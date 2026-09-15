@@ -861,32 +861,43 @@
       ctx.beginPath(); ctx.moveTo(-14, 2); ctx.bezierCurveTo(-27, 3, -37, 8, -49, 5); ctx.stroke();
     }
 
-    // Splayed legs and round adhesive toe pads.
+    // Side view: one visible foreleg and one visible hind leg with adhesive toe pads.
     ctx.strokeStyle = green; ctx.lineWidth = 4;
-    const feet = [[-9,6,-18,14,-25,13],[7,6,14,14,22,13],[-8,-5,-17,-11,-23,-10],[7,-5,15,-11,22,-9]];
+    const feet = [[-9,5,-17,14,-27,13],[8,5,15,13,25,12]];
     feet.forEach(([x1,y1,x2,y2,x3,y3]) => {
       ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.lineTo(x3,y3); ctx.stroke();
-      ctx.beginPath(); ctx.arc(x3,y3,3,0,Math.PI*2); ctx.fillStyle=green; ctx.fill();
+      ctx.fillStyle=green;
+      ctx.beginPath();ctx.ellipse(x3,y3,4,2.5,-.12,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle=green;ctx.lineWidth=1.3;
+      for(let toe=-1;toe<=1;toe++){ctx.beginPath();ctx.moveTo(x3+1,y3+toe);ctx.lineTo(x3+7,y3+toe*2);ctx.stroke();}
+      ctx.strokeStyle=green;ctx.lineWidth=4;
     });
 
-    // Slender body and broad wedge-shaped crested-gecko head.
+    // Slender body and broad, flat-topped wedge head with a distinct blunt snout.
     ctx.fillStyle = green;
     ctx.beginPath(); ctx.ellipse(-1,0,20,9,0,0,Math.PI*2); ctx.fill();
     ctx.beginPath();
-    ctx.moveTo(10,-8); ctx.lineTo(29,-7); ctx.quadraticCurveTo(34,-1,29,7); ctx.lineTo(11,8); ctx.quadraticCurveTo(18,0,10,-8); ctx.fill();
+    ctx.moveTo(8,-7);ctx.quadraticCurveTo(18,-11,31,-8);ctx.lineTo(35,-3);
+    ctx.lineTo(34,4);ctx.quadraticCurveTo(25,9,10,7);ctx.quadraticCurveTo(16,0,8,-7);ctx.fill();
+
+    // Raised eye turret and the little mouth line make the front unmistakable.
+    ctx.beginPath();ctx.ellipse(25,-8,6,5,-.08,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#714b2f";ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(23,3);ctx.quadraticCurveTo(29,5,34,2);ctx.stroke();
 
     // Eyelash crests continue from above the eye down the back.
+    ctx.fillStyle=green;
     ctx.beginPath();
-    ctx.moveTo(27,-7); ctx.lineTo(29,-14); ctx.lineTo(23,-8);
-    ctx.lineTo(23,-13); ctx.lineTo(18,-8);
-    ctx.lineTo(16,-12); ctx.lineTo(11,-7);
-    ctx.lineTo(8,-11); ctx.lineTo(3,-8);
-    ctx.lineTo(0,-11); ctx.lineTo(-5,-8);
-    ctx.lineTo(-8,-10); ctx.lineTo(-12,-7);
+    ctx.moveTo(30,-10);ctx.lineTo(31,-17);ctx.lineTo(26,-11);
+    ctx.lineTo(25,-16);ctx.lineTo(21,-10);
+    ctx.lineTo(19,-15);ctx.lineTo(15,-9);
+    ctx.lineTo(12,-13);ctx.lineTo(8,-8);
+    ctx.lineTo(4,-12);ctx.lineTo(0,-8);
+    ctx.lineTo(-5,-11);ctx.lineTo(-10,-7);
     ctx.closePath(); ctx.fill();
 
-    ctx.fillStyle="#071008"; ctx.beginPath(); ctx.ellipse(24,-5,3,3.8,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle="#fff6c5"; ctx.beginPath(); ctx.arc(25,-6,1,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle="#d9c577";ctx.beginPath();ctx.ellipse(26,-9,3.6,4.2,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#071008";ctx.beginPath();ctx.ellipse(27,-9,1.4,3.1,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#fff6c5";ctx.beginPath();ctx.arc(27,-10,1,0,Math.PI*2);ctx.fill();
 
     ctx.restore();
     ctx.globalAlpha = 1;
@@ -932,9 +943,11 @@
     if(flash)ctx.globalAlpha=.4;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
     const blue=characters.frog.color;
+    // Side view: one powerful folded hind leg and one smaller foreleg.
     ctx.strokeStyle=blue;ctx.lineWidth=6;ctx.lineCap="round";
-    ctx.beginPath();ctx.moveTo(-8,5);ctx.lineTo(-22,14);ctx.lineTo(-31,10);ctx.moveTo(7,6);ctx.lineTo(20,15);ctx.lineTo(29,11);ctx.stroke();
-    ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-7,-3);ctx.lineTo(-18,-10);ctx.lineTo(-24,-8);ctx.moveTo(9,-3);ctx.lineTo(19,-9);ctx.lineTo(25,-7);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-9,5);ctx.quadraticCurveTo(-22,13,-27,18);ctx.lineTo(-38,14);ctx.stroke();
+    ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(11,4);ctx.lineTo(20,12);ctx.lineTo(29,10);ctx.stroke();
+    ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-38,14);ctx.lineTo(-44,11);ctx.moveTo(-38,14);ctx.lineTo(-45,15);ctx.moveTo(-38,14);ctx.lineTo(-43,19);ctx.moveTo(29,10);ctx.lineTo(35,7);ctx.moveTo(29,10);ctx.lineTo(36,11);ctx.stroke();
     ctx.fillStyle=blue;ctx.beginPath();ctx.ellipse(0,3,18,12,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(12,-5,15,10,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#0a1830";[[-8,1,4],[2,7,3],[13,1,4],[20,-7,3],[-1,-5,3]].forEach(([x,y,r])=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();});
     ctx.fillStyle="#d8e9a0";ctx.beginPath();ctx.arc(18,-9,3.6,0,Math.PI*2);ctx.fill();ctx.fillStyle="#10171a";ctx.beginPath();ctx.arc(19,-9,1.7,0,Math.PI*2);ctx.fill();
