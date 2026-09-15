@@ -591,12 +591,21 @@
   }
 
   function drawLeaves(x, y, color) {
-    ctx.fillStyle = color;
     for (let i = 0; i < 7; i++) {
       ctx.save();
       ctx.translate(x + i * 24, y - (i % 3) * 28);
       ctx.rotate((i - 3) * .22);
-      ctx.beginPath(); ctx.ellipse(0, 0, 30, 12, 0, 0, Math.PI * 2); ctx.fill();
+      const length = 27 + (i % 2) * 5;
+      const width = 10 + (i % 3);
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(-length, 0);
+      ctx.bezierCurveTo(-length * .48, -width * 1.25, length * .52, -width, length, 0);
+      ctx.bezierCurveTo(length * .46, width, -length * .52, width * 1.18, -length, 0);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(177,220,153,.32)";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();ctx.moveTo(-length * .72,0);ctx.lineTo(length * .72,0);ctx.stroke();
       ctx.restore();
     }
   }
@@ -756,17 +765,26 @@
       ctx.fillStyle="#c99072";roundedRect(0,5,h.w,h.h-5,10);ctx.fill();
       for(let i=0;i<4;i++){roundedRect(25+i*9,0,8,16,4);ctx.fill();}
     } else if (h.type === "grab") {
-      // Top-down open hand. Five spread digits should finally end the foot allegations.
+      // Top-down open hand with an actual thumb, not an escaped deli product.
       ctx.fillStyle="#c99072";
-      roundedRect(33,50,27,24,8);ctx.fill();
-      roundedRect(23,24,48,40,17);ctx.fill();
-      const fingers=[[18,7,12,31,-.12],[32,1,12,35,-.03],[46,0,12,37,.02],[60,5,11,31,.10]];
+      roundedRect(36,53,27,21,7);ctx.fill();
+      roundedRect(25,25,48,39,17);ctx.fill();
+      const fingers=[[21,7,11,30,-.10],[34,1,11,35,-.03],[48,0,11,37,.03],[62,6,10,30,.11]];
       fingers.forEach(([x,y,w,ht,angle])=>{ctx.save();ctx.translate(x+w/2,y+ht);ctx.rotate(angle);roundedRect(-w/2,-ht,w,ht,6);ctx.fill();ctx.restore();});
-      ctx.save();ctx.translate(23,42);ctx.rotate(-.72);roundedRect(-19,-7,36,15,8);ctx.fill();ctx.strokeStyle="#9d644e";ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle="#e9b69a";roundedRect(-17,-4,9,8,4);ctx.fill();ctx.restore();
+      ctx.beginPath();
+      ctx.moveTo(29,34);
+      ctx.bezierCurveTo(20,29,12,30,7,36);
+      ctx.bezierCurveTo(3,41,6,47,12,47);
+      ctx.bezierCurveTo(18,47,23,52,29,57);
+      ctx.lineTo(39,49);
+      ctx.quadraticCurveTo(33,40,29,34);
+      ctx.closePath();ctx.fill();
       ctx.fillStyle="#e9b69a";
-      [[24,10],[38,5],[52,4],[65,10]].forEach(([x,y])=>{roundedRect(x-4,y,8,8,4);ctx.fill();});
+      ctx.save();ctx.translate(10,38);ctx.rotate(-.55);roundedRect(-4,-3,9,7,4);ctx.fill();ctx.restore();
+      ctx.fillStyle="#e9b69a";
+      [[26,10],[39,5],[53,4],[67,10]].forEach(([x,y])=>{roundedRect(x-4,y,8,8,4);ctx.fill();});
       ctx.strokeStyle="#9d644e";ctx.lineWidth=1.4;
-      ctx.beginPath();ctx.arc(47,43,13,.2,2.9);ctx.moveTo(35,54);ctx.quadraticCurveTo(47,48,59,54);ctx.stroke();
+      ctx.beginPath();ctx.arc(49,44,13,.2,2.9);ctx.moveTo(38,55);ctx.quadraticCurveTo(49,50,61,55);ctx.stroke();
     } else if (h.type === "mouseTrap") {
       ctx.fillStyle="#ad7b42";roundedRect(1,8,h.w-2,h.h-8,3);ctx.fill();ctx.strokeStyle="#e0b77a";ctx.lineWidth=2;roundedRect(1,8,h.w-2,h.h-8,3);ctx.stroke();
       ctx.strokeStyle="#cfd2cf";ctx.lineWidth=3;ctx.beginPath();ctx.rect(12,3,h.w-25,h.h-10);ctx.stroke();ctx.beginPath();ctx.moveTo(h.w/2,4);ctx.lineTo(h.w/2,h.h-2);ctx.stroke();
@@ -899,9 +917,12 @@
     const dark=characters.newt.color;
     ctx.strokeStyle=dark;ctx.lineWidth=8;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-12,1);ctx.bezierCurveTo(-29,0,-38,5,-49,1);ctx.stroke();
     ctx.fillStyle=dark;ctx.beginPath();ctx.ellipse(-1,0,22,8,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(20,-1,12,9,0,0,Math.PI*2);ctx.fill();
+    // Bright orange-red underside with the irregular black markings of a fire-belly newt.
+    ctx.fillStyle="#ef542f";ctx.beginPath();ctx.moveTo(-18,2);ctx.quadraticCurveTo(-5,10,12,7);ctx.quadraticCurveTo(21,6,27,2);ctx.quadraticCurveTo(10,5,-18,2);ctx.fill();
+    ctx.fillStyle="#ff9a35";ctx.beginPath();ctx.ellipse(-8,5,5,2.2,.12,0,Math.PI*2);ctx.ellipse(13,4,5,2,-.18,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#171918";[[-14,4,2.2],[-1,6,2.5],[7,4,1.8],[20,3,2.2]].forEach(([x,y,r])=>{ctx.beginPath();ctx.ellipse(x,y,r,r*.62,.2,0,Math.PI*2);ctx.fill();});
     ctx.strokeStyle=dark;ctx.lineWidth=3;
     [[-8,5,-17,13],[7,5,16,13],[-7,-4,-16,-10],[8,-4,17,-10]].forEach(([x,y,x2,y2])=>{ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.lineTo(x2+5,y2);ctx.stroke();});
-    ctx.strokeStyle="#f05a31";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-16,4);ctx.quadraticCurveTo(2,10,23,4);ctx.stroke();
     ctx.fillStyle="#f4cb64";ctx.beginPath();ctx.arc(24,-4,2,0,Math.PI*2);ctx.fill();
     ctx.restore();ctx.globalAlpha=1;
   }
