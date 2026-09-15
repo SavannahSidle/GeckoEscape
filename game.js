@@ -43,6 +43,8 @@
   let chameleonColorIndex = 0;
   let strikeActiveUntil = 0;
   let strikeCooldownUntil = 0;
+  let newtDashUntil = 0;
+  let newtDashCooldownUntil = 0;
   let selectedCharacter = "crested";
   let soundOn = true;
   let audioContext = null;
@@ -50,7 +52,7 @@
   const characters = {
     chameleon: { name: "CHAMELEON", ability: "TONGUE", secondary: "CAMOUFLAGE", collectible: "CRICKETS", color: "#79a94d", climbSpeed: 135, swimSpeed: 150, w: 42, h: 25 },
     crested: { name: "CRESTED GECKO", ability: "DROP TAIL", collectible: "ROACHES", color: "#d29458", climbSpeed: 195, swimSpeed: 160, w: 42, h: 25 },
-    newt: { name: "FIRE-BELLY NEWT", ability: "TOXIN", collectible: "WORMS", color: "#252a28", climbSpeed: 130, swimSpeed: 235, w: 46, h: 23 },
+    newt: { name: "FIRE-BELLY NEWT", ability: "TAIL DASH", secondary: "TOXIN", collectible: "WORMS", color: "#252a28", climbSpeed: 130, swimSpeed: 235, w: 46, h: 23 },
     frog: { name: "AZUREUS DART FROG", ability: "TONGUE", secondary: "POWER LEAP", collectible: "FRUIT FLIES", color: "#2679cb", climbSpeed: 120, swimSpeed: 155, w: 38, h: 27 },
     boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", secondary: "STRIKE", collectible: "RATS", color: "#030405", climbSpeed: 155, swimSpeed: 190, w: 94, h: 36 }
   };
@@ -136,6 +138,27 @@
     }
   ];
 
+  const standardStoryLayouts=levels.slice(1).map(level=>({
+    platforms:level.platforms.map(platform=>[...platform]),
+    vines:level.vines.map(vine=>[...vine]),
+    insects:level.insects.map(insect=>insect.slice(0,2))
+  }));
+
+  const frogLevelExtras=[
+    {
+      platforms:[[108,310,135,18],[690,225,125,18]],
+      insects:[[174,277],[752,192]]
+    },
+    {
+      platforms:[[88,310,130,18],[350,230,135,18]],
+      insects:[[152,277],[417,197]]
+    },
+    {
+      platforms:[[225,275,125,18],[760,365,125,18]],
+      insects:[[287,242],[822,332]]
+    }
+  ];
+
   const habitatConfigs = {
     chameleon: {
       title:"The Screen Enclosure",habitat:"chameleon",palette:["#08150c","#17351d","#6b4a2b","#8bd85c"],
@@ -165,8 +188,8 @@
       title:"The Planted Vivarium",habitat:"frog",palette:["#061810","#164528","#67502d","#74df79"],
       intro:"A bromeliad has reached the door. Leap through the leaves before the human arrives with entirely too much concern.",
       start:[170,430],exit:[870,410,48,90],
-      platforms:[[0,500,960,40],[75,455,175,20],[90,342,145,18],[285,405,145,18],[465,350,150,18],[650,295,160,18],[780,215,145,18]],
-      vines:[[250,320,18,140],[610,245,18,120],[760,155,18,145]],insects:[[158,309],[330,370],[535,315],[825,180]],
+      platforms:[[0,500,960,40],[75,455,175,20],[90,342,145,18],[285,405,145,18],[265,270,135,18],[465,350,150,18],[530,220,130,18],[650,295,160,18],[780,215,145,18]],
+      vines:[],insects:[[158,309],[330,370],[332,237],[535,315],[595,187],[825,180]],
       hazards:[{x:450,y:430,w:92,h:70,type:"grab",axis:"x",min:350,max:630,speed:84}]
     },
     boa: {
@@ -183,6 +206,16 @@
     const habitat = habitatConfigs[selectedCharacter];
     levels[0].ceilingVines=[];
     Object.assign(levels[0], JSON.parse(JSON.stringify(habitat)), {label:"LEVEL 1 · EASY",decor:"enclosure",completeTitle:"The room is larger than expected.",completeText:"Freedom contains shelves, suspicious noises, and absolutely no climate control."});
+    standardStoryLayouts.forEach((layout,index)=>{
+      const level=levels[index+1];
+      level.platforms=layout.platforms.map(platform=>[...platform]);
+      level.vines=selectedCharacter==="frog"?[]:layout.vines.map(vine=>[...vine]);
+      level.insects=layout.insects.map(insect=>[...insect]);
+      if(selectedCharacter==="frog"){
+        level.platforms.push(...frogLevelExtras[index].platforms.map(platform=>[...platform]));
+        level.insects.push(...frogLevelExtras[index].insects.map(insect=>[...insect]));
+      }
+    });
   }
 
   function tone(frequency, duration = 0.08, type = "sine") {
@@ -258,6 +291,8 @@
     camouflageCooldownUntil = 0;
     strikeActiveUntil = 0;
     strikeCooldownUntil = 0;
+    newtDashUntil = 0;
+    newtDashCooldownUntil = 0;
     tongueActiveUntil = 0;
     tongueCooldownUntil = 0;
     droppedTail = null;
@@ -300,7 +335,8 @@
     } else if (selectedCharacter === "crested") {
       abilityLabel.textContent = `TAIL ${tailReady ? "READY" : "GONE"}`;
     } else if (selectedCharacter === "newt") {
-      abilityLabel.textContent = `TOXIN ${toxinReady ? "READY" : "USED"}`;
+      const dashState=performance.now()>=newtDashCooldownUntil?"TAIL DASH READY":"DASH RECHARGING";
+      abilityLabel.textContent = `${dashState} · TOXIN ${toxinReady ? "READY" : "USED"}`;
     } else if (selectedCharacter === "frog") {
       abilityLabel.textContent = `TONGUE · ${performance.now() >= leapCooldownUntil ? "POWER LEAP READY" : "LEAP RECHARGING"}`;
     } else if (selectedCharacter === "boa") {
@@ -362,6 +398,14 @@
     toxinActiveUntil = now + 2600;
     updateHud();
     tone(155, .18, "sawtooth");
+  }
+
+  function useTailDash(){
+    const now=performance.now();
+    if(state!=="playing"||selectedCharacter!=="newt"||now<newtDashCooldownUntil)return;
+    newtDashUntil=now+320;newtDashCooldownUntil=now+1050;
+    player.vx=player.facing*390;player.vy=Math.min(player.vy,-70);
+    updateHud();tone(280,.08,"triangle");
   }
 
   function usePowerLeap() {
@@ -427,13 +471,14 @@
   function useAbility() {
     if (selectedCharacter === "chameleon" || selectedCharacter === "frog") useTongue();
     else if (selectedCharacter === "crested") dropTail();
-    else if (selectedCharacter === "newt") useToxin();
+    else if (selectedCharacter === "newt") useTailDash();
     else useConstrict();
   }
 
   function useSecondaryAbility(){
     if(selectedCharacter==="chameleon")useCamouflage();
     else if(selectedCharacter==="frog")usePowerLeap();
+    else if(selectedCharacter==="newt")useToxin();
     else if(selectedCharacter==="boa")useStrike();
   }
 
@@ -464,8 +509,8 @@
     const down = keys.ArrowDown || keys.KeyS;
     const inHabitatWater = level.habitat === "newt" && player.x < 450 && player.y + player.h / 2 > 408;
     const swimming = Boolean(level.underwater || inHabitatWater);
-    const speed = swimming ? character.swimSpeed : levelIndex === 2 ? 236 : 220;
-    if (["chameleon","frog","boa"].includes(selectedCharacter)) updateHud();
+    const speed = selectedCharacter==="newt"&&now<newtDashUntil?390:swimming ? character.swimSpeed : levelIndex === 2 ? 236 : 220;
+    if (["chameleon","newt","frog","boa"].includes(selectedCharacter)) updateHud();
 
     const acceleration = swimming ? 720 : 1450;
     if (left) { player.vx -= acceleration * dt; player.facing = -1; }
@@ -618,6 +663,10 @@
       ctx.strokeStyle = "rgba(210,255,230,.15)";
       ctx.lineWidth = 5; ctx.strokeRect(18, 45, 924, 455);
       drawEnclosureTrees();
+      ctx.save();ctx.globalAlpha=.42;
+      drawLeaves(-18,120,"#1b4b2b");drawLeaves(185,155,"#285c34");drawLeaves(390,105,"#214d2d");
+      drawLeaves(545,265,"#285735");drawLeaves(790,125,"#1d492b");drawLeaves(820,335,"#285d37");
+      ctx.restore();
       drawHabitatDetails(level);
       drawLeaves(48, 220, "#245f36");drawLeaves(665,180,"#1d4e2e");drawLeaves(720,400,"#245f36");
     } else if (level.decor === "kitchen") {
@@ -1053,7 +1102,8 @@
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
     if(now<toxinActiveUntil){ctx.strokeStyle="rgba(255,105,49,.72)";ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(0,0,43,24,0,0,Math.PI*2);ctx.stroke();}
     const dark=characters.newt.color;
-    ctx.strokeStyle=dark;ctx.lineWidth=8;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-12,1);ctx.bezierCurveTo(-29,0,-38,5,-49,1);ctx.stroke();
+    const tailKick=now<newtDashUntil?Math.sin(now*.055)*11:0;
+    ctx.strokeStyle=dark;ctx.lineWidth=8;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-12,1);ctx.bezierCurveTo(-29,tailKick,-38,-tailKick*.55,-49,1+tailKick*.35);ctx.stroke();
     ctx.fillStyle=dark;ctx.beginPath();ctx.ellipse(-1,0,22,8,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(20,-1,12,9,0,0,Math.PI*2);ctx.fill();
     // Bright orange-red underside with the irregular black markings of a fire-belly newt.
     ctx.fillStyle="#ef542f";ctx.beginPath();ctx.moveTo(-18,2);ctx.quadraticCurveTo(-5,10,12,7);ctx.quadraticCurveTo(21,6,27,2);ctx.quadraticCurveTo(10,5,-18,2);ctx.fill();
