@@ -38,22 +38,27 @@
   let leapCooldownUntil = 0;
   let constrictCooldownUntil = 0;
   let constrictPulseUntil = 0;
+  let camouflageUntil = 0;
+  let camouflageCooldownUntil = 0;
+  let chameleonColorIndex = 0;
+  let strikeActiveUntil = 0;
+  let strikeCooldownUntil = 0;
   let selectedCharacter = "crested";
   let soundOn = true;
   let audioContext = null;
 
   const characters = {
-    chameleon: { name: "CHAMELEON", ability: "TONGUE", collectible: "CRICKETS", color: "#79a94d", climbSpeed: 135, swimSpeed: 150, w: 42, h: 25 },
+    chameleon: { name: "CHAMELEON", ability: "TONGUE", secondary: "CAMOUFLAGE", collectible: "CRICKETS", color: "#79a94d", climbSpeed: 135, swimSpeed: 150, w: 42, h: 25 },
     crested: { name: "CRESTED GECKO", ability: "DROP TAIL", collectible: "ROACHES", color: "#d29458", climbSpeed: 195, swimSpeed: 160, w: 42, h: 25 },
     newt: { name: "FIRE-BELLY NEWT", ability: "TOXIN", collectible: "WORMS", color: "#252a28", climbSpeed: 130, swimSpeed: 235, w: 46, h: 23 },
-    frog: { name: "AZUREUS DART FROG", ability: "POWER LEAP", collectible: "FRUIT FLIES", color: "#2679cb", climbSpeed: 120, swimSpeed: 155, w: 38, h: 27 },
-    boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", collectible: "RATS", color: "#030405", climbSpeed: 155, swimSpeed: 190, w: 94, h: 36 }
+    frog: { name: "AZUREUS DART FROG", ability: "TONGUE", secondary: "POWER LEAP", collectible: "FRUIT FLIES", color: "#2679cb", climbSpeed: 120, swimSpeed: 155, w: 38, h: 27 },
+    boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", secondary: "STRIKE", collectible: "RATS", color: "#030405", climbSpeed: 155, swimSpeed: 190, w: 94, h: 36 }
   };
 
   const player = {
     x: 0, y: 0, w: 38, h: 24,
     vx: 0, vy: 0, facing: 1,
-    grounded: false, climbing: false,
+    grounded: false, climbing: false, ceilingClimbing: false,
     spawnX: 0, spawnY: 0
   };
 
@@ -137,7 +142,7 @@
       intro:"The screen door is loose. Cross the ficus branches and leave before anyone notices the suspiciously empty vine.",
       start:[70,420],exit:[870,410,48,90],
       platforms:[[0,500,960,40],[42,452,190,20],[80,340,150,18],[275,392,175,20],[510,330,190,20],[735,264,180,20],[570,180,165,18]],
-      vines:[[225,315,18,140],[465,255,18,140],[720,190,18,145]],insects:[[149,307],[330,355],[590,292],[810,225]],
+      vines:[],ceilingVines:[[150,92,680,18]],insects:[[149,307],[330,355],[590,292],[810,225]],
       hazards:[{x:430,y:430,w:92,h:70,type:"grab",axis:"x",min:340,max:620,speed:82}]
     },
     crested: {
@@ -176,6 +181,7 @@
 
   function applyCharacterHabitat() {
     const habitat = habitatConfigs[selectedCharacter];
+    levels[0].ceilingVines=[];
     Object.assign(levels[0], JSON.parse(JSON.stringify(habitat)), {label:"LEVEL 1 · EASY",decor:"enclosure",completeTitle:"The room is larger than expected.",completeText:"Freedom contains shelves, suspicious noises, and absolutely no climate control."});
   }
 
@@ -238,7 +244,7 @@
     player.w = characters[selectedCharacter].w;
     player.h = characters[selectedCharacter].h;
     level.insects.forEach(insect => insect[2] = false);
-    level.hazards.forEach((hazard, i) => { hazard.dir = i % 2 ? -1 : 1; hazard.stunnedUntil = 0; });
+    level.hazards.forEach((hazard, i) => { hazard.dir = i % 2 ? -1 : 1; hazard.stunnedUntil = 0; hazard.defeated = false; });
     lives = 3;
     collected = 0;
     tailReady = true;
@@ -248,6 +254,10 @@
     leapCooldownUntil = 0;
     constrictCooldownUntil = 0;
     constrictPulseUntil = 0;
+    camouflageUntil = 0;
+    camouflageCooldownUntil = 0;
+    strikeActiveUntil = 0;
+    strikeCooldownUntil = 0;
     tongueActiveUntil = 0;
     tongueCooldownUntil = 0;
     droppedTail = null;
@@ -275,6 +285,7 @@
     player.vx = 0;
     player.vy = 0;
     player.grounded = false;
+    player.ceilingClimbing = false;
     air = 100;
     invulnerableUntil = performance.now() + 1100;
     updateHud();
@@ -291,15 +302,21 @@
     } else if (selectedCharacter === "newt") {
       abilityLabel.textContent = `TOXIN ${toxinReady ? "READY" : "USED"}`;
     } else if (selectedCharacter === "frog") {
-      abilityLabel.textContent = performance.now() >= leapCooldownUntil ? "POWER LEAP READY" : "LEAP RECHARGING";
+      abilityLabel.textContent = `TONGUE · ${performance.now() >= leapCooldownUntil ? "POWER LEAP READY" : "LEAP RECHARGING"}`;
     } else if (selectedCharacter === "boa") {
-      abilityLabel.textContent = performance.now() >= constrictCooldownUntil ? "CONSTRICT READY" : "CONSTRICT RECHARGING";
+      const constrictState=performance.now()>=constrictCooldownUntil?"CONSTRICT READY":"CONSTRICT RECHARGING";
+      const strikeState=performance.now()>=strikeCooldownUntil?"STRIKE READY":"STRIKE RECHARGING";
+      abilityLabel.textContent=`${constrictState} · ${strikeState}`;
+    } else if (selectedCharacter === "chameleon") {
+      abilityLabel.textContent = `TONGUE · ${performance.now() >= camouflageCooldownUntil ? "CAMOUFLAGE READY" : "CAMOUFLAGE RECHARGING"}`;
     } else {
       abilityLabel.textContent = "TONGUE READY";
     }
     abilityButton.textContent = character.ability;
     abilityButton.setAttribute("aria-label", `Use ${character.ability.toLowerCase()} ability`);
-    tongueButton.classList.toggle("hidden", selectedCharacter !== "frog");
+    tongueButton.textContent = character.secondary || "";
+    tongueButton.setAttribute("aria-label", character.secondary ? `Use ${character.secondary.toLowerCase()} ability` : "Secondary ability unavailable");
+    tongueButton.classList.toggle("hidden", !character.secondary);
     lifeLabel.textContent = "♥ ".repeat(Math.max(0, lives)).trim();
   }
 
@@ -358,6 +375,16 @@
     tone(360, .1, "triangle");
   }
 
+  function useCamouflage() {
+    const now=performance.now();
+    if(state!=="playing"||selectedCharacter!=="chameleon"||now<camouflageCooldownUntil)return;
+    chameleonColorIndex=(chameleonColorIndex+1)%5;
+    camouflageUntil=now+2600;
+    camouflageCooldownUntil=now+5200;
+    invulnerableUntil=Math.max(invulnerableUntil,camouflageUntil);
+    updateHud();tone(430,.16,"sine");
+  }
+
   function useConstrict() {
     const now = performance.now();
     if (state !== "playing" || selectedCharacter !== "boa" || now < constrictCooldownUntil) return;
@@ -367,6 +394,7 @@
     let target = null;
     let nearest = 155;
     for (const hazard of level.hazards) {
+      if(hazard.defeated)continue;
       if (hazard.axis !== "x") continue;
       const distance = Math.hypot(px - (hazard.x + hazard.w / 2), py - (hazard.y + hazard.h / 2));
       if (distance < nearest) { nearest = distance; target = hazard; }
@@ -379,12 +407,34 @@
     tone(105, .22, "sawtooth");
   }
 
+  function useStrike(){
+    const now=performance.now();
+    if(state!=="playing"||selectedCharacter!=="boa"||now<strikeCooldownUntil)return;
+    strikeActiveUntil=now+300;strikeCooldownUntil=now+1150;
+    const strikeBox={x:player.facing>0?player.x+player.w-12:player.x-92,y:player.y-7,w:104,h:player.h+14};
+    const livingTypes=new Set(["cat","dalmatian","frenchie","fish"]);
+    for(const hazard of levels[levelIndex].hazards){
+      if(hazard.defeated||!intersects(strikeBox,hazard))continue;
+      if(hazard.type==="grab"||hazard.type==="hand"){
+        hazard.stunnedUntil=now+1000;hazard.dir*=-1;
+      }else if(livingTypes.has(hazard.type)){
+        hazard.defeated=true;
+      }
+    }
+    updateHud();tone(190,.09,"sawtooth");
+  }
+
   function useAbility() {
-    if (selectedCharacter === "chameleon") useTongue();
+    if (selectedCharacter === "chameleon" || selectedCharacter === "frog") useTongue();
     else if (selectedCharacter === "crested") dropTail();
     else if (selectedCharacter === "newt") useToxin();
-    else if (selectedCharacter === "frog") usePowerLeap();
     else useConstrict();
+  }
+
+  function useSecondaryAbility(){
+    if(selectedCharacter==="chameleon")useCamouflage();
+    else if(selectedCharacter==="frog")usePowerLeap();
+    else if(selectedCharacter==="boa")useStrike();
   }
 
   function intersects(a, b) {
@@ -415,16 +465,17 @@
     const inHabitatWater = level.habitat === "newt" && player.x < 450 && player.y + player.h / 2 > 408;
     const swimming = Boolean(level.underwater || inHabitatWater);
     const speed = swimming ? character.swimSpeed : levelIndex === 2 ? 236 : 220;
-    if (selectedCharacter === "frog" || selectedCharacter === "boa") updateHud();
+    if (["chameleon","frog","boa"].includes(selectedCharacter)) updateHud();
 
-    const acceleration = level.underwater ? 720 : 1450;
+    const acceleration = swimming ? 720 : 1450;
     if (left) { player.vx -= acceleration * dt; player.facing = -1; }
     if (right) { player.vx += acceleration * dt; player.facing = 1; }
-    if (!left && !right) player.vx *= Math.pow(level.underwater ? .025 : .0007, dt);
+    if (!left && !right) player.vx *= Math.pow(swimming ? .025 : .0007, dt);
     player.vx = Math.max(-speed, Math.min(speed, player.vx));
 
     if (swimming) {
       player.climbing = false;
+      player.ceilingClimbing = false;
       if (up) player.vy -= 680 * dt;
       if (down) player.vy += 680 * dt;
       if (!up && !down) player.vy *= Math.pow(.018, dt);
@@ -445,9 +496,14 @@
       updateHud();
     } else {
       const onVine = level.vines.some(v => intersects(player, {x:v[0], y:v[1], w:v[2], h:v[3]}));
+      const ceilingVine = (level.ceilingVines||[]).find(v => intersects(player,{x:v[0],y:v[1]-4,w:v[2],h:v[3]+22}));
       const onWall = player.x <= 5 || player.x + player.w >= W - 5;
-      player.climbing = (onVine || onWall) && (up || down);
-      if (player.climbing) {
+      player.ceilingClimbing=Boolean(ceilingVine&&up);
+      player.climbing = player.ceilingClimbing || ((onVine || onWall) && (up || down));
+      if(player.ceilingClimbing){
+        player.y=ceilingVine[1]+ceilingVine[3]-2;
+        player.vy=0;
+      }else if (player.climbing) {
         player.vy = up ? -character.climbSpeed : down ? character.climbSpeed : 0;
       } else {
         player.vy += 820 * dt;
@@ -478,6 +534,7 @@
     }
 
     for (const hazard of level.hazards) {
+      if(hazard.defeated)continue;
       if (hazard.axis === "x" && now >= (hazard.stunnedUntil || 0)) {
         hazard.x += hazard.speed * hazard.dir * dt;
         if (hazard.x < hazard.min || hazard.x > hazard.max) {
@@ -542,7 +599,7 @@
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, W, H);
 
-    if(level.habitat!=="newt"){
+    if(level.decor!=="enclosure"){
       ctx.globalAlpha = .13;
       ctx.strokeStyle = level.palette[3];
       ctx.lineWidth = 1;
@@ -647,7 +704,6 @@
   function drawHabitatDetails(level) {
     ctx.save();ctx.globalAlpha=.7;
     if(level.habitat==="chameleon"){
-      ctx.strokeStyle="rgba(150,190,150,.18)";ctx.lineWidth=1;for(let x=28;x<940;x+=18){ctx.beginPath();ctx.moveTo(x,50);ctx.lineTo(x,498);ctx.stroke();}
       ctx.fillStyle="#443326";ctx.fillRect(72,414,76,65);drawLeaves(58,380,"#315b35");
     }else if(level.habitat==="crested"){
       ctx.fillStyle="#583b24";roundedRect(700,95,105,315,18);ctx.fill();ctx.strokeStyle="#936b43";ctx.lineWidth=4;for(let y=120;y<390;y+=36){ctx.beginPath();ctx.moveTo(710,y);ctx.lineTo(790,y-11);ctx.stroke();}
@@ -703,6 +759,19 @@
     ctx.restore();
   }
 
+  function drawCeilingVine(v) {
+    const [x,y,w,h]=v;const cy=y+h/2;
+    ctx.save();ctx.lineCap="round";
+    ctx.strokeStyle="#4b3322";ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(x,cy);ctx.bezierCurveTo(x+w*.3,cy+8,x+w*.7,cy-8,x+w,cy);ctx.stroke();
+    ctx.strokeStyle="#5d8d42";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x+4,cy-3);ctx.bezierCurveTo(x+w*.32,cy+3,x+w*.66,cy-12,x+w-5,cy-2);ctx.stroke();
+    for(let px=x+22,index=0;px<x+w-18;px+=42,index++){
+      const direction=index%2===0?1:-1;
+      drawPlantLeaf(px,cy+direction*2,direction>0?Math.PI/2:-Math.PI/2,"#548c42",18,7);
+      if(index%3===1){ctx.strokeStyle="#4b793c";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(px+8,cy);ctx.bezierCurveTo(px+17,cy+15,px+5,cy+29,px+14,cy+43);ctx.stroke();}
+    }
+    ctx.restore();
+  }
+
   function drawPlatforms(level) {
     for (const p of level.platforms) {
       if(level.decor==="enclosure"&&p[1]<490){
@@ -721,6 +790,7 @@
       }
     }
     for (const v of level.vines) drawClimbablePlant(v,level);
+    for (const v of level.ceilingVines||[]) drawCeilingVine(v);
   }
 
   function drawExit(level) {
@@ -788,6 +858,7 @@
   }
 
   function drawHazard(h, now = 0) {
+    if(h.defeated)return;
     ctx.save();
     ctx.translate(h.x, h.y);
     if (now < (h.stunnedUntil || 0)) ctx.globalAlpha = .48;
@@ -962,7 +1033,8 @@
     const flash = now < invulnerableUntil && Math.floor(now / 90) % 2 === 0;
     if (flash) ctx.globalAlpha=.4;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
-    const green=characters.chameleon.color;
+    const chameleonColors=["#79a94d","#d8aa45","#43a4a0","#a565bd","#cf654f"];
+    const green=now<camouflageUntil?chameleonColors[Math.floor(now/170)%chameleonColors.length]:chameleonColors[chameleonColorIndex];
     ctx.strokeStyle=green;ctx.lineWidth=6;ctx.lineCap="round";
     ctx.beginPath();ctx.moveTo(-13,3);ctx.bezierCurveTo(-37,12,-47,-3,-34,-14);ctx.bezierCurveTo(-23,-22,-18,-9,-29,-5);ctx.stroke();
     ctx.fillStyle=green;ctx.beginPath();ctx.ellipse(-1,0,20,11,-.08,0,Math.PI*2);ctx.fill();
@@ -1015,24 +1087,36 @@
     if(flash)ctx.globalAlpha=.4;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
     const dark=characters.boa.color;
-    if(now<constrictPulseUntil){const pulse=1-(constrictPulseUntil-now)/360;ctx.strokeStyle=`rgba(182,190,200,${.8-pulse*.7})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,27+pulse*28,0,Math.PI*2);ctx.stroke();}
     ctx.strokeStyle=dark;ctx.lineWidth=15;ctx.lineCap="round";
-    ctx.beginPath();ctx.moveTo(-64,5);ctx.bezierCurveTo(-50,-14,-31,15,-15,0);ctx.bezierCurveTo(1,-15,11,10,24,-1);ctx.stroke();
+    if(now<constrictPulseUntil){
+      ctx.beginPath();ctx.ellipse(-18,3,31,15,0,0,Math.PI*2);ctx.stroke();
+      ctx.lineWidth=11;ctx.beginPath();ctx.ellipse(-16,3,21,9,0,0,Math.PI*2);ctx.stroke();
+      ctx.strokeStyle="#414448";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(-17,3,29,13,0,0,Math.PI*2);ctx.stroke();
+    }else{
+      ctx.beginPath();ctx.moveTo(-64,5);ctx.bezierCurveTo(-50,-14,-31,15,-15,0);ctx.bezierCurveTo(1,-15,11,10,24,-1);ctx.stroke();
+    }
+    const strikeProgress=now<strikeActiveUntil?Math.max(0,1-(strikeActiveUntil-now)/300):0;
+    const lunge=now<strikeActiveUntil?Math.sin(strikeProgress*Math.PI)*38:0;
+    ctx.save();ctx.translate(lunge,0);
     ctx.fillStyle=dark;
     ctx.beginPath();ctx.moveTo(15,-11);ctx.quadraticCurveTo(34,-14,48,-8);ctx.lineTo(54,-1);ctx.lineTo(49,8);ctx.quadraticCurveTo(33,13,16,9);ctx.lineTo(9,3);ctx.lineTo(11,-6);ctx.closePath();ctx.fill();
     ctx.strokeStyle="#383b3e";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(19,8);ctx.quadraticCurveTo(35,12,49,6);ctx.stroke();
     ctx.fillStyle="#d0a85d";ctx.beginPath();ctx.ellipse(39,-5,3,2.2,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#070707";ctx.beginPath();ctx.ellipse(40,-5,1,2,0,0,Math.PI*2);ctx.arc(49,-1,1.5,0,Math.PI*2);ctx.fill();
     ctx.strokeStyle="#bd3c48";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(52,4);ctx.lineTo(65,7);ctx.moveTo(65,7);ctx.lineTo(70,4);ctx.moveTo(65,7);ctx.lineTo(69,11);ctx.stroke();
+    ctx.restore();
     ctx.restore();ctx.globalAlpha=1;
   }
 
   function drawPlayer(now) {
+    ctx.save();
+    if(player.ceilingClimbing){ctx.translate(0,player.y*2+player.h);ctx.scale(1,-1);}
     if (selectedCharacter === "chameleon") drawChameleon(now);
     else if (selectedCharacter === "newt") drawNewt(now);
     else if (selectedCharacter === "frog") drawFrog(now);
     else if (selectedCharacter === "boa") drawBoa(now);
     else drawCrestedGecko(now);
+    ctx.restore();
   }
 
   function draw(time = 0) {
@@ -1058,8 +1142,8 @@
   window.addEventListener("keydown", event => {
     if (["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Space"].includes(event.code)) event.preventDefault();
     if (!keys[event.code] && (event.code === "Space" || event.code === "ArrowUp" || event.code === "KeyW")) jump();
-    if (!keys[event.code] && event.code === "KeyE") (["chameleon","frog"].includes(selectedCharacter) ? useTongue() : useAbility());
-    if (!keys[event.code] && (event.code === "ShiftLeft" || event.code === "ShiftRight" || event.code === "KeyX")) useAbility();
+    if (!keys[event.code] && event.code === "KeyE") useAbility();
+    if (!keys[event.code] && event.code === "KeyR") useSecondaryAbility();
     keys[event.code] = true;
   });
   window.addEventListener("keyup", event => keys[event.code] = false);
@@ -1069,8 +1153,8 @@
     const key = control === "left" ? "touchLeft" : control === "right" ? "touchRight" : "touchJump";
     const press = event => {
       event.preventDefault();
-      if (control === "tongue") return useTongue();
-      if (control === "ability") return useAbility();
+      if (control === "secondary") return useSecondaryAbility();
+      if (control === "primary") return useAbility();
       if (control === "jump" && !keys[key]) jump();
       keys[key] = true;
     };

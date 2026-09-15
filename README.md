@@ -6,7 +6,8 @@ A tiny four-level browser game from Alien Arboreal.
 
 - Move: WASD or arrow keys
 - Jump: Space or Up
-- Character ability: E, Shift, or X
+- Primary ability: E
+- Secondary ability: R, when available
 - Touch controls appear automatically on mobile devices
 
 Collect three insects per level, avoid hazards, and reach the exit. The game runs entirely in the browser with no dependencies.
