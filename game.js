@@ -50,7 +50,7 @@
       platforms: [[0,500,960,40],[45,458,190,22],[262,404,190,20],[500,342,185,20],[712,270,190,20],[790,154,150,20]],
       vines: [[215,328,20,135],[456,273,20,135],[680,204,20,140]],
       insects: [[330,370],[570,308],[840,230]],
-      hazards: [{x:420,y:477,w:78,h:23,type:"spray",axis:"x",min:360,max:600,speed:72}],
+      hazards: [{x:420,y:454,w:82,h:46,type:"grab",axis:"x",min:330,max:620,speed:82}],
       decor: "enclosure"
     },
     {
@@ -428,9 +428,16 @@
     } else if (h.type === "hand") {
       ctx.fillStyle="#c99072";roundedRect(0,5,h.w,h.h-5,10);ctx.fill();
       for(let i=0;i<4;i++){roundedRect(25+i*9,0,8,16,4);ctx.fill();}
-    } else if (h.type === "spray") {
-      ctx.fillStyle="rgba(150,220,255,.55)";
-      for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(8+i*15,8+(i%2)*7,5,0,Math.PI*2);ctx.fill();}
+    } else if (h.type === "grab") {
+      ctx.fillStyle="#c99072";
+      roundedRect(16,20,h.w-30,h.h-14,13);ctx.fill();
+      for(let i=0;i<4;i++){
+        roundedRect(12+i*15,2,11,31-(i%2)*5,6);ctx.fill();
+      }
+      ctx.fillStyle="#a96f56";
+      roundedRect(h.w-20,29,28,15,7);ctx.fill();
+      ctx.fillStyle="rgba(255,255,255,.18)";
+      roundedRect(18,23,h.w-42,4,2);ctx.fill();
     } else if (h.type === "repashy") {
       ctx.fillStyle="#d6d1b4";roundedRect(4,0,h.w-8,h.h,6);ctx.fill();ctx.fillStyle="#6d5938";ctx.fillRect(8,4,h.w-16,7);
     } else if (h.type === "roomba") {
