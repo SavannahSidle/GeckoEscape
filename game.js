@@ -89,9 +89,9 @@
       completeText: "The house stretches before you. Somewhere in the dark, a refrigerator hums like destiny.",
       palette: ["#0c1117", "#1d2830", "#754f31", "#f0cc62"],
       start: [45, 445], exit: [876,88,50,82],
-      platforms: [[0,500,960,40],[28,442,235,20],[425,390,205,20],[615,327,285,20],[40,262,170,18],[55,196,180,18],[530,155,180,18],[815,174,125,18]],
+      platforms: [[0,500,960,40],[28,442,235,20],[425,390,205,20],[615,327,285,20],[265,285,105,18],[40,262,170,18],[55,196,180,18],[530,155,180,18],[815,174,125,18]],
       angledPlatforms: [[300,330,185,215,18]],
-      vines: [[258,317,18,130],[545,270,18,123],[705,95,18,235]],
+      vines: [],
       insects: [[80,410],[420,355],[300,294],[510,294],[740,294],[120,161],[620,120],[875,142]],
       hazards: [
         {x:650,y:303,w:66,h:24,type:"cat",axis:"x",min:620,max:820,speed:105},
@@ -108,9 +108,9 @@
       palette: ["#111018", "#292239", "#795b44", "#ef8c73"],
       start: [38, 445], exit: [878,392,64,108],
       platforms: [[0,500,960,40],[26,434,165,20],[35,105,125,18],[40,175,120,18],[115,260,135,18],[230,372,150,18],[420,318,132,18],[520,160,110,18],[602,268,140,18],[790,212,150,18],[820,125,105,18],[690,392,105,18],[520,445,94,18]],
-      vines: [[190,326,18,112],[380,265,18,110]],
+      vines: [],
       insects: [[95,72],[290,337],[665,233],[850,177]],
-      mice: [[575,126],[875,91]],
+      mice: [],
       hazards: [
         {x:238,y:460,w:96,h:40,type:"roomba",axis:"x",min:210,max:490,speed:145},
         {x:550,y:413,w:72,h:32,type:"roomba",axis:"x",min:510,max:680,speed:118},
@@ -165,6 +165,12 @@
     }
   ];
 
+  const boaStoryCollectibles=[
+    {rats:[[620,120]],mice:[[80,410],[300,294],[420,355],[510,294],[740,294],[120,161],[875,142]]},
+    {rats:[[95,72],[665,233],[850,177]],mice:[[105,400],[185,225],[290,337],[470,285],[705,358],[835,305]]},
+    {rats:[[310,115],[850,180]],mice:[[180,390],[120,270],[475,305],[520,465],[650,330],[810,235],[385,315],[735,245]]}
+  ];
+
   const habitatConfigs = {
     chameleon: {
       title:"The Screen Enclosure",habitat:"chameleon",palette:["#08150c","#17351d","#6b4a2b","#8bd85c"],
@@ -179,7 +185,7 @@
       intro:"The glass door is open. Cross the cork and branches, then make your first terrible decision.",
       start:[55,433],exit:[870,410,48,90],
       platforms:[[0,500,960,40],[45,458,190,22],[76,340,150,18],[500,342,185,20],[712,270,190,20],[790,154,150,20]],
-      vines:[[215,328,20,135],[680,204,20,140],[675,342,20,120]],ceilingVines:[[210,92,560,26,"curved"]],insects:[[145,307],[225,127],[570,308],[840,230]],
+      vines:[[215,328,20,135],[680,204,20,140],[675,342,20,120]],ceilingVines:[[210,92,560,26,"curved"],[350,182,280,22,"curved"],[430,255,250,20,"curved"]],insects:[[145,307],[145,132],[570,308],[840,230]],
       hazards:[{x:420,y:430,w:92,h:70,type:"grab",axis:"x",min:330,max:610,speed:82}]
     },
     newt: {
@@ -187,7 +193,7 @@
       intro:"The lid has shifted above the shoreline. Climb from water to stone and investigate this administrative failure.",
       start:[112,445],exit:[870,410,48,90],
       platforms:[[0,500,960,40],[55,458,220,22],[82,342,150,18],[205,282,130,18],[310,422,150,18],[395,165,135,18],[490,372,170,18],[510,252,130,18],[690,320,180,18],[760,232,150,18]],
-      vines:[[280,345,18,118],[650,260,18,130],[845,165,18,155]],insects:[[151,309],[270,249],[350,390],[462,132],[560,338],[575,219],[800,285]],
+      vines:[[650,260,18,130],[845,165,18,155]],insects:[[151,309],[270,249],[350,390],[462,132],[560,338],[575,219],[800,285]],
       hazards:[{x:465,y:430,w:92,h:70,type:"grab",axis:"x",min:380,max:640,speed:76}]
     },
     frog: {
@@ -202,8 +208,8 @@
       title:"The Boa Enclosure",habitat:"boa",palette:["#0b100d","#242a20","#62472d","#a0b37b"],
       intro:"The sliding door is open. Follow the heavy logs toward freedom, dignity, and several poorly secured feeder rats.",
       start:[38,430],exit:[870,410,48,90],
-      platforms:[[0,500,960,40],[35,454,245,26],[78,338,170,22],[315,410,210,25],[560,360,220,25],[760,292,170,24],[600,212,175,22],[705,105,180,22]],
-      vines:[[285,325,22,130],[535,285,22,125],[800,215,22,110]],diagonalVines:[[655,215,780,115,22]],insects:[[158,304],[365,373],[640,322],[835,255],[795,70]],
+      platforms:[[0,500,960,40],[35,454,245,26],[78,338,170,22],[315,410,210,25],[560,360,220,25],[760,292,170,24],[600,212,175,22],[390,165,180,22],[705,105,180,22]],
+      vines:[[285,325,22,130],[800,215,22,110]],diagonalVines:[],insects:[[480,130]],mice:[[158,304],[365,373],[640,322],[835,255]],
       hazards:[{x:455,y:430,w:92,h:70,type:"grab",axis:"x",min:350,max:630,speed:70}]
     }
   };
@@ -212,6 +218,7 @@
     const habitat = habitatConfigs[selectedCharacter];
     levels[0].ceilingVines=[];
     levels[0].diagonalVines=[];
+    levels[0].mice=[];
     Object.assign(levels[0], JSON.parse(JSON.stringify(habitat)), {label:"LEVEL 1 · EASY",decor:"enclosure",completeTitle:"The room is larger than expected.",completeText:"Freedom contains shelves, suspicious noises, and absolutely no climate control."});
     standardStoryLayouts.forEach((layout,index)=>{
       const level=levels[index+1];
@@ -223,6 +230,11 @@
       if(selectedCharacter==="frog"){
         level.platforms.push(...frogLevelExtras[index].platforms.map(platform=>[...platform]));
         level.insects.push(...frogLevelExtras[index].insects.map(insect=>[...insect]));
+      }
+      if(selectedCharacter==="boa"){
+        const prey=boaStoryCollectibles[index];
+        level.insects=prey.rats.map(rat=>[...rat]);
+        level.mice=prey.mice.map(mouse=>[...mouse]);
       }
     });
   }
@@ -809,7 +821,9 @@
       ctx.strokeStyle="rgba(166,247,238,.22)";ctx.lineWidth=4;
       for(let x=30;x<W;x+=120){ctx.beginPath();ctx.moveTo(x,75);ctx.quadraticCurveTo(x+50,95,x+100,75);ctx.stroke();}
       ctx.fillStyle="#253e3b";ctx.fillRect(0,500,W,40);
-      for(let x=10;x<W;x+=24){ctx.fillStyle=x%48===10?"#6d806c":"#465e58";ctx.beginPath();ctx.arc(x,505+(x%3)*5,8,Math.PI,Math.PI*2);ctx.fill();}
+      // Rounded aquarium gravel in mixed natural tones.
+      const gravelColors=["#6d806c","#465e58","#8d735a","#b79a72","#38505a"];
+      for(let row=0;row<3;row++){for(let x=8+(row%2)*9;x<W;x+=19){ctx.fillStyle=gravelColors[(Math.floor(x/19)+row)%gravelColors.length];ctx.beginPath();ctx.ellipse(x,503+row*10,10,6,(x%7)*.08,0,Math.PI*2);ctx.fill();}}
       drawUnderwaterPlant(105,500,88,"#3e8a5a");drawUnderwaterPlant(390,500,64,"#4b9a63");drawUnderwaterPlant(670,500,104,"#39794f");
     }
   }
@@ -1126,13 +1140,13 @@
       ctx.fillStyle="#74462d";ctx.beginPath();ctx.arc(15,16,2.6,0,Math.PI*2);ctx.fill();ctx.fillStyle="#17110d";ctx.beginPath();ctx.arc(15.5,16,1.2,0,Math.PI*2);ctx.fill();
       ctx.strokeStyle="#c84d4d";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(29,11);ctx.lineTo(30,32);ctx.stroke();
     } else if (h.type === "frenchie") {
-      ctx.fillStyle="#71777c";roundedRect(23,12,h.w-29,h.h-13,11);ctx.fill();roundedRect(8,9,27,25,9);ctx.fill();
+      ctx.fillStyle="#42484d";roundedRect(23,12,h.w-29,h.h-13,11);ctx.fill();roundedRect(8,9,27,25,9);ctx.fill();
       ctx.beginPath();ctx.moveTo(10,13);ctx.quadraticCurveTo(8,1,14,0);ctx.quadraticCurveTo(20,1,20,13);ctx.moveTo(23,13);ctx.quadraticCurveTo(23,1,29,1);ctx.quadraticCurveTo(35,3,32,15);ctx.fill();
       ctx.fillStyle="#c49a76";ctx.beginPath();ctx.ellipse(10,25,7,5,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(13,16,4,2.5,0,0,Math.PI*2);ctx.ellipse(27,16,4,2.5,0,0,Math.PI*2);ctx.fill();
       ctx.fillRect(30,h.h-13,7,13);ctx.fillRect(h.w-21,h.h-13,7,13);ctx.beginPath();ctx.moveTo(39,20);ctx.lineTo(48,35);ctx.lineTo(57,35);ctx.lineTo(50,20);ctx.fill();
       ctx.fillStyle="#34363a";ctx.beginPath();ctx.ellipse(5,23,4,3.6,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#34363a";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(7,27);ctx.lineTo(10,29);ctx.quadraticCurveTo(13,30,16,27);ctx.stroke();
       ctx.strokeStyle="#9c7457";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(10,19);ctx.lineTo(10,26);ctx.stroke();
-      ctx.fillStyle="#c9b06c";ctx.beginPath();ctx.arc(14,20,1.7,0,Math.PI*2);ctx.arc(26,20,1.7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#5f656a";ctx.beginPath();ctx.arc(h.w-5,17,4,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#c9b06c";ctx.beginPath();ctx.arc(14,20,1.7,0,Math.PI*2);ctx.arc(26,20,1.7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#353a3e";ctx.beginPath();ctx.arc(h.w-5,17,4,0,Math.PI*2);ctx.fill();
     } else if (h.type === "hand") {
       ctx.fillStyle="#c99072";roundedRect(0,5,h.w,h.h-5,10);ctx.fill();
       for(let i=0;i<4;i++){roundedRect(25+i*9,0,8,16,4);ctx.fill();}
@@ -1324,15 +1338,15 @@
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
     const blue=characters.frog.color;
     const airborne=!player.grounded;
-    const kick=airborne?Math.sin(now*.024)*5:0;
-    const rearKneeX=airborne?-27-kick:-27,rearKneeY=airborne?11+kick*.35:18;
-    const rearFootX=airborne?-43-kick*1.4:-38,rearFootY=airborne?7-kick*.25:14;
-    const frontFootY=airborne?6+kick*.3:10;
-    // Side view with legs that extend and tuck through each jump.
+    const extension=airborne?Math.min(1,.35+Math.abs(player.vy)/520):0;
+    const rearKneeX=-22-extension*7,rearKneeY=airborne?7:15;
+    const rearAnkleX=-34-extension*13,rearAnkleY=airborne?9:8;
+    const frontKneeX=18,frontKneeY=airborne?6:11,frontFootX=28+extension*4,frontFootY=airborne?4:8;
+    // One clearly jointed hind leg and one foreleg, crouched on land and extended in flight.
     ctx.strokeStyle=blue;ctx.lineWidth=6;ctx.lineCap="round";
-    ctx.beginPath();ctx.moveTo(-9,5);ctx.quadraticCurveTo(-22,13,rearKneeX,rearKneeY);ctx.lineTo(rearFootX,rearFootY);ctx.stroke();
-    ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(11,4);ctx.lineTo(20,airborne?8:12);ctx.lineTo(29,frontFootY);ctx.stroke();
-    ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(rearFootX,rearFootY);ctx.lineTo(rearFootX-6,rearFootY-3);ctx.moveTo(rearFootX,rearFootY);ctx.lineTo(rearFootX-7,rearFootY+1);ctx.moveTo(rearFootX,rearFootY);ctx.lineTo(rearFootX-5,rearFootY+5);ctx.moveTo(29,frontFootY);ctx.lineTo(35,frontFootY-3);ctx.moveTo(29,frontFootY);ctx.lineTo(36,frontFootY+1);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-8,5);ctx.lineTo(rearKneeX,rearKneeY);ctx.lineTo(rearAnkleX,rearAnkleY);ctx.stroke();
+    ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(10,3);ctx.lineTo(frontKneeX,frontKneeY);ctx.lineTo(frontFootX,frontFootY);ctx.stroke();
+    ctx.lineWidth=2;ctx.beginPath();[-4,0,4].forEach(offset=>{ctx.moveTo(rearAnkleX,rearAnkleY);ctx.lineTo(rearAnkleX-8,rearAnkleY+offset);ctx.moveTo(frontFootX,frontFootY);ctx.lineTo(frontFootX+7,frontFootY+offset*.65);});ctx.stroke();
     ctx.fillStyle=blue;ctx.beginPath();ctx.ellipse(0,3,18,12,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(12,-5,15,10,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#0a1830";[[-8,1,4],[2,7,3],[13,1,4],[20,-7,3],[-1,-5,3]].forEach(([x,y,r])=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();});
     ctx.fillStyle="#d8e9a0";ctx.beginPath();ctx.arc(18,-9,3.6,0,Math.PI*2);ctx.fill();ctx.fillStyle="#10171a";ctx.beginPath();ctx.arc(19,-9,1.7,0,Math.PI*2);ctx.fill();
