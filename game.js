@@ -43,10 +43,7 @@
   let chameleonColorIndex = 0;
   let strikeActiveUntil = 0;
   let strikeCooldownUntil = 0;
-  let newtDashUntil = 0;
-  let newtDashCooldownUntil = 0;
-  let toeBoostUntil = 0;
-  let toeBoostCooldownUntil = 0;
+  let regenerateReady = true;
   let miceCollected = 0;
   let selectedCharacter = "crested";
   let soundOn = true;
@@ -54,8 +51,8 @@
 
   const characters = {
     chameleon: { name: "CHAMELEON", ability: "TONGUE", secondary: "CAMOUFLAGE", collectible: "CRICKETS", color: "#79a94d", climbSpeed: 135, swimSpeed: 150, w: 42, h: 25 },
-    crested: { name: "CRESTED GECKO", ability: "TOE BOOST", secondary: "DROP TAIL", collectible: "ROACHES", color: "#d29458", climbSpeed: 195, swimSpeed: 160, w: 42, h: 25 },
-    newt: { name: "FIRE-BELLY NEWT", ability: "TAIL DASH", secondary: "TOXIN", collectible: "WORMS", color: "#252a28", climbSpeed: 130, swimSpeed: 235, w: 46, h: 23 },
+    crested: { name: "CRESTED GECKO", ability: "SHORT TONGUE", secondary: "DROP TAIL", collectible: "ROACHES", color: "#d29458", climbSpeed: 195, swimSpeed: 160, w: 42, h: 25 },
+    newt: { name: "FIRE-BELLY NEWT", ability: "REGENERATE", secondary: "TOXIN", collectible: "WORMS", color: "#252a28", climbSpeed: 130, swimSpeed: 235, w: 46, h: 23 },
     frog: { name: "AZUREUS DART FROG", ability: "TONGUE", secondary: "POWER LEAP", collectible: "FRUIT FLIES", color: "#2679cb", climbSpeed: 120, swimSpeed: 155, w: 38, h: 27 },
     boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", secondary: "STRIKE", collectible: "RATS", color: "#030405", climbSpeed: 155, swimSpeed: 190, w: 94, h: 36 }
   };
@@ -85,17 +82,16 @@
     {
       label: "LEVEL 2 · MEDIUM",
       title: "The Kitchen",
-      intro: "Cross the counters and open shelves. Avoid the cat, the Dalmatian, and the armed mousetrap on the floor.",
+      intro: "Cross the long counter and open shelves. Avoid the cat and Dalmatian while gathering every last meal.",
       completeTitle: "You have breached containment.",
       completeText: "The house stretches before you. Somewhere in the dark, a refrigerator hums like destiny.",
       palette: ["#0c1117", "#1d2830", "#754f31", "#f0cc62"],
       start: [45, 445], exit: [876,88,50,82],
-      platforms: [[0,500,960,40],[28,442,235,20],[340,390,205,20],[615,327,285,20],[280,262,170,18],[55,196,180,18],[530,155,180,18],[815,174,125,18]],
+      platforms: [[0,500,960,40],[28,442,235,20],[0,326,960,18],[340,390,205,20],[615,327,285,20],[280,262,170,18],[55,196,180,18],[530,155,180,18],[815,174,125,18]],
       vines: [[258,317,18,130],[545,270,18,123],[705,95,18,235]],
-      insects: [[420,355],[120,161],[620,120]],
+      insects: [[80,410],[420,355],[300,294],[510,294],[740,294],[120,161],[620,120],[875,142]],
       hazards: [
         {x:650,y:303,w:66,h:24,type:"cat",axis:"x",min:620,max:820,speed:105},
-        {x:286,y:468,w:76,h:32,type:"mouseTrap",axis:"none"},
         {x:125,y:152,w:88,h:44,type:"dalmatian",axis:"x",min:60,max:165,speed:78}
       ],
       decor: "kitchen"
@@ -108,15 +104,15 @@
       completeText: "Warm. Dusty. Almost freedom. Then the filter hose gives way and the floor disappears beneath a wall of water.",
       palette: ["#111018", "#292239", "#795b44", "#ef8c73"],
       start: [38, 445], exit: [878,392,64,108],
-      platforms: [[0,500,960,40],[26,434,165,20],[230,372,150,18],[420,318,132,18],[520,160,110,18],[602,268,140,18],[790,212,150,18],[820,125,105,18],[690,392,105,18],[520,445,94,18]],
+      platforms: [[0,500,960,40],[26,434,165,20],[35,105,125,18],[230,372,150,18],[420,318,132,18],[520,160,110,18],[602,268,140,18],[790,212,150,18],[820,125,105,18],[690,392,105,18],[520,445,94,18]],
       vines: [[190,326,18,112],[380,265,18,110],[742,205,18,190]],
-      insects: [[290,337],[665,233],[850,177]],
+      insects: [[95,72],[290,337],[665,233],[850,177]],
       mice: [[575,126],[875,91]],
       hazards: [
         {x:238,y:460,w:96,h:40,type:"slipper",axis:"x",min:210,max:490,speed:145},
         {x:550,y:413,w:72,h:32,type:"roomba",axis:"x",min:510,max:680,speed:118},
         {x:645,y:464,w:78,h:36,type:"frenchie",axis:"x",min:610,max:760,speed:92},
-        {x:330,y:255,w:66,h:24,type:"cat",axis:"diagonal",minX:300,maxX:510,minY:225,maxY:330,speedX:82,speedY:58},
+        {x:330,y:390,w:66,h:24,type:"cat",axis:"jump",min:285,max:525,speed:88,baseY:390,jumpHeight:132},
         {x:465,y:170,w:38,h:32,type:"spider",axis:"y",minY:145,maxY:390,speed:72}
       ],
       decor: "house"
@@ -131,7 +127,7 @@
       start: [35,440], exit: [875,62,58,92],
       platforms: [[0,500,960,40],[70,430,170,18],[315,350,170,18],[555,430,130,18],[700,278,190,18],[410,200,150,18],[72,145,190,18]],
       vines: [[245,310,16,190],[505,220,16,210],[760,120,16,160]],
-      insects: [[180,390],[475,305],[810,235]],
+      insects: [[180,390],[120,270],[310,115],[475,305],[520,465],[650,330],[810,235],[850,180]],
       airPockets: [[285,260,24],[635,175,24]],
       hazards: [
         {x:270,y:392,w:86,h:34,type:"fish",axis:"x",min:245,max:500,speed:112},
@@ -146,7 +142,8 @@
   const standardStoryLayouts=levels.slice(1).map(level=>({
     platforms:level.platforms.map(platform=>[...platform]),
     vines:level.vines.map(vine=>[...vine]),
-    insects:level.insects.map(insect=>insect.slice(0,2))
+    insects:level.insects.map(insect=>insect.slice(0,2)),
+    mice:(level.mice||[]).map(mouse=>mouse.slice(0,2))
   }));
 
   const frogLevelExtras=[
@@ -178,23 +175,23 @@
       intro:"The glass door is open. Cross the cork and branches, then make your first terrible decision.",
       start:[55,433],exit:[870,410,48,90],
       platforms:[[0,500,960,40],[45,458,190,22],[76,340,150,18],[262,404,190,20],[500,342,185,20],[712,270,190,20],[790,154,150,20]],
-      vines:[[215,328,20,135],[456,273,20,135],[680,204,20,140]],ceilingVines:[[210,92,560,26,"curved"]],insects:[[145,307],[330,370],[570,308],[840,230]],
+      vines:[[215,328,20,135],[456,273,20,135],[680,204,20,140]],ceilingVines:[[210,92,560,26,"curved"]],insects:[[145,307],[225,127],[330,370],[570,308],[840,230]],
       hazards:[{x:420,y:430,w:92,h:70,type:"grab",axis:"x",min:330,max:610,speed:82}]
     },
     newt: {
       title:"The Paludarium",habitat:"newt",palette:["#07151a","#153b3d","#536b50","#65d6c4"],
       intro:"The lid has shifted above the shoreline. Climb from water to stone and investigate this administrative failure.",
       start:[112,445],exit:[870,410,48,90],
-      platforms:[[0,500,960,40],[55,458,220,22],[82,342,150,18],[205,282,130,18],[310,422,150,18],[490,372,170,18],[510,252,130,18],[690,320,180,18],[760,232,150,18]],
-      vines:[[280,345,18,118],[650,260,18,130],[845,165,18,155]],insects:[[151,309],[270,249],[350,390],[560,338],[575,219],[800,285]],
+      platforms:[[0,500,960,40],[55,458,220,22],[82,342,150,18],[205,282,130,18],[310,422,150,18],[395,165,135,18],[490,372,170,18],[510,252,130,18],[690,320,180,18],[760,232,150,18]],
+      vines:[[280,345,18,118],[650,260,18,130],[845,165,18,155]],insects:[[151,309],[270,249],[350,390],[462,132],[560,338],[575,219],[800,285]],
       hazards:[{x:465,y:430,w:92,h:70,type:"grab",axis:"x",min:380,max:640,speed:76}]
     },
     frog: {
       title:"The Planted Vivarium",habitat:"frog",palette:["#061810","#164528","#67502d","#74df79"],
       intro:"A bromeliad has reached the door. Leap through the leaves before the human arrives with entirely too much concern.",
       start:[170,430],exit:[870,410,48,90],
-      platforms:[[0,500,960,40],[75,455,175,20],[90,342,145,18],[285,405,145,18],[265,270,135,18],[465,350,150,18],[530,220,130,18],[650,295,160,18],[780,215,145,18]],
-      vines:[],insects:[[158,309],[330,370],[332,237],[535,315],[595,187],[825,180]],
+      platforms:[[0,500,960,40],[75,455,175,20],[90,342,145,18],[285,405,145,18],[265,270,135,18],[380,65,140,18],[465,350,150,18],[530,220,130,18],[650,295,160,18],[780,215,145,18]],
+      vines:[],insects:[[158,309],[330,370],[332,237],[450,32],[535,315],[595,187],[825,180]],
       hazards:[{x:450,y:430,w:92,h:70,type:"grab",axis:"x",min:350,max:630,speed:84}]
     },
     boa: {
@@ -216,6 +213,7 @@
       level.platforms=layout.platforms.map(platform=>[...platform]);
       level.vines=selectedCharacter==="frog"?[]:layout.vines.map(vine=>[...vine]);
       level.insects=layout.insects.map(insect=>[...insect]);
+      level.mice=selectedCharacter==="crested"?[]:layout.mice.map(mouse=>[...mouse]);
       if(selectedCharacter==="frog"){
         level.platforms.push(...frogLevelExtras[index].platforms.map(platform=>[...platform]));
         level.insects.push(...frogLevelExtras[index].insects.map(insect=>[...insect]));
@@ -282,7 +280,7 @@
     player.w = characters[selectedCharacter].w;
     player.h = characters[selectedCharacter].h;
     level.insects.forEach(insect => insect[2] = false);
-    level.hazards.forEach((hazard, i) => { hazard.dir = i % 2 ? -1 : 1; hazard.dirX = i % 2 ? -1 : 1; hazard.dirY = i % 2 ? 1 : -1; hazard.stunnedUntil = 0; hazard.camouflageIgnoredUntil=0; hazard.defeated = false; });
+    level.hazards.forEach((hazard, i) => { hazard.dir = i % 2 ? -1 : 1; hazard.dirX = i % 2 ? -1 : 1; hazard.dirY = i % 2 ? 1 : -1; hazard.jumpPhase=i*.7; hazard.stunnedUntil = 0; hazard.camouflageIgnoredUntil=0; hazard.defeated = false; });
     lives = 3;
     collected = 0;
     tailReady = true;
@@ -296,10 +294,7 @@
     camouflageCooldownUntil = 0;
     strikeActiveUntil = 0;
     strikeCooldownUntil = 0;
-    newtDashUntil = 0;
-    newtDashCooldownUntil = 0;
-    toeBoostUntil = 0;
-    toeBoostCooldownUntil = 0;
+    regenerateReady = true;
     miceCollected = 0;
     (level.mice||[]).forEach(mouse=>mouse[2]=false);
     tongueActiveUntil = 0;
@@ -343,11 +338,9 @@
     if (levels[levelIndex]?.underwater && selectedCharacter !== "newt") {
       abilityLabel.textContent = `AIR ${Math.max(0, Math.ceil(air))}% · ${character.ability}`;
     } else if (selectedCharacter === "crested") {
-      const toeState=performance.now()>=toeBoostCooldownUntil?"TOE BOOST READY":"BOOST RECHARGING";
-      abilityLabel.textContent = `${toeState} · TAIL ${tailReady ? "READY" : "GONE"}`;
+      abilityLabel.textContent = `SHORT TONGUE · TAIL ${tailReady ? "READY" : "GONE"}`;
     } else if (selectedCharacter === "newt") {
-      const dashState=performance.now()>=newtDashCooldownUntil?"TAIL DASH READY":"DASH RECHARGING";
-      abilityLabel.textContent = `${dashState} · TOXIN ${toxinReady ? "READY" : "USED"}`;
+      abilityLabel.textContent = `REGENERATE ${regenerateReady ? "READY" : "USED"} · TOXIN ${toxinReady ? "READY" : "USED"}`;
     } else if (selectedCharacter === "frog") {
       abilityLabel.textContent = `TONGUE · ${performance.now() >= leapCooldownUntil ? "POWER LEAP READY" : "LEAP RECHARGING"}`;
     } else if (selectedCharacter === "boa") {
@@ -383,25 +376,17 @@
     tone(115, .22, "sawtooth");
   }
 
-  function useToeBoost(){
-    const now=performance.now();
-    if(state!=="playing"||selectedCharacter!=="crested"||now<toeBoostCooldownUntil)return;
-    toeBoostUntil=now+2600;toeBoostCooldownUntil=now+4800;
-    player.vy=-285;player.vx+=player.facing*110;
-    updateHud();tone(315,.1,"triangle");
-  }
-
   function useTongue() {
     const now = performance.now();
-    if (state !== "playing" || !["chameleon","frog"].includes(selectedCharacter) || now < tongueCooldownUntil) return;
+    if (state !== "playing" || !["chameleon","crested","frog"].includes(selectedCharacter) || now < tongueCooldownUntil) return;
     tongueActiveUntil = now + 230;
     tongueCooldownUntil = now + 520;
     tone(610, .045, "sine");
   }
 
   function tongueHitbox(now) {
-    if (!["chameleon","frog"].includes(selectedCharacter) || now >= tongueActiveUntil) return null;
-    const reach = 112;
+    if (!["chameleon","crested","frog"].includes(selectedCharacter) || now >= tongueActiveUntil) return null;
+    const reach = selectedCharacter==="crested"?58:112;
     return {
       x: player.facing > 0 ? player.x + player.w - 3 : player.x - reach + 3,
       y: player.y + 5,
@@ -419,12 +404,10 @@
     tone(155, .18, "sawtooth");
   }
 
-  function useTailDash(){
-    const now=performance.now();
-    if(state!=="playing"||selectedCharacter!=="newt"||now<newtDashCooldownUntil)return;
-    newtDashUntil=now+320;newtDashCooldownUntil=now+1050;
-    player.vx=player.facing*390;player.vy=Math.min(player.vy,-70);
-    updateHud();tone(280,.08,"triangle");
+  function useRegenerate(){
+    if(state!=="playing"||selectedCharacter!=="newt"||!regenerateReady||lives>=3)return;
+    regenerateReady=false;lives=Math.min(3,lives+1);invulnerableUntil=performance.now()+900;
+    updateHud();tone(390,.18,"sine");
   }
 
   function usePowerLeap() {
@@ -487,9 +470,8 @@
   }
 
   function useAbility() {
-    if (selectedCharacter === "chameleon" || selectedCharacter === "frog") useTongue();
-    else if (selectedCharacter === "crested") useToeBoost();
-    else if (selectedCharacter === "newt") useTailDash();
+    if (["chameleon","crested","frog"].includes(selectedCharacter)) useTongue();
+    else if (selectedCharacter === "newt") useRegenerate();
     else useConstrict();
   }
 
@@ -532,7 +514,7 @@
     const down = keys.ArrowDown || keys.KeyS;
     const inHabitatWater = level.habitat === "newt" && player.x < 450 && player.y + player.h / 2 > 408;
     const swimming = Boolean(level.underwater || inHabitatWater);
-    const speed = selectedCharacter==="newt"&&now<newtDashUntil?390:swimming ? character.swimSpeed : levelIndex === 2 ? 236 : 220;
+    const speed = swimming ? character.swimSpeed : levelIndex === 2 ? 236 : 220;
     if (["chameleon","newt","frog","boa"].includes(selectedCharacter)) updateHud();
 
     const acceleration = swimming ? 720 : 1450;
@@ -573,8 +555,7 @@
         player.y=ceilingVineY(ceilingVine,player.x+player.w/2)+5;
         player.vy=0;
       }else if (player.climbing) {
-        const climbSpeed=selectedCharacter==="crested"&&now<toeBoostUntil?character.climbSpeed*1.75:character.climbSpeed;
-        player.vy = up ? -climbSpeed : down ? climbSpeed : 0;
+        player.vy = up ? -character.climbSpeed : down ? character.climbSpeed : 0;
       } else {
         player.vy += 820 * dt;
         player.vy = Math.min(player.vy, 570);
@@ -611,6 +592,10 @@
           hazard.x = Math.max(hazard.min, Math.min(hazard.max, hazard.x));
           hazard.dir *= -1;
         }
+      }else if(hazard.axis==="jump"&&now>=(hazard.stunnedUntil||0)){
+        hazard.x+=hazard.speed*hazard.dir*dt;
+        if(hazard.x<hazard.min||hazard.x>hazard.max){hazard.x=Math.max(hazard.min,Math.min(hazard.max,hazard.x));hazard.dir*=-1;}
+        hazard.jumpPhase+=dt*2.7;hazard.y=hazard.baseY-Math.abs(Math.sin(hazard.jumpPhase))*hazard.jumpHeight;
       }else if(hazard.axis==="y"&&now>=(hazard.stunnedUntil||0)){
         hazard.y+=hazard.speed*hazard.dirY*dt;
         if(hazard.y<hazard.minY||hazard.y>hazard.maxY){hazard.y=Math.max(hazard.minY,Math.min(hazard.maxY,hazard.y));hazard.dirY*=-1;}
@@ -1012,10 +997,10 @@
     } else if (h.type === "frenchie") {
       ctx.fillStyle="#111315";roundedRect(23,12,h.w-29,h.h-13,11);ctx.fill();roundedRect(8,9,27,25,9);ctx.fill();
       ctx.beginPath();ctx.moveTo(10,13);ctx.quadraticCurveTo(8,1,14,0);ctx.quadraticCurveTo(20,1,20,13);ctx.moveTo(23,13);ctx.quadraticCurveTo(23,1,29,1);ctx.quadraticCurveTo(35,3,32,15);ctx.fill();
-      ctx.fillStyle="#9b5d30";ctx.beginPath();ctx.ellipse(8,25,8,6,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(13,16,4,2.5,0,0,Math.PI*2);ctx.ellipse(27,16,4,2.5,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#9b5d30";ctx.beginPath();ctx.ellipse(10,25,6,5,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(13,16,4,2.5,0,0,Math.PI*2);ctx.ellipse(27,16,4,2.5,0,0,Math.PI*2);ctx.fill();
       ctx.fillRect(30,h.h-10,7,10);ctx.fillRect(h.w-21,h.h-10,7,10);ctx.beginPath();ctx.moveTo(39,20);ctx.lineTo(48,35);ctx.lineTo(57,35);ctx.lineTo(50,20);ctx.fill();
-      ctx.fillStyle="#050607";ctx.beginPath();ctx.ellipse(2,23,5,4,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#050607";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(4,27);ctx.lineTo(8,29);ctx.quadraticCurveTo(12,31,16,27);ctx.stroke();
-      ctx.strokeStyle="#7a4629";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(8,19);ctx.lineTo(8,26);ctx.stroke();
+      ctx.fillStyle="#050607";ctx.beginPath();ctx.ellipse(5,23,4,3.6,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#050607";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(7,27);ctx.lineTo(10,29);ctx.quadraticCurveTo(13,30,16,27);ctx.stroke();
+      ctx.strokeStyle="#7a4629";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(10,19);ctx.lineTo(10,26);ctx.stroke();
       ctx.fillStyle="#d9e6a0";ctx.beginPath();ctx.arc(14,20,1.7,0,Math.PI*2);ctx.arc(26,20,1.7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#111315";ctx.beginPath();ctx.arc(h.w-5,17,4,0,Math.PI*2);ctx.fill();
     } else if (h.type === "hand") {
       ctx.fillStyle="#c99072";roundedRect(0,5,h.w,h.h-5,10);ctx.fill();
@@ -1153,6 +1138,7 @@
     ctx.fillStyle="#d9c577";ctx.beginPath();ctx.ellipse(26,-9,3.6,4.2,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#071008";ctx.beginPath();ctx.ellipse(27,-9,1.4,3.1,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#fff6c5";ctx.beginPath();ctx.arc(27,-10,1,0,Math.PI*2);ctx.fill();
+    if(now<tongueActiveUntil){const progress=Math.min(1,Math.max(0,(now-(tongueActiveUntil-230))/230));const extension=Math.sin(progress*Math.PI)*48;ctx.strokeStyle="#ef829a";ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(39,1);ctx.lineTo(39+extension,1);ctx.stroke();ctx.fillStyle="#ff9db0";ctx.beginPath();ctx.ellipse(41+extension,1,4,2.8,0,0,Math.PI*2);ctx.fill();}
 
     ctx.restore();
     ctx.globalAlpha = 1;
@@ -1182,8 +1168,7 @@
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
     if(now<toxinActiveUntil){ctx.strokeStyle="rgba(255,105,49,.72)";ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(0,0,43,24,0,0,Math.PI*2);ctx.stroke();}
     const dark=characters.newt.color;
-    const tailKick=now<newtDashUntil?Math.sin(now*.055)*11:0;
-    ctx.strokeStyle=dark;ctx.lineWidth=8;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-12,1);ctx.bezierCurveTo(-29,tailKick,-38,-tailKick*.55,-49,1+tailKick*.35);ctx.stroke();
+    ctx.strokeStyle=dark;ctx.lineWidth=8;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-12,1);ctx.bezierCurveTo(-29,0,-38,5,-49,1);ctx.stroke();
     ctx.fillStyle=dark;ctx.beginPath();ctx.ellipse(-1,0,22,8,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(20,-1,12,9,0,0,Math.PI*2);ctx.fill();
     // Bright orange-red underside with the irregular black markings of a fire-belly newt.
     ctx.fillStyle="#ef542f";ctx.beginPath();ctx.moveTo(-18,2);ctx.quadraticCurveTo(-5,10,12,7);ctx.quadraticCurveTo(21,6,27,2);ctx.quadraticCurveTo(10,5,-18,2);ctx.fill();
@@ -1217,16 +1202,18 @@
     if(flash)ctx.globalAlpha=.4;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
     const dark=characters.boa.color;
+    const slither=Math.abs(player.vx)>12?Math.sin(now*.018)*5:0;
     ctx.strokeStyle=dark;ctx.lineWidth=15;ctx.lineCap="round";
     if(now<constrictPulseUntil){
-      ctx.beginPath();ctx.ellipse(-18,3,31,15,0,0,Math.PI*2);ctx.stroke();
-      ctx.lineWidth=11;ctx.beginPath();ctx.ellipse(-16,3,21,9,0,0,Math.PI*2);ctx.stroke();
-      ctx.strokeStyle="#414448";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(-17,3,29,13,0,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.ellipse(-22,4,32,14,-.08,0,Math.PI*2);ctx.stroke();
+      ctx.lineWidth=11;ctx.beginPath();ctx.ellipse(-17,1,22,9,.1,0,Math.PI*2);ctx.stroke();
+      ctx.strokeStyle="#414448";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(-21,4,29,12,-.08,0,Math.PI*2);ctx.stroke();
     }else{
-      ctx.beginPath();ctx.moveTo(-64,5);ctx.bezierCurveTo(-50,-14,-31,15,-15,0);ctx.bezierCurveTo(1,-15,11,10,24,-1);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-64,5);ctx.bezierCurveTo(-50,-14+slither,-31,15-slither,-15,0);ctx.bezierCurveTo(1,-15-slither,11,10+slither,24,-1);ctx.stroke();
     }
     const strikeProgress=now<strikeActiveUntil?Math.max(0,1-(strikeActiveUntil-now)/300):0;
     const lunge=now<strikeActiveUntil?Math.sin(strikeProgress*Math.PI)*38:0;
+    ctx.strokeStyle=dark;ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(now<constrictPulseUntil?-1:14,-1);ctx.quadraticCurveTo(20+lunge*.45,-5,24+lunge,-2);ctx.stroke();
     ctx.save();ctx.translate(lunge,0);
     ctx.fillStyle=dark;
     ctx.beginPath();ctx.moveTo(15,-11);ctx.quadraticCurveTo(34,-14,48,-8);ctx.lineTo(54,-1);ctx.lineTo(49,8);ctx.quadraticCurveTo(33,13,16,9);ctx.lineTo(9,3);ctx.lineTo(11,-6);ctx.closePath();ctx.fill();
