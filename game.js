@@ -66,9 +66,9 @@
       completeText: "Freedom contains shelves, suspicious noises, and absolutely no climate control.",
       palette: ["#07150f", "#123120", "#6f4d2c", "#a9f576"],
       start: [66, 445], exit: [870, 410, 48, 90],
-      platforms: [[0,500,960,40],[45,458,190,22],[262,404,190,20],[500,342,185,20],[712,270,190,20],[790,154,150,20]],
+      platforms: [[0,500,960,40],[45,458,190,22],[76,340,150,18],[262,404,190,20],[500,342,185,20],[712,270,190,20],[790,154,150,20]],
       vines: [[215,328,20,135],[456,273,20,135],[680,204,20,140]],
-      insects: [[330,370],[570,308],[840,230]],
+      insects: [[145,307],[330,370],[570,308],[840,230]],
       hazards: [{x:420,y:430,w:92,h:70,type:"grab",axis:"x",min:330,max:610,speed:82}],
       decor: "enclosure"
     },
@@ -136,40 +136,40 @@
       title:"The Screen Enclosure",habitat:"chameleon",palette:["#08150c","#17351d","#6b4a2b","#8bd85c"],
       intro:"The screen door is loose. Cross the ficus branches and leave before anyone notices the suspiciously empty vine.",
       start:[70,420],exit:[870,410,48,90],
-      platforms:[[0,500,960,40],[42,452,190,20],[275,392,175,20],[510,330,190,20],[735,264,180,20],[570,180,165,18]],
-      vines:[[225,315,18,140],[465,255,18,140],[720,190,18,145]],insects:[[330,355],[590,292],[810,225]],
+      platforms:[[0,500,960,40],[42,452,190,20],[80,340,150,18],[275,392,175,20],[510,330,190,20],[735,264,180,20],[570,180,165,18]],
+      vines:[[225,315,18,140],[465,255,18,140],[720,190,18,145]],insects:[[149,307],[330,355],[590,292],[810,225]],
       hazards:[{x:430,y:430,w:92,h:70,type:"grab",axis:"x",min:340,max:620,speed:82}]
     },
     crested: {
       title:"The Arboreal Terrarium",habitat:"crested",palette:["#07150f","#123120","#6f4d2c","#a9f576"],
       intro:"The glass door is open. Cross the cork and branches, then make your first terrible decision.",
       start:[55,433],exit:[870,410,48,90],
-      platforms:[[0,500,960,40],[45,458,190,22],[262,404,190,20],[500,342,185,20],[712,270,190,20],[790,154,150,20]],
-      vines:[[215,328,20,135],[456,273,20,135],[680,204,20,140]],insects:[[330,370],[570,308],[840,230]],
+      platforms:[[0,500,960,40],[45,458,190,22],[76,340,150,18],[262,404,190,20],[500,342,185,20],[712,270,190,20],[790,154,150,20]],
+      vines:[[215,328,20,135],[456,273,20,135],[680,204,20,140]],insects:[[145,307],[330,370],[570,308],[840,230]],
       hazards:[{x:420,y:430,w:92,h:70,type:"grab",axis:"x",min:330,max:610,speed:82}]
     },
     newt: {
       title:"The Paludarium",habitat:"newt",palette:["#07151a","#153b3d","#536b50","#65d6c4"],
       intro:"The lid has shifted above the shoreline. Climb from water to stone and investigate this administrative failure.",
       start:[112,445],exit:[870,410,48,90],
-      platforms:[[0,500,960,40],[55,458,220,22],[310,422,150,18],[490,372,170,18],[690,320,180,18],[760,232,150,18]],
-      vines:[[280,345,18,118],[650,260,18,130],[845,165,18,155]],insects:[[350,390],[560,338],[800,285]],
+      platforms:[[0,500,960,40],[55,458,220,22],[82,342,150,18],[310,422,150,18],[490,372,170,18],[690,320,180,18],[760,232,150,18]],
+      vines:[[280,345,18,118],[650,260,18,130],[845,165,18,155]],insects:[[151,309],[350,390],[560,338],[800,285]],
       hazards:[{x:465,y:430,w:92,h:70,type:"grab",axis:"x",min:380,max:640,speed:76}]
     },
     frog: {
       title:"The Planted Vivarium",habitat:"frog",palette:["#061810","#164528","#67502d","#74df79"],
       intro:"A bromeliad has reached the door. Leap through the leaves before the human arrives with entirely too much concern.",
       start:[170,430],exit:[870,410,48,90],
-      platforms:[[0,500,960,40],[75,455,175,20],[285,405,145,18],[465,350,150,18],[650,295,160,18],[780,215,145,18]],
-      vines:[[250,320,18,140],[610,245,18,120],[760,155,18,145]],insects:[[330,370],[535,315],[825,180]],
+      platforms:[[0,500,960,40],[75,455,175,20],[90,342,145,18],[285,405,145,18],[465,350,150,18],[650,295,160,18],[780,215,145,18]],
+      vines:[[250,320,18,140],[610,245,18,120],[760,155,18,145]],insects:[[158,309],[330,370],[535,315],[825,180]],
       hazards:[{x:450,y:430,w:92,h:70,type:"grab",axis:"x",min:350,max:630,speed:84}]
     },
     boa: {
       title:"The Boa Enclosure",habitat:"boa",palette:["#0b100d","#242a20","#62472d","#a0b37b"],
       intro:"The sliding door is open. Follow the heavy logs toward freedom, dignity, and several poorly secured feeder rats.",
       start:[38,430],exit:[870,410,48,90],
-      platforms:[[0,500,960,40],[35,454,245,26],[315,410,210,25],[560,360,220,25],[760,292,170,24],[600,212,175,22]],
-      vines:[[285,325,22,130],[535,285,22,125],[800,215,22,110]],insects:[[365,373],[640,322],[835,255]],
+      platforms:[[0,500,960,40],[35,454,245,26],[78,338,170,22],[315,410,210,25],[560,360,220,25],[760,292,170,24],[600,212,175,22]],
+      vines:[[285,325,22,130],[535,285,22,125],[800,215,22,110]],insects:[[158,304],[365,373],[640,322],[835,255]],
       hazards:[{x:455,y:430,w:92,h:70,type:"grab",axis:"x",min:350,max:630,speed:70}]
     }
   };
@@ -282,7 +282,8 @@
 
   function updateHud() {
     const character = characters[selectedCharacter];
-    bugLabel.textContent = `${character.collectible} ${collected}/3`;
+    const preyTotal = levels[levelIndex].insects.length;
+    bugLabel.textContent = `${character.collectible} ${collected}/${preyTotal}`;
     if (levels[levelIndex]?.underwater && selectedCharacter !== "newt") {
       abilityLabel.textContent = `AIR ${Math.max(0, Math.ceil(air))}% · ${character.ability}`;
     } else if (selectedCharacter === "crested") {
@@ -391,6 +392,7 @@
   }
 
   function completeLevel() {
+    if (collected < levels[levelIndex].insects.length) return;
     state = "complete";
     tone(523, .1, "triangle");
     setTimeout(() => tone(659, .13, "triangle"), 100);
@@ -509,7 +511,7 @@
     });
 
     const exit = {x:level.exit[0], y:level.exit[1], w:level.exit[2], h:level.exit[3]};
-    if (intersects(player, exit)) completeLevel();
+    if (intersects(player, exit) && collected === level.insects.length) completeLevel();
   }
 
   function jump() {
@@ -640,6 +642,39 @@
     ctx.restore();
   }
 
+  function drawPlantLeaf(x, y, angle, color, length = 15, width = 6) {
+    ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.fillStyle=color;
+    ctx.beginPath();ctx.moveTo(0,0);
+    ctx.bezierCurveTo(length*.3,-width,length*.78,-width*.72,length,0);
+    ctx.bezierCurveTo(length*.72,width*.72,length*.28,width,0,0);ctx.fill();
+    ctx.strokeStyle="rgba(210,245,176,.28)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(2,0);ctx.lineTo(length*.78,0);ctx.stroke();ctx.restore();
+  }
+
+  function drawClimbablePlant(v, level) {
+    const [x,y,w,h]=v;
+    const cx=x+w/2;
+    const underwater=Boolean(level.underwater);
+    ctx.save();ctx.lineCap="round";
+    ctx.strokeStyle=underwater?"#376e4c":"#573a25";
+    ctx.lineWidth=Math.max(8,w*.72);
+    ctx.beginPath();ctx.moveTo(cx,y+h);
+    ctx.bezierCurveTo(x-8,y+h*.68,x+w+12,y+h*.36,cx,y);ctx.stroke();
+    ctx.strokeStyle=underwater?"#78b96d":"#9a744b";ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.moveTo(cx-2,y+h-4);
+    ctx.bezierCurveTo(x-9,y+h*.68,x+w+9,y+h*.36,cx-1,y+4);ctx.stroke();
+    for(let offset=18,index=0;offset<h-8;offset+=27,index++){
+      const leafY=y+h-offset;
+      const leafX=cx+Math.sin(offset*.08)*7;
+      const direction=index%2===0?-1:1;
+      ctx.strokeStyle=underwater?"#4d8c58":"#426b34";ctx.lineWidth=3;
+      ctx.beginPath();ctx.moveTo(leafX,leafY);ctx.lineTo(leafX+direction*15,leafY-7);ctx.stroke();
+      drawPlantLeaf(leafX+direction*13,leafY-7,direction<0?Math.PI-.22:.22,underwater?"#4f9b61":"#4f873d",underwater?18:16,underwater?5:7);
+      if(index%3===1)drawPlantLeaf(leafX,leafY-4,-Math.PI/2,underwater?"#67ad6e":"#659b47",14,6);
+    }
+    ctx.restore();
+  }
+
   function drawPlatforms(level) {
     for (const p of level.platforms) {
       if(level.decor==="enclosure"&&p[1]<490){
@@ -658,31 +693,24 @@
         ctx.fillRect(p[0] + 7, p[1] + 3, Math.max(0, p[2] - 14), 2);
       }
     }
-    for (const v of level.vines) {
-      ctx.strokeStyle = level.palette[3];
-      ctx.globalAlpha = .52;
-      ctx.lineWidth = v[2];
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      ctx.moveTo(v[0] + v[2]/2, v[1]);
-      ctx.bezierCurveTo(v[0]-12, v[1]+v[3]*.35, v[0]+26, v[1]+v[3]*.68, v[0]+v[2]/2, v[1]+v[3]);
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-    }
+    for (const v of level.vines) drawClimbablePlant(v,level);
   }
 
   function drawExit(level) {
     const [x,y,w,h] = level.exit;
+    const remaining=Math.max(0,level.insects.length-collected);
+    const locked=remaining>0;
     const glow = ctx.createRadialGradient(x+w/2,y+h/2,2,x+w/2,y+h/2,70);
-    glow.addColorStop(0, level.palette[3] + "88"); glow.addColorStop(1, "transparent");
+    glow.addColorStop(0, locked?"rgba(190,62,52,.34)":level.palette[3] + "88"); glow.addColorStop(1, "transparent");
     ctx.fillStyle = glow; ctx.fillRect(x-50,y-45,w+100,h+90);
     ctx.fillStyle = "#020604"; ctx.fillRect(x,y,w,h);
-    ctx.strokeStyle = level.palette[3]; ctx.lineWidth = 3; ctx.strokeRect(x,y,w,h);
-    ctx.fillStyle = level.palette[3];
-    const exitLabel = levelIndex === 2 ? "FRIDGE" : level.underwater ? "FILTER OUT" : "EXIT";
+    ctx.strokeStyle = locked?"#c75b4e":level.palette[3]; ctx.lineWidth = 3; ctx.strokeRect(x,y,w,h);
+    ctx.fillStyle = locked?"#df7b6c":level.palette[3];
+    const exitLabel = locked?`${remaining} PREY LEFT`:levelIndex === 2 ? "FRIDGE" : level.underwater ? "FILTER OUT" : "EXIT";
     ctx.font = "900 12px system-ui"; ctx.textAlign = "center"; ctx.fillText(exitLabel, x+w/2, y-10);
     ctx.font = "900 24px system-ui";
-    ctx.fillText("↓", x+w/2, y-28);
+    ctx.fillText(locked?"×":"↓", x+w/2, y-28);
+    if(locked){ctx.strokeStyle="#c75b4e";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x+7,y+8);ctx.lineTo(x+w-7,y+h-8);ctx.moveTo(x+w-7,y+8);ctx.lineTo(x+7,y+h-8);ctx.stroke();}
   }
 
   function drawInsects(level, time) {
