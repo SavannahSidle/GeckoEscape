@@ -7,13 +7,16 @@
   const panelKicker = document.querySelector("#panelKicker");
   const panelTitle = document.querySelector("#panelTitle");
   const panelText = document.querySelector("#panelText");
+  const characterSelect = document.querySelector("#characterSelect");
   const primaryButton = document.querySelector("#primaryButton");
   const secondaryButton = document.querySelector("#secondaryButton");
   const hud = document.querySelector("#hud");
   const levelLabel = document.querySelector("#levelLabel");
   const bugLabel = document.querySelector("#bugLabel");
+  const abilityLabel = document.querySelector("#abilityLabel");
   const lifeLabel = document.querySelector("#lifeLabel");
   const soundButton = document.querySelector("#soundButton");
+  const abilityButton = document.querySelector("#abilityButton");
 
   const W = canvas.width;
   const H = canvas.height;
@@ -28,8 +31,18 @@
   let tongueActiveUntil = 0;
   let tongueCooldownUntil = 0;
   let droppedTail = null;
+  let toxinActiveUntil = 0;
+  let toxinReady = true;
+  let air = 100;
+  let selectedCharacter = "crested";
   let soundOn = true;
   let audioContext = null;
+
+  const characters = {
+    chameleon: { name: "CHAMELEON", ability: "TONGUE", color: "#79a94d", climbSpeed: 135, swimSpeed: 150 },
+    crested: { name: "CRESTED GECKO", ability: "DROP TAIL", color: "#d29458", climbSpeed: 195, swimSpeed: 160 },
+    newt: { name: "FIRE-BELLY NEWT", ability: "TOXIN", color: "#252a28", climbSpeed: 130, swimSpeed: 235 }
+  };
 
   const player = {
     x: 0, y: 0, w: 38, h: 24,
@@ -76,7 +89,7 @@
       title: "The House",
       intro: "Cross the living room. A human foot patrols the floor. The Roomba has joined the hunt.",
       completeTitle: "Behind the refrigerator.",
-      completeText: "Warm. Dusty. Inaccessible to humans. You have found paradise, which is mostly crumbs and one dead spider.",
+      completeText: "Warm. Dusty. Almost freedom. Then the filter hose gives way and the floor disappears beneath a wall of water.",
       palette: ["#111018", "#292239", "#795b44", "#ef8c73"],
       start: [38, 445], exit: [878,392,64,108],
       platforms: [[0,500,960,40],[26,434,165,20],[230,372,150,18],[420,318,132,18],[602,268,140,18],[790,212,150,18],[690,392,105,18],[520,445,94,18]],
@@ -88,6 +101,26 @@
         {x:800,y:474,w:56,h:26,type:"lego",axis:"none"}
       ],
       decor: "house"
+    },
+    {
+      label: "LEVEL 4 · UNDERWATER",
+      title: "The Aquarium",
+      intro: "The final route is underwater. Reptiles need air bubbles. The newt has been waiting its entire moist little life for this.",
+      completeTitle: "Out through the filter.",
+      completeText: "Cold. Wet. Free. You have escaped four separate containment failures and learned absolutely nothing.",
+      palette: ["#031729", "#075169", "#456b52", "#62e8dc"],
+      start: [35,440], exit: [875,62,58,92],
+      platforms: [[0,500,960,40],[70,430,170,18],[315,350,170,18],[555,430,130,18],[700,278,190,18],[410,200,150,18],[72,145,190,18]],
+      vines: [[245,310,16,190],[505,220,16,210],[760,120,16,160]],
+      insects: [[180,390],[475,305],[810,235]],
+      airPockets: [[285,260,24],[635,175,24]],
+      hazards: [
+        {x:270,y:392,w:86,h:34,type:"fish",axis:"x",min:245,max:500,speed:112},
+        {x:620,y:238,w:92,h:38,type:"fish",axis:"x",min:560,max:800,speed:145},
+        {x:805,y:457,w:70,h:43,type:"filter",axis:"none"}
+      ],
+      decor: "underwater",
+      underwater: true
     }
   ];
 
@@ -113,6 +146,8 @@
     panelText.textContent = text;
     primaryButton.textContent = buttonText;
     primaryButton.onclick = action;
+    primaryButton.classList.remove("hidden");
+    characterSelect.classList.add("hidden");
     secondaryButton.classList.toggle("hidden", !allowSelect);
     overlay.classList.remove("hidden");
     hud.classList.add("hidden");
@@ -121,7 +156,18 @@
 
   function showMenu() {
     state = "menu";
-    showPanel("STORY MODE", "The enclosure door is open.", "This is almost certainly a trap. Unfortunately, you are a gecko.", "BEGIN ESCAPE", () => showIntro(0));
+    showPanel("STORY MODE", "The enclosure door is open.", "This is almost certainly a trap. Choose the small criminal responsible.", "CHOOSE CHARACTER", showCharacterSelect);
+  }
+
+  function showCharacterSelect() {
+    state = "character-select";
+    panelKicker.textContent = "CHOOSE YOUR ESCAPE ARTIST";
+    panelTitle.textContent = "Three animals. Three bad decisions.";
+    panelText.textContent = "Each character has a different ability. Your choice lasts for all four levels.";
+    primaryButton.classList.add("hidden");
+    secondaryButton.classList.add("hidden");
+    characterSelect.classList.remove("hidden");
+    characterSelect.querySelector("button")?.focus();
   }
 
   function showIntro(index) {
@@ -139,6 +185,9 @@
     lives = 3;
     collected = 0;
     tailReady = true;
+    toxinReady = true;
+    toxinActiveUntil = 0;
+    air = 100;
     tongueActiveUntil = 0;
     tongueCooldownUntil = 0;
     droppedTail = null;
@@ -166,17 +215,30 @@
     player.vx = 0;
     player.vy = 0;
     player.grounded = false;
+    air = 100;
     invulnerableUntil = performance.now() + 1100;
     updateHud();
   }
 
   function updateHud() {
-    bugLabel.textContent = `BUGS ${collected}/3 · TAIL ${tailReady ? "READY" : "GONE"}`;
+    const character = characters[selectedCharacter];
+    bugLabel.textContent = `BUGS ${collected}/3`;
+    if (levels[levelIndex]?.underwater && selectedCharacter !== "newt") {
+      abilityLabel.textContent = `AIR ${Math.max(0, Math.ceil(air))}% · ${character.ability}`;
+    } else if (selectedCharacter === "crested") {
+      abilityLabel.textContent = `TAIL ${tailReady ? "READY" : "GONE"}`;
+    } else if (selectedCharacter === "newt") {
+      abilityLabel.textContent = `TOXIN ${toxinReady ? "READY" : "USED"}`;
+    } else {
+      abilityLabel.textContent = "TONGUE READY";
+    }
+    abilityButton.textContent = character.ability;
+    abilityButton.setAttribute("aria-label", `Use ${character.ability.toLowerCase()} ability`);
     lifeLabel.textContent = "♥ ".repeat(Math.max(0, lives)).trim();
   }
 
   function dropTail() {
-    if (state !== "playing" || !tailReady) return;
+    if (state !== "playing" || selectedCharacter !== "crested" || !tailReady) return;
     droppedTail = {
       x: player.x + player.w / 2 - player.facing * 24,
       y: player.y + player.h / 2 + 3,
@@ -193,14 +255,14 @@
 
   function useTongue() {
     const now = performance.now();
-    if (state !== "playing" || now < tongueCooldownUntil) return;
+    if (state !== "playing" || selectedCharacter !== "chameleon" || now < tongueCooldownUntil) return;
     tongueActiveUntil = now + 230;
     tongueCooldownUntil = now + 520;
     tone(610, .045, "sine");
   }
 
   function tongueHitbox(now) {
-    if (now >= tongueActiveUntil) return null;
+    if (selectedCharacter !== "chameleon" || now >= tongueActiveUntil) return null;
     const reach = 112;
     return {
       x: player.facing > 0 ? player.x + player.w - 3 : player.x - reach + 3,
@@ -208,6 +270,21 @@
       w: reach,
       h: 20
     };
+  }
+
+  function useToxin() {
+    const now = performance.now();
+    if (state !== "playing" || selectedCharacter !== "newt" || !toxinReady) return;
+    toxinReady = false;
+    toxinActiveUntil = now + 2600;
+    updateHud();
+    tone(155, .18, "sawtooth");
+  }
+
+  function useAbility() {
+    if (selectedCharacter === "chameleon") useTongue();
+    else if (selectedCharacter === "crested") dropTail();
+    else useToxin();
   }
 
   function intersects(a, b) {
@@ -229,36 +306,61 @@
   function update(dt, now) {
     if (state !== "playing") return;
     const level = levels[levelIndex];
+    const character = characters[selectedCharacter];
     const left = keys.ArrowLeft || keys.KeyA || keys.touchLeft;
     const right = keys.ArrowRight || keys.KeyD || keys.touchRight;
     const up = keys.ArrowUp || keys.KeyW || keys.touchJump;
     const down = keys.ArrowDown || keys.KeyS;
-    const speed = levelIndex === 2 ? 236 : 220;
+    const speed = level.underwater ? character.swimSpeed : levelIndex === 2 ? 236 : 220;
 
-    if (left) { player.vx -= 1450 * dt; player.facing = -1; }
-    if (right) { player.vx += 1450 * dt; player.facing = 1; }
-    if (!left && !right) player.vx *= Math.pow(.0007, dt);
+    const acceleration = level.underwater ? 720 : 1450;
+    if (left) { player.vx -= acceleration * dt; player.facing = -1; }
+    if (right) { player.vx += acceleration * dt; player.facing = 1; }
+    if (!left && !right) player.vx *= Math.pow(level.underwater ? .025 : .0007, dt);
     player.vx = Math.max(-speed, Math.min(speed, player.vx));
 
-    const onVine = level.vines.some(v => intersects(player, {x:v[0], y:v[1], w:v[2], h:v[3]}));
-    const onWall = player.x <= 5 || player.x + player.w >= W - 5;
-    player.climbing = (onVine || onWall) && (up || down);
-    if (player.climbing) {
-      player.vy = up ? -145 : down ? 145 : 0;
+    if (level.underwater) {
+      player.climbing = false;
+      if (up) player.vy -= 680 * dt;
+      if (down) player.vy += 680 * dt;
+      if (!up && !down) player.vy *= Math.pow(.018, dt);
+      player.vy = Math.max(-speed, Math.min(speed, player.vy));
+
+      if (selectedCharacter !== "newt") {
+        air -= dt * 7.5;
+        for (const pocket of level.airPockets || []) {
+          const bubble = {x:pocket[0]-pocket[2],y:pocket[1]-pocket[2],w:pocket[2]*2,h:pocket[2]*2};
+          if (intersects(player, bubble)) air = Math.min(100, air + dt * 75);
+        }
+        if (air <= 0) {
+          tone(70, .3, "square");
+          resetPlayer();
+          return;
+        }
+      }
+      updateHud();
     } else {
-      player.vy += 820 * dt;
-      player.vy = Math.min(player.vy, 570);
+      const onVine = level.vines.some(v => intersects(player, {x:v[0], y:v[1], w:v[2], h:v[3]}));
+      const onWall = player.x <= 5 || player.x + player.w >= W - 5;
+      player.climbing = (onVine || onWall) && (up || down);
+      if (player.climbing) {
+        player.vy = up ? -character.climbSpeed : down ? character.climbSpeed : 0;
+      } else {
+        player.vy += 820 * dt;
+        player.vy = Math.min(player.vy, 570);
+      }
     }
 
     const oldY = player.y;
     player.x += player.vx * dt;
     player.x = Math.max(0, Math.min(W - player.w, player.x));
     player.y += player.vy * dt;
+    if (level.underwater) player.y = Math.max(48, Math.min(H - player.h, player.y));
     player.grounded = false;
 
     for (const p of level.platforms) {
       const platform = {x:p[0], y:p[1], w:p[2], h:p[3]};
-      if (player.vy >= 0 && oldY + player.h <= platform.y + 4 && intersects(player, platform)) {
+      if (!level.underwater && player.vy >= 0 && oldY + player.h <= platform.y + 4 && intersects(player, platform)) {
         player.y = platform.y - player.h;
         player.vy = 0;
         player.grounded = true;
@@ -280,9 +382,16 @@
         }
       }
       if (now > invulnerableUntil && intersects(player, hazard)) {
-        tone(86, .2, "square");
-        resetPlayer();
-        return;
+        if (selectedCharacter === "newt" && now < toxinActiveUntil) {
+          toxinActiveUntil = 0;
+          invulnerableUntil = now + 900;
+          hazard.dir *= -1;
+          tone(120, .18, "sawtooth");
+        } else {
+          tone(86, .2, "square");
+          resetPlayer();
+          return;
+        }
       }
     }
 
@@ -305,6 +414,11 @@
 
   function jump() {
     if (state !== "playing") return;
+    if (levels[levelIndex].underwater) {
+      player.vy = -characters[selectedCharacter].swimSpeed;
+      tone(210, .05, "sine");
+      return;
+    }
     if (player.grounded || player.climbing) {
       player.vy = -455;
       player.grounded = false;
@@ -347,12 +461,20 @@
       for (let x = 35; x < W; x += 205) ctx.fillRect(x, 120, 155, 330);
       ctx.strokeStyle = "rgba(240,204,98,.13)"; ctx.lineWidth = 4;
       for (let x = 35; x < W; x += 205) ctx.strokeRect(x, 120, 155, 330);
-    } else {
+    } else if (level.decor === "house") {
       ctx.fillStyle = "rgba(255,210,185,.04)"; ctx.fillRect(0, 70, W, 430);
       ctx.fillStyle = "#171820"; ctx.fillRect(760, 70, 200, 430);
       ctx.strokeStyle = "rgba(239,140,115,.18)"; ctx.lineWidth = 4; ctx.strokeRect(760, 70, 200, 430);
       ctx.fillStyle = "rgba(245,245,230,.1)"; ctx.fillRect(895, 100, 8, 265);
       ctx.fillStyle = "rgba(80,60,50,.3)"; ctx.fillRect(70, 360, 290, 140);
+    } else if (level.decor === "underwater") {
+      const water = ctx.createLinearGradient(0,55,0,H);
+      water.addColorStop(0,"rgba(51,194,211,.18)");water.addColorStop(1,"rgba(0,35,58,.76)");
+      ctx.fillStyle=water;ctx.fillRect(0,55,W,H-55);
+      ctx.strokeStyle="rgba(166,247,238,.22)";ctx.lineWidth=4;
+      for(let x=30;x<W;x+=120){ctx.beginPath();ctx.moveTo(x,75);ctx.quadraticCurveTo(x+50,95,x+100,75);ctx.stroke();}
+      ctx.fillStyle="#253e3b";ctx.fillRect(0,500,W,40);
+      for(let x=10;x<W;x+=24){ctx.fillStyle=x%48===10?"#6d806c":"#465e58";ctx.beginPath();ctx.arc(x,505+(x%3)*5,8,Math.PI,Math.PI*2);ctx.fill();}
     }
   }
 
@@ -395,7 +517,8 @@
     ctx.fillStyle = "#020604"; ctx.fillRect(x,y,w,h);
     ctx.strokeStyle = level.palette[3]; ctx.lineWidth = 3; ctx.strokeRect(x,y,w,h);
     ctx.fillStyle = level.palette[3];
-    ctx.font = "900 12px system-ui"; ctx.textAlign = "center"; ctx.fillText(levelIndex === 2 ? "FRIDGE" : "EXIT", x+w/2, y-10);
+    const exitLabel = levelIndex === 2 ? "FRIDGE" : level.underwater ? "FILTER OUT" : "EXIT";
+    ctx.font = "900 12px system-ui"; ctx.textAlign = "center"; ctx.fillText(exitLabel, x+w/2, y-10);
     ctx.font = "900 24px system-ui";
     ctx.fillText("↓", x+w/2, y-28);
   }
@@ -405,12 +528,35 @@
       if (bug[2]) return;
       const bob = Math.sin(time * .004 + i * 2) * 4;
       ctx.save(); ctx.translate(bug[0], bug[1] + bob);
-      ctx.strokeStyle = "#f8e89a"; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(-4,-2);ctx.lineTo(-12,-8);ctx.moveTo(4,-2);ctx.lineTo(12,-8);ctx.moveTo(-4,3);ctx.lineTo(-12,9);ctx.moveTo(4,3);ctx.lineTo(12,9);ctx.stroke();
-      ctx.fillStyle = "#1b1108"; ctx.beginPath();ctx.ellipse(0,0,7,10,0,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle = "#f8e89a";ctx.beginPath();ctx.arc(0,-7,2.2,0,Math.PI*2);ctx.fill();
+      if (level.underwater) {
+        // Aquatic beetle: oval shell, split wing cases, legs, and antennae.
+        ctx.strokeStyle="#c6e9dc";ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.moveTo(-5,-1);ctx.lineTo(-13,-7);ctx.moveTo(-5,2);ctx.lineTo(-14,8);ctx.moveTo(5,-1);ctx.lineTo(13,-7);ctx.moveTo(5,2);ctx.lineTo(14,8);ctx.stroke();
+        ctx.fillStyle="#382d22";ctx.beginPath();ctx.ellipse(0,1,7,11,0,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="#b8874d";ctx.beginPath();ctx.moveTo(0,-8);ctx.lineTo(0,10);ctx.stroke();
+        ctx.fillStyle="#19140f";ctx.beginPath();ctx.arc(0,-9,4,0,Math.PI*2);ctx.fill();
+      } else {
+        // Cricket: segmented body, bent jumping legs, antennae, and tiny compound eyes.
+        ctx.strokeStyle="#b99461";ctx.lineWidth=1.6;ctx.lineCap="round";
+        ctx.beginPath();ctx.moveTo(-4,2);ctx.lineTo(-12,10);ctx.lineTo(-16,7);ctx.moveTo(4,2);ctx.lineTo(12,10);ctx.lineTo(16,7);ctx.moveTo(-4,-1);ctx.lineTo(-10,-6);ctx.moveTo(4,-1);ctx.lineTo(10,-6);ctx.stroke();
+        ctx.fillStyle="#5a3b20";ctx.beginPath();ctx.ellipse(0,2,6,10,0,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="#8d653b";ctx.beginPath();ctx.moveTo(-5,0);ctx.lineTo(5,0);ctx.moveTo(-5,4);ctx.lineTo(5,4);ctx.stroke();
+        ctx.fillStyle="#2b1b10";ctx.beginPath();ctx.arc(0,-8,5,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="#d1ad75";ctx.beginPath();ctx.moveTo(-2,-11);ctx.quadraticCurveTo(-7,-18,-12,-19);ctx.moveTo(2,-11);ctx.quadraticCurveTo(7,-18,12,-19);ctx.stroke();
+        ctx.fillStyle="#d9ba77";ctx.beginPath();ctx.arc(-2,-9,1,0,Math.PI*2);ctx.arc(2,-9,1,0,Math.PI*2);ctx.fill();
+      }
       ctx.restore();
     });
+  }
+
+  function drawAirPockets(level, time) {
+    if (!level.underwater) return;
+    for (const [x,y,r] of level.airPockets || []) {
+      ctx.strokeStyle="rgba(203,252,255,.85)";ctx.fillStyle="rgba(185,245,255,.11)";ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(x,y,r+Math.sin(time*.004+x)*2,0,Math.PI*2);ctx.fill();ctx.stroke();
+      for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(x-13+i*13,y+r+12+(i%2)*8,3+i,0,Math.PI*2);ctx.stroke();}
+      ctx.fillStyle="#d9ffff";ctx.font="bold 9px system-ui";ctx.textAlign="center";ctx.fillText("AIR",x,y+3);
+    }
   }
 
   function drawHazard(h) {
@@ -437,15 +583,15 @@
       ctx.fillStyle="#c99072";roundedRect(0,5,h.w,h.h-5,10);ctx.fill();
       for(let i=0;i<4;i++){roundedRect(25+i*9,0,8,16,4);ctx.fill();}
     } else if (h.type === "grab") {
-      ctx.fillStyle="#c99072";
-      roundedRect(16,20,h.w-30,h.h-14,13);ctx.fill();
-      for(let i=0;i<4;i++){
-        roundedRect(12+i*15,2,11,31-(i%2)*5,6);ctx.fill();
-      }
-      ctx.fillStyle="#a96f56";
-      roundedRect(h.w-20,29,28,15,7);ctx.fill();
-      ctx.fillStyle="rgba(255,255,255,.18)";
-      roundedRect(18,23,h.w-42,4,2);ctx.fill();
+      // A side-on reaching hand: wrist, palm, four fingers, thumb, and fingernails.
+      ctx.fillStyle="#c99072";roundedRect(0,17,45,25,11);ctx.fill();
+      roundedRect(24,10,31,31,13);ctx.fill();
+      const fingers=[[43,4,38,9],[46,13,36,9],[45,22,33,9],[41,31,27,9]];
+      fingers.forEach(([x,y,w,ht])=>{roundedRect(x,y,w,ht,5);ctx.fill();});
+      ctx.save();ctx.translate(29,36);ctx.rotate(-.48);roundedRect(0,0,28,10,5);ctx.fill();ctx.restore();
+      ctx.fillStyle="#e9b69a";
+      fingers.forEach(([x,y,w,ht])=>{roundedRect(x+w-8,y+2,6,ht-4,3);ctx.fill();});
+      ctx.strokeStyle="#9d644e";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(25,18);ctx.quadraticCurveTo(35,22,38,31);ctx.stroke();
     } else if (h.type === "foodBowl") {
       // A tipped feeding cup with a visible brown puddle, rather than a white mystery brick.
       ctx.fillStyle="#7a5632";ctx.beginPath();ctx.ellipse(h.w*.62,h.h-5,h.w*.38,8,-.08,0,Math.PI*2);ctx.fill();
@@ -471,16 +617,29 @@
       ctx.fillStyle="#ff5b62";
       for(let x=9;x<h.w-5;x+=13){ctx.beginPath();ctx.ellipse(x,7,5,3,0,Math.PI,Math.PI*2);ctx.fill();}
       ctx.strokeStyle="#9e1720";ctx.lineWidth=2;roundedRect(2,7,h.w-4,h.h-7,3);ctx.stroke();
+    } else if (h.type === "fish") {
+      ctx.fillStyle="#d4a04d";ctx.beginPath();ctx.ellipse(h.w*.48,h.h*.52,h.w*.34,h.h*.34,0,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.moveTo(h.w*.76,h.h*.52);ctx.lineTo(h.w,h.h*.18);ctx.lineTo(h.w,h.h*.84);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#785427";ctx.beginPath();ctx.moveTo(h.w*.4,h.h*.3);ctx.lineTo(h.w*.57,1);ctx.lineTo(h.w*.62,h.h*.34);ctx.fill();
+      ctx.fillStyle="#0c1820";ctx.beginPath();ctx.arc(h.w*.26,h.h*.42,3,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="#6f4721";ctx.lineWidth=2;ctx.beginPath();ctx.arc(h.w*.12,h.h*.58,7,-.8,.8);ctx.stroke();
+    } else if (h.type === "filter") {
+      ctx.fillStyle="#17242a";roundedRect(4,0,h.w-8,h.h,8);ctx.fill();
+      ctx.strokeStyle="#7ec5cf";ctx.lineWidth=2;roundedRect(4,0,h.w-8,h.h,8);ctx.stroke();
+      ctx.fillStyle="#081217";
+      for(let y=9;y<h.h-5;y+=8)ctx.fillRect(13,y,h.w-26,3);
+      ctx.strokeStyle="rgba(196,249,255,.7)";ctx.lineWidth=2;
+      for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(12+i*19,-8-i*4,4,0,Math.PI*2);ctx.stroke();}
     }
     ctx.restore();
   }
 
   function drawDroppedTail(now) {
-    if (!droppedTail) return;
+    if (!droppedTail || selectedCharacter !== "crested") return;
     const age = now - droppedTail.droppedAt;
     if (age > 7000) return;
     const wiggle = age < 3200 ? Math.sin(age * .026) * 7 * (1 - age / 4000) : 0;
-    const green = levels[levelIndex]?.palette[3] || "#a9f576";
+    const green = characters.crested.color;
     ctx.save();
     ctx.translate(droppedTail.x, droppedTail.y);
     ctx.scale(droppedTail.facing, 1);
@@ -496,13 +655,13 @@
     ctx.restore();
   }
 
-  function drawGecko(now) {
+  function drawCrestedGecko(now) {
     const flash = now < invulnerableUntil && Math.floor(now / 90) % 2 === 0;
     if (flash) ctx.globalAlpha = .4;
     ctx.save();
     ctx.translate(player.x + player.w/2, player.y + player.h/2);
     ctx.scale(player.facing, 1);
-    const green = levels[levelIndex]?.palette[3] || "#a9f576";
+    const green = characters.crested.color;
     // Long, gently tapering tail. Crested geckos are not curly-tailed chameleons.
     if (tailReady) {
       ctx.strokeStyle = green; ctx.lineWidth = 7; ctx.lineCap = "round";
@@ -536,16 +695,46 @@
     ctx.fillStyle="#071008"; ctx.beginPath(); ctx.ellipse(24,-5,3,3.8,0,0,Math.PI*2); ctx.fill();
     ctx.fillStyle="#fff6c5"; ctx.beginPath(); ctx.arc(25,-6,1,0,Math.PI*2); ctx.fill();
 
-    // Tongue reaches forward and can actually collect bugs.
-    if (now < tongueActiveUntil) {
-      const progress = Math.min(1, Math.max(0, (now - (tongueActiveUntil - 230)) / 230));
-      const extension = Math.sin(progress * Math.PI) * 106;
-      ctx.strokeStyle="#ff86a8"; ctx.lineWidth=3; ctx.lineCap="round";
-      ctx.beginPath(); ctx.moveTo(29,2); ctx.lineTo(29 + extension,2); ctx.stroke();
-      ctx.fillStyle="#ff9bb7"; ctx.beginPath(); ctx.ellipse(31 + extension,2,6,4,0,0,Math.PI*2); ctx.fill();
-    }
     ctx.restore();
     ctx.globalAlpha = 1;
+  }
+
+  function drawChameleon(now) {
+    const flash = now < invulnerableUntil && Math.floor(now / 90) % 2 === 0;
+    if (flash) ctx.globalAlpha=.4;
+    ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
+    const green=characters.chameleon.color;
+    ctx.strokeStyle=green;ctx.lineWidth=6;ctx.lineCap="round";
+    ctx.beginPath();ctx.moveTo(-13,3);ctx.bezierCurveTo(-37,12,-47,-3,-34,-14);ctx.bezierCurveTo(-23,-22,-18,-9,-29,-5);ctx.stroke();
+    ctx.fillStyle=green;ctx.beginPath();ctx.ellipse(-1,0,20,11,-.08,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.moveTo(12,-9);ctx.lineTo(25,-15);ctx.lineTo(31,-4);ctx.lineTo(27,8);ctx.lineTo(12,8);ctx.closePath();ctx.fill();
+    ctx.strokeStyle=green;ctx.lineWidth=4;
+    [[-8,7,-18,15],[8,7,18,15],[-7,-5,-17,-10],[8,-5,18,-10]].forEach(([x,y,x2,y2])=>{ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.lineTo(x2+5,y2-2);ctx.stroke();});
+    ctx.fillStyle="#d9ef76";ctx.beginPath();ctx.arc(23,-5,6,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#13190d";ctx.beginPath();ctx.arc(25,-5,2.5,0,Math.PI*2);ctx.fill();
+    if(now<tongueActiveUntil){const progress=Math.min(1,Math.max(0,(now-(tongueActiveUntil-230))/230));const extension=Math.sin(progress*Math.PI)*106;ctx.strokeStyle="#ff86a8";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(29,2);ctx.lineTo(29+extension,2);ctx.stroke();ctx.fillStyle="#ff9bb7";ctx.beginPath();ctx.ellipse(31+extension,2,6,4,0,0,Math.PI*2);ctx.fill();}
+    ctx.restore();ctx.globalAlpha=1;
+  }
+
+  function drawNewt(now) {
+    const flash = now < invulnerableUntil && Math.floor(now / 90) % 2 === 0;
+    if (flash) ctx.globalAlpha=.4;
+    ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
+    if(now<toxinActiveUntil){ctx.strokeStyle="rgba(255,105,49,.72)";ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(0,0,43,24,0,0,Math.PI*2);ctx.stroke();}
+    const dark=characters.newt.color;
+    ctx.strokeStyle=dark;ctx.lineWidth=8;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-12,1);ctx.bezierCurveTo(-29,0,-38,5,-49,1);ctx.stroke();
+    ctx.fillStyle=dark;ctx.beginPath();ctx.ellipse(-1,0,22,8,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(20,-1,12,9,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle=dark;ctx.lineWidth=3;
+    [[-8,5,-17,13],[7,5,16,13],[-7,-4,-16,-10],[8,-4,17,-10]].forEach(([x,y,x2,y2])=>{ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.lineTo(x2+5,y2);ctx.stroke();});
+    ctx.strokeStyle="#f05a31";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-16,4);ctx.quadraticCurveTo(2,10,23,4);ctx.stroke();
+    ctx.fillStyle="#f4cb64";ctx.beginPath();ctx.arc(24,-4,2,0,Math.PI*2);ctx.fill();
+    ctx.restore();ctx.globalAlpha=1;
+  }
+
+  function drawPlayer(now) {
+    if (selectedCharacter === "chameleon") drawChameleon(now);
+    else if (selectedCharacter === "newt") drawNewt(now);
+    else drawCrestedGecko(now);
   }
 
   function draw(time = 0) {
@@ -554,9 +743,10 @@
     drawPlatforms(level);
     drawExit(level);
     drawInsects(level, time);
+    drawAirPockets(level, time);
     level.hazards.forEach(drawHazard);
     drawDroppedTail(time);
-    drawGecko(time);
+    drawPlayer(time);
   }
 
   function frame(time) {
@@ -570,8 +760,7 @@
   window.addEventListener("keydown", event => {
     if (["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Space"].includes(event.code)) event.preventDefault();
     if (!keys[event.code] && (event.code === "Space" || event.code === "ArrowUp" || event.code === "KeyW")) jump();
-    if (!keys[event.code] && event.code === "KeyE") useTongue();
-    if (!keys[event.code] && (event.code === "ShiftLeft" || event.code === "ShiftRight" || event.code === "KeyX")) dropTail();
+    if (!keys[event.code] && (event.code === "KeyE" || event.code === "ShiftLeft" || event.code === "ShiftRight" || event.code === "KeyX")) useAbility();
     keys[event.code] = true;
   });
   window.addEventListener("keyup", event => keys[event.code] = false);
@@ -581,8 +770,7 @@
     const key = control === "left" ? "touchLeft" : control === "right" ? "touchRight" : "touchJump";
     const press = event => {
       event.preventDefault();
-      if (control === "tail") return dropTail();
-      if (control === "tongue") return useTongue();
+      if (control === "ability") return useAbility();
       if (control === "jump" && !keys[key]) jump();
       keys[key] = true;
     };
@@ -594,6 +782,13 @@
   });
 
   secondaryButton.addEventListener("click", showMenu);
+  characterSelect.querySelectorAll("[data-character]").forEach(button => {
+    button.addEventListener("click", () => {
+      selectedCharacter = button.dataset.character;
+      abilityButton.textContent = characters[selectedCharacter].ability;
+      showIntro(0);
+    });
+  });
   soundButton.addEventListener("click", () => {
     soundOn = !soundOn;
     soundButton.textContent = `SOUND: ${soundOn ? "ON" : "OFF"}`;

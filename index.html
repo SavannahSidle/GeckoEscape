@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <meta name="theme-color" content="#07150f" />
-    <meta name="description" content="A tiny three-level gecko escape game by Alien Arboreal." />
+    <meta name="description" content="A tiny four-level reptile and amphibian escape game by Alien Arboreal." />
     <title>Gecko Escape</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2307150f'/%3E%3Cpath d='M13 34c7-15 22-21 35-12 7 5 3 14-5 12-5-1-5-7-1-8-9-5-17 2-20 10-2 6-7 10-12 9' fill='none' stroke='%238fe36a' stroke-width='6' stroke-linecap='round'/%3E%3Ccircle cx='48' cy='24' r='2' fill='%23fff7d6'/%3E%3C/svg%3E" />
     <link rel="stylesheet" href="style.css" />
@@ -20,13 +20,30 @@
       </header>
 
       <section class="stage-wrap" aria-label="Gecko Escape game">
-        <canvas id="game" width="960" height="540" tabindex="0" aria-label="Gecko Escape. Use arrow keys or WASD to move and Space to jump."></canvas>
+        <canvas id="game" width="960" height="540" tabindex="0" aria-label="Gecko Escape. Choose a character, use arrow keys or WASD to move, Space to jump, and E for your ability."></canvas>
 
         <div id="overlay" class="overlay">
           <div class="panel">
             <p id="panelKicker" class="panel-kicker">STORY MODE</p>
             <h2 id="panelTitle">The enclosure door is open.</h2>
             <p id="panelText">This is almost certainly a trap. Unfortunately, you are a gecko.</p>
+            <div id="characterSelect" class="character-select hidden" aria-label="Choose your escape artist">
+              <button type="button" class="character-card" data-character="chameleon">
+                <span class="character-icon chameleon-icon" aria-hidden="true">◉</span>
+                <strong>CHAMELEON</strong>
+                <small>Long tongue catches bugs from a distance.</small>
+              </button>
+              <button type="button" class="character-card" data-character="crested">
+                <span class="character-icon crested-icon" aria-hidden="true">♛</span>
+                <strong>CRESTED GECKO</strong>
+                <small>Fastest climber. Drops its tail to escape danger.</small>
+              </button>
+              <button type="button" class="character-card" data-character="newt">
+                <span class="character-icon newt-icon" aria-hidden="true">●</span>
+                <strong>FIRE-BELLY NEWT</strong>
+                <small>Toxic defence. Fastest swimmer and never needs air.</small>
+              </button>
+            </div>
             <button id="primaryButton" class="primary-button" type="button">BEGIN ESCAPE</button>
             <button id="secondaryButton" class="secondary-button hidden" type="button">LEVEL SELECT</button>
           </div>
@@ -35,18 +52,18 @@
         <div id="hud" class="hud hidden" aria-live="polite">
           <span id="levelLabel">LEVEL 1 · EASY</span>
           <span id="bugLabel">BUGS 0/3</span>
+          <span id="abilityLabel">ABILITY READY</span>
           <span id="lifeLabel">♥ ♥ ♥</span>
         </div>
       </section>
 
       <div class="controls-row">
-        <p class="keyboard-help"><strong>MOVE</strong> WASD / ARROWS &nbsp; <strong>JUMP</strong> SPACE &nbsp; <strong>TONGUE</strong> E &nbsp; <strong>DROP TAIL</strong> SHIFT</p>
+        <p class="keyboard-help"><strong>MOVE</strong> WASD / ARROWS &nbsp; <strong>JUMP</strong> SPACE &nbsp; <strong>ABILITY</strong> E / SHIFT</p>
         <div class="touch-controls" aria-label="Touch controls">
           <button type="button" data-control="left" aria-label="Move left">◀</button>
           <button type="button" data-control="right" aria-label="Move right">▶</button>
           <button type="button" data-control="jump" aria-label="Jump">↑</button>
-          <button type="button" data-control="tongue" class="tongue-control" aria-label="Use tongue">TONGUE</button>
-          <button type="button" data-control="tail" class="tail-control" aria-label="Drop tail">TAIL</button>
+          <button id="abilityButton" type="button" data-control="ability" class="ability-control" aria-label="Use character ability">ABILITY</button>
         </div>
       </div>
     </main>

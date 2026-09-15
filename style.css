@@ -97,10 +97,11 @@ canvas {
   place-items: center;
   padding: 24px;
   background: linear-gradient(90deg, rgba(2,9,6,.93), rgba(2,9,6,.62) 60%, rgba(2,9,6,.28));
+  overflow-y: auto;
 }
 
 .panel {
-  width: min(550px, 100%);
+  width: min(760px, 100%);
   padding: clamp(22px, 4vw, 46px);
   margin-right: auto;
 }
@@ -139,6 +140,40 @@ canvas {
 .primary-button:focus-visible { background: #c3ff9d; transform: translateY(-1px); }
 
 .secondary-button { margin-left: 8px; }
+
+.character-select {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0 0;
+}
+
+.character-card {
+  min-height: 148px;
+  padding: 15px 13px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: rgba(7, 21, 15, .88);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.character-card:hover,
+.character-card:focus-visible {
+  border-color: var(--acid);
+  background: #10251a;
+  transform: translateY(-2px);
+}
+
+.character-card strong,
+.character-card small { display: block; }
+.character-card strong { margin: 9px 0 6px; font-size: .78rem; letter-spacing: .06em; }
+.character-card small { color: #b8c9bc; font-size: .76rem; line-height: 1.35; }
+.character-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; font-size: 1.2rem; }
+.chameleon-icon { background: #567d35; color: #efffb4; }
+.crested-icon { background: #a9f576; color: #07150f; }
+.newt-icon { background: #15171a; color: #f05a31; border: 2px solid #f05a31; }
 
 .hud {
   position: absolute;
@@ -188,10 +223,7 @@ canvas {
   touch-action: manipulation;
 }
 
-.touch-controls .tail-control,
-.touch-controls .tongue-control { width: 68px; font-size: .66rem; }
-.touch-controls .tail-control { color: #f2a19b; }
-.touch-controls .tongue-control { color: #ff9eb8; }
+.touch-controls .ability-control { width: 76px; color: #ffcab0; font-size: .66rem; }
 .touch-controls button:active { background: var(--acid-dark); transform: translateY(1px); }
 .hidden { display: none !important; }
 
@@ -203,14 +235,17 @@ canvas {
   .keyboard-help { display: none; }
   .touch-controls { display: flex; width: 100%; justify-content: center; }
   .touch-controls button { width: 46px; }
-  .touch-controls .tail-control,
-  .touch-controls .tongue-control { width: 62px; }
+  .touch-controls .ability-control { width: 72px; }
   .controls-row { justify-content: center; }
   .overlay { padding: 10px; }
   .panel { padding: 18px; }
   .panel h2 { font-size: clamp(1.6rem, 7vw, 3.2rem); margin-bottom: 8px; }
   .panel p:not(.panel-kicker) { margin-bottom: 14px; line-height: 1.35; }
   .primary-button { padding: 11px 14px; }
+  .character-select { grid-template-columns: 1fr; gap: 6px; margin-top: 10px; }
+  .character-card { min-height: 0; display: grid; grid-template-columns: 34px 1fr; column-gap: 10px; padding: 9px 10px; }
+  .character-card .character-icon { grid-row: 1 / 3; }
+  .character-card strong { margin: 1px 0 2px; }
 }
 
 @media (max-height: 600px) and (orientation: landscape) {
