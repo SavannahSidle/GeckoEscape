@@ -152,8 +152,8 @@
       title:"The Paludarium",habitat:"newt",palette:["#07151a","#153b3d","#536b50","#65d6c4"],
       intro:"The lid has shifted above the shoreline. Climb from water to stone and investigate this administrative failure.",
       start:[112,445],exit:[870,410,48,90],
-      platforms:[[0,500,960,40],[55,458,220,22],[82,342,150,18],[310,422,150,18],[490,372,170,18],[690,320,180,18],[760,232,150,18]],
-      vines:[[280,345,18,118],[650,260,18,130],[845,165,18,155]],insects:[[151,309],[350,390],[560,338],[800,285]],
+      platforms:[[0,500,960,40],[55,458,220,22],[82,342,150,18],[205,282,130,18],[310,422,150,18],[490,372,170,18],[510,252,130,18],[690,320,180,18],[760,232,150,18]],
+      vines:[[280,345,18,118],[650,260,18,130],[845,165,18,155]],insects:[[151,309],[270,249],[350,390],[560,338],[575,219],[800,285]],
       hazards:[{x:465,y:430,w:92,h:70,type:"grab",axis:"x",min:380,max:640,speed:76}]
     },
     frog: {
@@ -412,7 +412,9 @@
     const right = keys.ArrowRight || keys.KeyD || keys.touchRight;
     const up = keys.ArrowUp || keys.KeyW || keys.touchJump;
     const down = keys.ArrowDown || keys.KeyS;
-    const speed = level.underwater ? character.swimSpeed : levelIndex === 2 ? 236 : 220;
+    const inHabitatWater = level.habitat === "newt" && player.x < 450 && player.y + player.h / 2 > 408;
+    const swimming = Boolean(level.underwater || inHabitatWater);
+    const speed = swimming ? character.swimSpeed : levelIndex === 2 ? 236 : 220;
     if (selectedCharacter === "frog" || selectedCharacter === "boa") updateHud();
 
     const acceleration = level.underwater ? 720 : 1450;
@@ -421,14 +423,14 @@
     if (!left && !right) player.vx *= Math.pow(level.underwater ? .025 : .0007, dt);
     player.vx = Math.max(-speed, Math.min(speed, player.vx));
 
-    if (level.underwater) {
+    if (swimming) {
       player.climbing = false;
       if (up) player.vy -= 680 * dt;
       if (down) player.vy += 680 * dt;
       if (!up && !down) player.vy *= Math.pow(.018, dt);
       player.vy = Math.max(-speed, Math.min(speed, player.vy));
 
-      if (selectedCharacter !== "newt") {
+      if (level.underwater && selectedCharacter !== "newt") {
         air -= dt * 7.5;
         for (const pocket of level.airPockets || []) {
           const bubble = {x:pocket[0]-pocket[2],y:pocket[1]-pocket[2],w:pocket[2]*2,h:pocket[2]*2};
@@ -540,14 +542,16 @@
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, W, H);
 
-    ctx.globalAlpha = .13;
-    ctx.strokeStyle = level.palette[3];
-    ctx.lineWidth = 1;
-    for (let x = 20; x < W; x += 48) {
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
-    }
-    for (let y = 20; y < H; y += 48) {
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    if(level.habitat!=="newt"){
+      ctx.globalAlpha = .13;
+      ctx.strokeStyle = level.palette[3];
+      ctx.lineWidth = 1;
+      for (let x = 20; x < W; x += 48) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+      }
+      for (let y = 20; y < H; y += 48) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      }
     }
     ctx.globalAlpha = 1;
 
@@ -589,10 +593,13 @@
       for(let x=30;x<W;x+=120){ctx.beginPath();ctx.moveTo(x,75);ctx.quadraticCurveTo(x+50,95,x+100,75);ctx.stroke();}
       ctx.fillStyle="#253e3b";ctx.fillRect(0,500,W,40);
       for(let x=10;x<W;x+=24){ctx.fillStyle=x%48===10?"#6d806c":"#465e58";ctx.beginPath();ctx.arc(x,505+(x%3)*5,8,Math.PI,Math.PI*2);ctx.fill();}
+      drawUnderwaterPlant(105,500,88,"#3e8a5a");drawUnderwaterPlant(390,500,64,"#4b9a63");drawUnderwaterPlant(670,500,104,"#39794f");
     }
   }
 
   function drawLeaves(x, y, color) {
+    ctx.strokeStyle=color;ctx.lineWidth=4;ctx.lineCap="round";
+    ctx.beginPath();ctx.moveTo(x-12,y+12);ctx.bezierCurveTo(x+32,y-16,x+92,y-18,x+158,y-58);ctx.stroke();
     for (let i = 0; i < 7; i++) {
       ctx.save();
       ctx.translate(x + i * 24, y - (i % 3) * 28);
@@ -610,6 +617,21 @@
       ctx.beginPath();ctx.moveTo(-length * .72,0);ctx.lineTo(length * .72,0);ctx.stroke();
       ctx.restore();
     }
+    ctx.strokeStyle="rgba(62,111,49,.75)";ctx.lineWidth=2;
+    for(let i=1;i<6;i+=2){const sx=x+i*24;const sy=y-(i%3)*28;ctx.beginPath();ctx.moveTo(sx-5,sy+4);ctx.bezierCurveTo(sx-8,sy+20,sx+6,sy+26,sx+2,sy+42);ctx.stroke();}
+  }
+
+  function drawUnderwaterPlant(x, baseY, height, color) {
+    ctx.save();ctx.strokeStyle=color;ctx.lineWidth=5;ctx.lineCap="round";
+    for(let i=-1;i<=1;i++){
+      ctx.beginPath();ctx.moveTo(x,baseY);
+      ctx.bezierCurveTo(x+i*20,baseY-height*.32,x-i*18,baseY-height*.7,x+i*14,baseY-height);ctx.stroke();
+      for(let step=1;step<=3;step++){
+        const py=baseY-height*(step*.23);const px=x+Math.sin(step+i)*8;
+        drawPlantLeaf(px,py,i<0?Math.PI-.5:.5,color,13,5);
+      }
+    }
+    ctx.restore();
   }
 
   function drawEnclosureTrees() {
@@ -630,8 +652,9 @@
     }else if(level.habitat==="crested"){
       ctx.fillStyle="#583b24";roundedRect(700,95,105,315,18);ctx.fill();ctx.strokeStyle="#936b43";ctx.lineWidth=4;for(let y=120;y<390;y+=36){ctx.beginPath();ctx.moveTo(710,y);ctx.lineTo(790,y-11);ctx.stroke();}
     }else if(level.habitat==="newt"){
-      ctx.fillStyle="rgba(45,145,155,.28)";ctx.fillRect(20,410,430,86);ctx.strokeStyle="#62d7d0";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(20,410);ctx.quadraticCurveTo(120,400,220,410);ctx.quadraticCurveTo(330,420,450,410);ctx.stroke();
+      ctx.fillStyle="rgba(45,145,155,.28)";ctx.fillRect(20,410,430,86);
       ctx.fillStyle="#52635c";for(const [x,y,r] of [[490,450,34],[555,465,24],[620,444,38]]){ctx.beginPath();ctx.arc(x,y,r,Math.PI,Math.PI*2);ctx.fill();}
+      drawUnderwaterPlant(72,492,66,"#3f8357");drawUnderwaterPlant(176,492,50,"#579b64");drawUnderwaterPlant(340,492,74,"#397950");
     }else if(level.habitat==="frog"){
       ctx.fillStyle="#4d3924";ctx.fillRect(20,458,920,38);for(let x=30;x<930;x+=34){ctx.fillStyle=x%68?"#765133":"#3b592f";ctx.beginPath();ctx.ellipse(x,462,28,8,-.25,0,Math.PI*2);ctx.fill();}
       ctx.fillStyle="#27643b";for(const x of [130,520,820]){for(let i=0;i<6;i++){ctx.save();ctx.translate(x,405);ctx.rotate(i*Math.PI/3);ctx.beginPath();ctx.ellipse(0,-25,9,30,0,0,Math.PI*2);ctx.fill();ctx.restore();}}
@@ -671,6 +694,11 @@
       ctx.beginPath();ctx.moveTo(leafX,leafY);ctx.lineTo(leafX+direction*15,leafY-7);ctx.stroke();
       drawPlantLeaf(leafX+direction*13,leafY-7,direction<0?Math.PI-.22:.22,underwater?"#4f9b61":"#4f873d",underwater?18:16,underwater?5:7);
       if(index%3===1)drawPlantLeaf(leafX,leafY-4,-Math.PI/2,underwater?"#67ad6e":"#659b47",14,6);
+      if(!underwater&&index%3===0){ctx.strokeStyle="#426d35";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(leafX+direction*8,leafY-3);ctx.bezierCurveTo(leafX+direction*17,leafY+8,leafX+direction*5,leafY+18,leafX+direction*12,leafY+28);ctx.stroke();}
+    }
+    if(!underwater){
+      ctx.fillStyle="#668448";
+      for(let offset=12;offset<h;offset+=22){const my=y+h-offset;const mx=cx+Math.sin(offset*.11)*5;ctx.beginPath();ctx.ellipse(mx,my,6,3,.2,0,Math.PI*2);ctx.fill();}
     }
     ctx.restore();
   }
@@ -681,9 +709,8 @@
         const y=p[1]+p[3]/2;
         ctx.strokeStyle="#51351f";ctx.lineWidth=p[3];ctx.lineCap="round";
         ctx.beginPath();ctx.moveTo(p[0]+5,y);ctx.quadraticCurveTo(p[0]+p[2]*.48,y-7,p[0]+p[2]-5,y+2);ctx.stroke();
-        ctx.strokeStyle=level.palette[3];ctx.globalAlpha=.9;ctx.lineWidth=4;
-        ctx.beginPath();ctx.moveTo(p[0]+10,y-4);ctx.quadraticCurveTo(p[0]+p[2]*.5,y-9,p[0]+p[2]-12,y-2);ctx.stroke();
-        ctx.globalAlpha=1;
+        ctx.fillStyle="#5f8144";
+        for(let bx=p[0]+14;bx<p[0]+p[2]-10;bx+=18){const by=y-5-Math.sin(bx*.09)*3;ctx.beginPath();ctx.moveTo(bx-9,by+3);ctx.quadraticCurveTo(bx-5,by-5,bx,by+1);ctx.quadraticCurveTo(bx+5,by-7,bx+10,by+3);ctx.closePath();ctx.fill();}
         ctx.strokeStyle="#624125";ctx.lineWidth=5;
         ctx.beginPath();ctx.moveTo(p[0]+p[2]*.3,y-5);ctx.lineTo(p[0]+p[2]*.2,y-22);ctx.moveTo(p[0]+p[2]*.72,y);ctx.lineTo(p[0]+p[2]*.82,y-17);ctx.stroke();
       }else{
@@ -961,7 +988,7 @@
     ctx.fillStyle="#ff9a35";ctx.beginPath();ctx.ellipse(-8,5,5,2.2,.12,0,Math.PI*2);ctx.ellipse(13,4,5,2,-.18,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#171918";[[-14,4,2.2],[-1,6,2.5],[7,4,1.8],[20,3,2.2]].forEach(([x,y,r])=>{ctx.beginPath();ctx.ellipse(x,y,r,r*.62,.2,0,Math.PI*2);ctx.fill();});
     ctx.strokeStyle=dark;ctx.lineWidth=3;
-    [[-8,5,-17,13],[7,5,16,13],[-7,-4,-16,-10],[8,-4,17,-10]].forEach(([x,y,x2,y2])=>{ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.lineTo(x2+5,y2);ctx.stroke();});
+    [[-8,5,-17,13],[8,5,17,13]].forEach(([x,y,x2,y2])=>{ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.lineTo(x2+6,y2);ctx.moveTo(x2+3,y2);ctx.lineTo(x2+7,y2-3);ctx.moveTo(x2+3,y2);ctx.lineTo(x2+7,y2+3);ctx.stroke();});
     ctx.fillStyle="#f4cb64";ctx.beginPath();ctx.arc(24,-4,2,0,Math.PI*2);ctx.fill();
     ctx.restore();ctx.globalAlpha=1;
   }
