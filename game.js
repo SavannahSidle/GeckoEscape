@@ -45,13 +45,16 @@
   let strikeCooldownUntil = 0;
   let newtDashUntil = 0;
   let newtDashCooldownUntil = 0;
+  let toeBoostUntil = 0;
+  let toeBoostCooldownUntil = 0;
+  let miceCollected = 0;
   let selectedCharacter = "crested";
   let soundOn = true;
   let audioContext = null;
 
   const characters = {
     chameleon: { name: "CHAMELEON", ability: "TONGUE", secondary: "CAMOUFLAGE", collectible: "CRICKETS", color: "#79a94d", climbSpeed: 135, swimSpeed: 150, w: 42, h: 25 },
-    crested: { name: "CRESTED GECKO", ability: "DROP TAIL", collectible: "ROACHES", color: "#d29458", climbSpeed: 195, swimSpeed: 160, w: 42, h: 25 },
+    crested: { name: "CRESTED GECKO", ability: "TOE BOOST", secondary: "DROP TAIL", collectible: "ROACHES", color: "#d29458", climbSpeed: 195, swimSpeed: 160, w: 42, h: 25 },
     newt: { name: "FIRE-BELLY NEWT", ability: "TAIL DASH", secondary: "TOXIN", collectible: "WORMS", color: "#252a28", climbSpeed: 130, swimSpeed: 235, w: 46, h: 23 },
     frog: { name: "AZUREUS DART FROG", ability: "TONGUE", secondary: "POWER LEAP", collectible: "FRUIT FLIES", color: "#2679cb", climbSpeed: 120, swimSpeed: 155, w: 38, h: 27 },
     boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", secondary: "STRIKE", collectible: "RATS", color: "#030405", climbSpeed: 155, swimSpeed: 190, w: 94, h: 36 }
@@ -99,20 +102,22 @@
     },
     {
       label: "LEVEL 3 · HARD",
-      title: "The House",
-      intro: "Cross the living room. A human foot patrols the floor. The Roomba and French bulldog have joined the hunt.",
+      title: "The Living Room",
+      intro: "Cross the sofa, shelves, and coffee table. The Roomba, French bulldog, cat, and ceiling spider have joined the hunt.",
       completeTitle: "Behind the refrigerator.",
       completeText: "Warm. Dusty. Almost freedom. Then the filter hose gives way and the floor disappears beneath a wall of water.",
       palette: ["#111018", "#292239", "#795b44", "#ef8c73"],
       start: [38, 445], exit: [878,392,64,108],
-      platforms: [[0,500,960,40],[26,434,165,20],[230,372,150,18],[420,318,132,18],[602,268,140,18],[790,212,150,18],[690,392,105,18],[520,445,94,18]],
+      platforms: [[0,500,960,40],[26,434,165,20],[230,372,150,18],[420,318,132,18],[520,160,110,18],[602,268,140,18],[790,212,150,18],[820,125,105,18],[690,392,105,18],[520,445,94,18]],
       vines: [[190,326,18,112],[380,265,18,110],[742,205,18,190]],
       insects: [[290,337],[665,233],[850,177]],
+      mice: [[575,126],[875,91]],
       hazards: [
         {x:238,y:460,w:96,h:40,type:"slipper",axis:"x",min:210,max:490,speed:145},
         {x:550,y:413,w:72,h:32,type:"roomba",axis:"x",min:510,max:680,speed:118},
         {x:645,y:464,w:78,h:36,type:"frenchie",axis:"x",min:610,max:760,speed:92},
-        {x:800,y:474,w:56,h:26,type:"lego",axis:"none"}
+        {x:330,y:255,w:66,h:24,type:"cat",axis:"diagonal",minX:300,maxX:510,minY:225,maxY:330,speedX:82,speedY:58},
+        {x:465,y:170,w:38,h:32,type:"spider",axis:"y",minY:145,maxY:390,speed:72}
       ],
       decor: "house"
     },
@@ -165,7 +170,7 @@
       intro:"The screen door is loose. Cross the ficus branches and leave before anyone notices the suspiciously empty vine.",
       start:[70,420],exit:[870,410,48,90],
       platforms:[[0,500,960,40],[42,452,190,20],[80,340,150,18],[275,392,175,20],[510,330,190,20],[735,264,180,20],[570,180,165,18]],
-      vines:[],ceilingVines:[[150,92,680,18]],insects:[[149,307],[330,355],[590,292],[810,225]],
+      vines:[],ceilingVines:[[150,92,680,18,"woody"]],insects:[[149,307],[180,126],[330,355],[590,292],[810,225]],
       hazards:[{x:430,y:430,w:92,h:70,type:"grab",axis:"x",min:340,max:620,speed:82}]
     },
     crested: {
@@ -173,7 +178,7 @@
       intro:"The glass door is open. Cross the cork and branches, then make your first terrible decision.",
       start:[55,433],exit:[870,410,48,90],
       platforms:[[0,500,960,40],[45,458,190,22],[76,340,150,18],[262,404,190,20],[500,342,185,20],[712,270,190,20],[790,154,150,20]],
-      vines:[[215,328,20,135],[456,273,20,135],[680,204,20,140]],insects:[[145,307],[330,370],[570,308],[840,230]],
+      vines:[[215,328,20,135],[456,273,20,135],[680,204,20,140]],ceilingVines:[[210,92,560,26,"curved"]],insects:[[145,307],[330,370],[570,308],[840,230]],
       hazards:[{x:420,y:430,w:92,h:70,type:"grab",axis:"x",min:330,max:610,speed:82}]
     },
     newt: {
@@ -277,7 +282,7 @@
     player.w = characters[selectedCharacter].w;
     player.h = characters[selectedCharacter].h;
     level.insects.forEach(insect => insect[2] = false);
-    level.hazards.forEach((hazard, i) => { hazard.dir = i % 2 ? -1 : 1; hazard.stunnedUntil = 0; hazard.defeated = false; });
+    level.hazards.forEach((hazard, i) => { hazard.dir = i % 2 ? -1 : 1; hazard.dirX = i % 2 ? -1 : 1; hazard.dirY = i % 2 ? 1 : -1; hazard.stunnedUntil = 0; hazard.camouflageIgnoredUntil=0; hazard.defeated = false; });
     lives = 3;
     collected = 0;
     tailReady = true;
@@ -293,6 +298,10 @@
     strikeCooldownUntil = 0;
     newtDashUntil = 0;
     newtDashCooldownUntil = 0;
+    toeBoostUntil = 0;
+    toeBoostCooldownUntil = 0;
+    miceCollected = 0;
+    (level.mice||[]).forEach(mouse=>mouse[2]=false);
     tongueActiveUntil = 0;
     tongueCooldownUntil = 0;
     droppedTail = null;
@@ -329,11 +338,13 @@
   function updateHud() {
     const character = characters[selectedCharacter];
     const preyTotal = levels[levelIndex].insects.length;
-    bugLabel.textContent = `${character.collectible} ${collected}/${preyTotal}`;
+    const miceTotal=(levels[levelIndex].mice||[]).length;
+    bugLabel.textContent = `${character.collectible} ${collected}/${preyTotal}${miceTotal?` · MICE ${miceCollected}/${miceTotal}`:""}`;
     if (levels[levelIndex]?.underwater && selectedCharacter !== "newt") {
       abilityLabel.textContent = `AIR ${Math.max(0, Math.ceil(air))}% · ${character.ability}`;
     } else if (selectedCharacter === "crested") {
-      abilityLabel.textContent = `TAIL ${tailReady ? "READY" : "GONE"}`;
+      const toeState=performance.now()>=toeBoostCooldownUntil?"TOE BOOST READY":"BOOST RECHARGING";
+      abilityLabel.textContent = `${toeState} · TAIL ${tailReady ? "READY" : "GONE"}`;
     } else if (selectedCharacter === "newt") {
       const dashState=performance.now()>=newtDashCooldownUntil?"TAIL DASH READY":"DASH RECHARGING";
       abilityLabel.textContent = `${dashState} · TOXIN ${toxinReady ? "READY" : "USED"}`;
@@ -370,6 +381,14 @@
     player.vy = -180;
     updateHud();
     tone(115, .22, "sawtooth");
+  }
+
+  function useToeBoost(){
+    const now=performance.now();
+    if(state!=="playing"||selectedCharacter!=="crested"||now<toeBoostCooldownUntil)return;
+    toeBoostUntil=now+2600;toeBoostCooldownUntil=now+4800;
+    player.vy=-285;player.vx+=player.facing*110;
+    updateHud();tone(315,.1,"triangle");
   }
 
   function useTongue() {
@@ -425,7 +444,6 @@
     chameleonColorIndex=(chameleonColorIndex+1)%5;
     camouflageUntil=now+2600;
     camouflageCooldownUntil=now+5200;
-    invulnerableUntil=Math.max(invulnerableUntil,camouflageUntil);
     updateHud();tone(430,.16,"sine");
   }
 
@@ -439,7 +457,7 @@
     let nearest = 155;
     for (const hazard of level.hazards) {
       if(hazard.defeated)continue;
-      if (hazard.axis !== "x") continue;
+      if (hazard.axis === "none") continue;
       const distance = Math.hypot(px - (hazard.x + hazard.w / 2), py - (hazard.y + hazard.h / 2));
       if (distance < nearest) { nearest = distance; target = hazard; }
     }
@@ -456,7 +474,7 @@
     if(state!=="playing"||selectedCharacter!=="boa"||now<strikeCooldownUntil)return;
     strikeActiveUntil=now+300;strikeCooldownUntil=now+1150;
     const strikeBox={x:player.facing>0?player.x+player.w-12:player.x-92,y:player.y-7,w:104,h:player.h+14};
-    const livingTypes=new Set(["cat","dalmatian","frenchie","fish"]);
+    const livingTypes=new Set(["cat","dalmatian","frenchie","fish","spider"]);
     for(const hazard of levels[levelIndex].hazards){
       if(hazard.defeated||!intersects(strikeBox,hazard))continue;
       if(hazard.type==="grab"||hazard.type==="hand"){
@@ -470,7 +488,7 @@
 
   function useAbility() {
     if (selectedCharacter === "chameleon" || selectedCharacter === "frog") useTongue();
-    else if (selectedCharacter === "crested") dropTail();
+    else if (selectedCharacter === "crested") useToeBoost();
     else if (selectedCharacter === "newt") useTailDash();
     else useConstrict();
   }
@@ -478,6 +496,7 @@
   function useSecondaryAbility(){
     if(selectedCharacter==="chameleon")useCamouflage();
     else if(selectedCharacter==="frog")usePowerLeap();
+    else if(selectedCharacter==="crested")dropTail();
     else if(selectedCharacter==="newt")useToxin();
     else if(selectedCharacter==="boa")useStrike();
   }
@@ -486,8 +505,12 @@
     return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
   }
 
+  function remainingCollectibles(level){
+    return level.insects.filter(item=>!item[2]).length+(level.mice||[]).filter(item=>!item[2]).length;
+  }
+
   function completeLevel() {
-    if (collected < levels[levelIndex].insects.length) return;
+    if (remainingCollectibles(levels[levelIndex])>0) return;
     state = "complete";
     tone(523, .1, "triangle");
     setTimeout(() => tone(659, .13, "triangle"), 100);
@@ -543,13 +566,15 @@
       const onVine = level.vines.some(v => intersects(player, {x:v[0], y:v[1], w:v[2], h:v[3]}));
       const ceilingVine = (level.ceilingVines||[]).find(v => intersects(player,{x:v[0],y:v[1]-4,w:v[2],h:v[3]+22}));
       const onWall = player.x <= 5 || player.x + player.w >= W - 5;
-      player.ceilingClimbing=Boolean(ceilingVine&&up);
+      const canHang=["chameleon","crested"].includes(selectedCharacter);
+      player.ceilingClimbing=Boolean(canHang&&ceilingVine&&!down&&(player.ceilingClimbing||up||player.vy<0));
       player.climbing = player.ceilingClimbing || ((onVine || onWall) && (up || down));
       if(player.ceilingClimbing){
-        player.y=ceilingVine[1]+ceilingVine[3]-2;
+        player.y=ceilingVineY(ceilingVine,player.x+player.w/2)+5;
         player.vy=0;
       }else if (player.climbing) {
-        player.vy = up ? -character.climbSpeed : down ? character.climbSpeed : 0;
+        const climbSpeed=selectedCharacter==="crested"&&now<toeBoostUntil?character.climbSpeed*1.75:character.climbSpeed;
+        player.vy = up ? -climbSpeed : down ? climbSpeed : 0;
       } else {
         player.vy += 820 * dt;
         player.vy = Math.min(player.vy, 570);
@@ -586,12 +611,23 @@
           hazard.x = Math.max(hazard.min, Math.min(hazard.max, hazard.x));
           hazard.dir *= -1;
         }
+      }else if(hazard.axis==="y"&&now>=(hazard.stunnedUntil||0)){
+        hazard.y+=hazard.speed*hazard.dirY*dt;
+        if(hazard.y<hazard.minY||hazard.y>hazard.maxY){hazard.y=Math.max(hazard.minY,Math.min(hazard.maxY,hazard.y));hazard.dirY*=-1;}
+      }else if(hazard.axis==="diagonal"&&now>=(hazard.stunnedUntil||0)){
+        hazard.x+=hazard.speedX*hazard.dirX*dt;hazard.y+=hazard.speedY*hazard.dirY*dt;
+        if(hazard.x<hazard.minX||hazard.x>hazard.maxX){hazard.x=Math.max(hazard.minX,Math.min(hazard.maxX,hazard.x));hazard.dirX*=-1;}
+        if(hazard.y<hazard.minY||hazard.y>hazard.maxY){hazard.y=Math.max(hazard.minY,Math.min(hazard.maxY,hazard.y));hazard.dirY*=-1;}
       }
       if (now > invulnerableUntil && intersects(player, hazard)) {
+        if(selectedCharacter==="chameleon"&&now<camouflageUntil){
+          if(now<(hazard.camouflageIgnoredUntil||0))continue;
+          if(Math.random()<.76){hazard.camouflageIgnoredUntil=now+850;tone(510,.035,"sine");continue;}
+        }
         if (selectedCharacter === "newt" && now < toxinActiveUntil) {
           toxinActiveUntil = 0;
           invulnerableUntil = now + 900;
-          hazard.dir *= -1;
+          hazard.dir *= -1;hazard.dirX*=-1;hazard.dirY*=-1;
           tone(120, .18, "sawtooth");
         } else {
           tone(86, .2, "square");
@@ -614,13 +650,22 @@
       }
     });
 
+    (level.mice||[]).forEach(mouse=>{
+      if(mouse[2])return;
+      const mouseBox={x:mouse[0]-14,y:mouse[1]-10,w:28,h:20};
+      if(intersects(player,mouseBox)){mouse[2]=true;miceCollected+=1;updateHud();tone(540+miceCollected*80,.08,"triangle");}
+    });
+
     const exit = {x:level.exit[0], y:level.exit[1], w:level.exit[2], h:level.exit[3]};
-    if (intersects(player, exit) && collected === level.insects.length) completeLevel();
+    if (intersects(player, exit) && remainingCollectibles(level)===0) completeLevel();
   }
 
   function jump() {
     if (state !== "playing") return;
-    if (levels[levelIndex].underwater) {
+    if(player.ceilingClimbing){player.ceilingClimbing=false;player.climbing=false;player.y+=8;player.vy=135;tone(185,.05,"triangle");return;}
+    const level=levels[levelIndex];
+    const inHabitatWater=level.habitat==="newt"&&player.x<450&&player.y+player.h/2>408;
+    if (level.underwater || inHabitatWater) {
       player.vy = -characters[selectedCharacter].swimSpeed;
       tone(210, .05, "sine");
       return;
@@ -686,11 +731,18 @@
       ctx.fillStyle="rgba(240,240,220,.08)";ctx.fillRect(40,95,210,112);ctx.fillRect(530,90,190,118);
       ctx.strokeStyle="rgba(240,204,98,.18)";ctx.strokeRect(40,95,210,112);ctx.strokeRect(530,90,190,118);
     } else if (level.decor === "house") {
-      ctx.fillStyle = "rgba(255,210,185,.04)"; ctx.fillRect(0, 70, W, 430);
-      ctx.fillStyle = "#171820"; ctx.fillRect(760, 70, 200, 430);
-      ctx.strokeStyle = "rgba(239,140,115,.18)"; ctx.lineWidth = 4; ctx.strokeRect(760, 70, 200, 430);
-      ctx.fillStyle = "rgba(245,245,230,.1)"; ctx.fillRect(895, 100, 8, 265);
-      ctx.fillStyle = "rgba(80,60,50,.3)"; ctx.fillRect(70, 360, 290, 140);
+      ctx.fillStyle="#292634";ctx.fillRect(0,70,W,340);ctx.fillStyle="#3a2d2c";ctx.fillRect(0,410,W,90);
+      ctx.fillStyle="#ddd2bd";ctx.fillRect(0,399,W,11);
+      ctx.fillStyle="#101923";ctx.fillRect(82,105,210,150);ctx.strokeStyle="#806e64";ctx.lineWidth=8;ctx.strokeRect(82,105,210,150);
+      ctx.strokeStyle="#8f8177";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(187,108);ctx.lineTo(187,252);ctx.moveTo(85,180);ctx.lineTo(289,180);ctx.stroke();
+      ctx.fillStyle="#6d4051";ctx.beginPath();ctx.moveTo(57,91);ctx.quadraticCurveTo(100,145,70,284);ctx.lineTo(112,284);ctx.quadraticCurveTo(124,150,102,91);ctx.fill();ctx.beginPath();ctx.moveTo(272,91);ctx.quadraticCurveTo(248,160,268,284);ctx.lineTo(316,284);ctx.quadraticCurveTo(335,145,314,91);ctx.fill();
+      ctx.fillStyle="#493c50";roundedRect(92,330,305,118,22);ctx.fill();ctx.fillStyle="#5d4b63";roundedRect(110,300,128,83,20);ctx.fill();roundedRect(244,300,132,83,20);ctx.fill();
+      ctx.strokeStyle="#2d2831";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(242,312);ctx.lineTo(242,430);ctx.stroke();
+      ctx.fillStyle="#201b22";ctx.fillRect(455,390,240,16);ctx.fillRect(478,406,12,56);ctx.fillRect(660,406,12,56);
+      ctx.fillStyle="#5a3744";ctx.beginPath();ctx.ellipse(525,478,280,45,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#332b2c";ctx.fillRect(790,92,135,295);ctx.strokeStyle="#887060";ctx.lineWidth=5;ctx.strokeRect(790,92,135,295);for(let sy=150;sy<370;sy+=70){ctx.beginPath();ctx.moveTo(792,sy);ctx.lineTo(923,sy);ctx.stroke();}
+      ctx.strokeStyle="#806e64";ctx.lineWidth=4;ctx.strokeRect(470,105,105,78);ctx.strokeRect(600,120,92,70);
+      ctx.strokeStyle="#9d8266";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(735,185);ctx.lineTo(735,390);ctx.stroke();ctx.fillStyle="#b78c62";ctx.beginPath();ctx.moveTo(694,188);ctx.lineTo(776,188);ctx.lineTo(756,128);ctx.lineTo(714,128);ctx.closePath();ctx.fill();
     } else if (level.decor === "underwater") {
       const water = ctx.createLinearGradient(0,55,0,H);
       water.addColorStop(0,"rgba(51,194,211,.18)");water.addColorStop(1,"rgba(0,35,58,.76)");
@@ -809,8 +861,17 @@
   }
 
   function drawCeilingVine(v) {
-    const [x,y,w,h]=v;const cy=y+h/2;
+    const [x,y,w,h,kind]=v;const cy=y+h/2;
     ctx.save();ctx.lineCap="round";
+    if(kind==="curved"){
+      ctx.strokeStyle="#356b3c";ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(x,cy);
+      const sections=8,step=w/sections;
+      for(let i=0;i<sections;i++){const start=x+i*step;const end=start+step;const bend=i%2===0?18:-18;ctx.quadraticCurveTo(start+step/2,cy+bend,end,cy);}
+      ctx.stroke();
+      ctx.strokeStyle="#75a957";ctx.lineWidth=2;ctx.stroke();
+      for(let px=x+28,index=0;px<x+w-20;px+=38,index++){const py=cy+Math.sin((px-x)/w*Math.PI*8)*11;drawPlantLeaf(px,py,index%2?-.8:.8,index%2?"#4c8e48":"#65a653",19,8);}
+      ctx.restore();return;
+    }
     ctx.strokeStyle="#4b3322";ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(x,cy);ctx.bezierCurveTo(x+w*.3,cy+8,x+w*.7,cy-8,x+w,cy);ctx.stroke();
     ctx.strokeStyle="#5d8d42";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x+4,cy-3);ctx.bezierCurveTo(x+w*.32,cy+3,x+w*.66,cy-12,x+w-5,cy-2);ctx.stroke();
     for(let px=x+22,index=0;px<x+w-18;px+=42,index++){
@@ -819,6 +880,13 @@
       if(index%3===1){ctx.strokeStyle="#4b793c";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(px+8,cy);ctx.bezierCurveTo(px+17,cy+15,px+5,cy+29,px+14,cy+43);ctx.stroke();}
     }
     ctx.restore();
+  }
+
+  function ceilingVineY(v,worldX){
+    const [x,y,w,h,kind]=v;const cy=y+h/2;
+    if(kind!=="curved")return cy;
+    const progress=Math.max(0,Math.min(1,(worldX-x)/w));
+    return cy+Math.sin(progress*Math.PI*8)*11;
   }
 
   function drawPlatforms(level) {
@@ -844,7 +912,7 @@
 
   function drawExit(level) {
     const [x,y,w,h] = level.exit;
-    const remaining=Math.max(0,level.insects.length-collected);
+    const remaining=remainingCollectibles(level);
     const locked=remaining>0;
     const glow = ctx.createRadialGradient(x+w/2,y+h/2,2,x+w/2,y+h/2,70);
     glow.addColorStop(0, locked?"rgba(190,62,52,.34)":level.palette[3] + "88"); glow.addColorStop(1, "transparent");
@@ -896,6 +964,18 @@
     });
   }
 
+  function drawMice(level,time){
+    (level.mice||[]).forEach((mouse,index)=>{
+      if(mouse[2])return;const bob=Math.sin(time*.004+index)*2;
+      ctx.save();ctx.translate(mouse[0],mouse[1]+bob);
+      ctx.strokeStyle="#b99384";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-10,5);ctx.bezierCurveTo(-21,9,-25,1,-31,4);ctx.stroke();
+      ctx.fillStyle="#91817b";ctx.beginPath();ctx.ellipse(0,2,12,8,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(10,0,7,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#c7aaa0";ctx.beginPath();ctx.arc(8,-6,4,0,Math.PI*2);ctx.fill();ctx.fillStyle="#151515";ctx.beginPath();ctx.arc(13,-1,1.5,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#d8a2a2";ctx.beginPath();ctx.arc(17,2,2,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="#d8d0c8";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(15,3);ctx.lineTo(25,0);ctx.moveTo(15,4);ctx.lineTo(25,7);ctx.stroke();ctx.restore();
+    });
+  }
+
   function drawAirPockets(level, time) {
     if (!level.underwater) return;
     for (const [x,y,r] of level.airPockets || []) {
@@ -930,12 +1010,13 @@
       ctx.fillStyle="#8df4d7";ctx.beginPath();ctx.arc(15,16,2.4,0,Math.PI*2);ctx.fill();
       ctx.strokeStyle="#c84d4d";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(29,11);ctx.lineTo(30,32);ctx.stroke();
     } else if (h.type === "frenchie") {
-      ctx.fillStyle="#111315";roundedRect(23,12,h.w-29,h.h-13,11);ctx.fill();roundedRect(6,10,29,24,9);ctx.fill();
-      ctx.beginPath();ctx.moveTo(9,13);ctx.quadraticCurveTo(7,1,13,0);ctx.quadraticCurveTo(19,1,20,13);ctx.moveTo(22,13);ctx.quadraticCurveTo(23,1,29,1);ctx.quadraticCurveTo(35,3,32,15);ctx.fill();
-      ctx.fillStyle="#9b5d30";ctx.beginPath();ctx.ellipse(6,25,11,7,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(12,16,4,2.5,0,0,Math.PI*2);ctx.ellipse(26,16,4,2.5,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#111315";roundedRect(23,12,h.w-29,h.h-13,11);ctx.fill();roundedRect(8,9,27,25,9);ctx.fill();
+      ctx.beginPath();ctx.moveTo(10,13);ctx.quadraticCurveTo(8,1,14,0);ctx.quadraticCurveTo(20,1,20,13);ctx.moveTo(23,13);ctx.quadraticCurveTo(23,1,29,1);ctx.quadraticCurveTo(35,3,32,15);ctx.fill();
+      ctx.fillStyle="#9b5d30";ctx.beginPath();ctx.ellipse(8,25,8,6,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(13,16,4,2.5,0,0,Math.PI*2);ctx.ellipse(27,16,4,2.5,0,0,Math.PI*2);ctx.fill();
       ctx.fillRect(30,h.h-10,7,10);ctx.fillRect(h.w-21,h.h-10,7,10);ctx.beginPath();ctx.moveTo(39,20);ctx.lineTo(48,35);ctx.lineTo(57,35);ctx.lineTo(50,20);ctx.fill();
-      ctx.fillStyle="#050607";ctx.beginPath();ctx.ellipse(-2,23,5,4,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#050607";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(1,28);ctx.quadraticCurveTo(7,31,13,27);ctx.stroke();
-      ctx.fillStyle="#d9e6a0";ctx.beginPath();ctx.arc(13,20,1.7,0,Math.PI*2);ctx.arc(25,20,1.7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#111315";ctx.beginPath();ctx.arc(h.w-5,17,4,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#050607";ctx.beginPath();ctx.ellipse(2,23,5,4,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#050607";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(4,27);ctx.lineTo(8,29);ctx.quadraticCurveTo(12,31,16,27);ctx.stroke();
+      ctx.strokeStyle="#7a4629";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(8,19);ctx.lineTo(8,26);ctx.stroke();
+      ctx.fillStyle="#d9e6a0";ctx.beginPath();ctx.arc(14,20,1.7,0,Math.PI*2);ctx.arc(26,20,1.7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#111315";ctx.beginPath();ctx.arc(h.w-5,17,4,0,Math.PI*2);ctx.fill();
     } else if (h.type === "hand") {
       ctx.fillStyle="#c99072";roundedRect(0,5,h.w,h.h-5,10);ctx.fill();
       for(let i=0;i<4;i++){roundedRect(25+i*9,0,8,16,4);ctx.fill();}
@@ -971,17 +1052,16 @@
       ctx.strokeStyle="#8f959f";ctx.lineWidth=2;ctx.stroke();
       ctx.fillStyle="#1e2025";ctx.beginPath();ctx.ellipse(h.w/2,9,h.w*.35,8,0,0,Math.PI*2);ctx.fill();
       ctx.fillStyle="#65d9f5";ctx.beginPath();ctx.arc(h.w/2,8,3,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle="#ef8c73";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(h.w-4,h.h-7);ctx.lineTo(h.w+9,h.h-13);ctx.moveTo(h.w-4,h.h-7);ctx.lineTo(h.w+9,h.h-4);ctx.stroke();
     } else if (h.type === "slipper") {
       ctx.fillStyle="#d7aa86";roundedRect(0,0,28,h.h,9);ctx.fill();
       ctx.fillStyle="#24252a";ctx.beginPath();ctx.moveTo(17,14);ctx.quadraticCurveTo(48,5,h.w-5,19);ctx.lineTo(h.w,34);ctx.lineTo(23,34);ctx.closePath();ctx.fill();
       ctx.fillStyle="#666a73";roundedRect(26,18,h.w-34,10,5);ctx.fill();
       ctx.fillStyle="#111318";ctx.fillRect(20,h.h-6,h.w-20,6);
-    } else if (h.type === "lego") {
-      ctx.fillStyle="#e3343f";roundedRect(2,7,h.w-4,h.h-7,3);ctx.fill();
-      ctx.fillStyle="#ff5b62";
-      for(let x=9;x<h.w-5;x+=13){ctx.beginPath();ctx.ellipse(x,7,5,3,0,Math.PI,Math.PI*2);ctx.fill();}
-      ctx.strokeStyle="#9e1720";ctx.lineWidth=2;roundedRect(2,7,h.w-4,h.h-7,3);ctx.stroke();
+    } else if(h.type==="spider"){
+      ctx.strokeStyle="rgba(210,210,205,.55)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(h.w/2,-170);ctx.lineTo(h.w/2,4);ctx.stroke();
+      ctx.strokeStyle="#17151a";ctx.lineWidth=3;for(let side=-1;side<=1;side+=2){for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(h.w/2+side*5,14+i*2);ctx.lineTo(h.w/2+side*(14+i*2),6+i*6);ctx.lineTo(h.w/2+side*(20+i*2),10+i*6);ctx.stroke();}}
+      ctx.fillStyle="#242026";ctx.beginPath();ctx.ellipse(h.w/2,17,8,11,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(h.w/2,7,6,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#d66c48";ctx.beginPath();ctx.arc(h.w/2-2,5,1.3,0,Math.PI*2);ctx.arc(h.w/2+2,5,1.3,0,Math.PI*2);ctx.fill();
     } else if (h.type === "fish") {
       ctx.fillStyle="#d4a04d";ctx.beginPath();ctx.ellipse(h.w*.48,h.h*.52,h.w*.34,h.h*.34,0,0,Math.PI*2);ctx.fill();
       ctx.beginPath();ctx.moveTo(h.w*.76,h.h*.52);ctx.lineTo(h.w,h.h*.18);ctx.lineTo(h.w,h.h*.84);ctx.closePath();ctx.fill();
@@ -1052,12 +1132,12 @@
     ctx.fillStyle = green;
     ctx.beginPath(); ctx.ellipse(-1,0,20,9,0,0,Math.PI*2); ctx.fill();
     ctx.beginPath();
-    ctx.moveTo(8,-7);ctx.quadraticCurveTo(18,-11,31,-8);ctx.lineTo(35,-3);
-    ctx.lineTo(34,4);ctx.quadraticCurveTo(25,9,10,7);ctx.quadraticCurveTo(16,0,8,-7);ctx.fill();
+    ctx.moveTo(8,-7);ctx.quadraticCurveTo(19,-11,33,-8);ctx.lineTo(40,-3);
+    ctx.lineTo(39,4);ctx.quadraticCurveTo(27,9,10,7);ctx.quadraticCurveTo(16,0,8,-7);ctx.fill();
 
     // Raised eye turret and the little mouth line make the front unmistakable.
     ctx.beginPath();ctx.ellipse(25,-8,6,5,-.08,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#714b2f";ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(23,3);ctx.quadraticCurveTo(29,5,34,2);ctx.stroke();
+    ctx.strokeStyle="#714b2f";ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(24,3);ctx.quadraticCurveTo(32,6,39,2);ctx.stroke();
 
     // Eyelash crests continue from above the eye down the back.
     ctx.fillStyle=green;
@@ -1175,6 +1255,7 @@
     drawPlatforms(level);
     drawExit(level);
     drawInsects(level, time);
+    drawMice(level,time);
     drawAirPockets(level, time);
     level.hazards.forEach(hazard => drawHazard(hazard, time));
     drawDroppedTail(time);
