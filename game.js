@@ -42,11 +42,11 @@
   let audioContext = null;
 
   const characters = {
-    chameleon: { name: "CHAMELEON", ability: "TONGUE", color: "#79a94d", climbSpeed: 135, swimSpeed: 150 },
-    crested: { name: "CRESTED GECKO", ability: "DROP TAIL", color: "#d29458", climbSpeed: 195, swimSpeed: 160 },
-    newt: { name: "FIRE-BELLY NEWT", ability: "TOXIN", color: "#252a28", climbSpeed: 130, swimSpeed: 235 },
-    frog: { name: "AZUREUS DART FROG", ability: "POWER LEAP", color: "#2679cb", climbSpeed: 120, swimSpeed: 155 },
-    boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", color: "#111315", climbSpeed: 155, swimSpeed: 190 }
+    chameleon: { name: "CHAMELEON", ability: "TONGUE", color: "#79a94d", climbSpeed: 135, swimSpeed: 150, w: 42, h: 25 },
+    crested: { name: "CRESTED GECKO", ability: "DROP TAIL", color: "#d29458", climbSpeed: 195, swimSpeed: 160, w: 42, h: 25 },
+    newt: { name: "FIRE-BELLY NEWT", ability: "TOXIN", color: "#252a28", climbSpeed: 130, swimSpeed: 235, w: 46, h: 23 },
+    frog: { name: "AZUREUS DART FROG", ability: "POWER LEAP", color: "#2679cb", climbSpeed: 120, swimSpeed: 155, w: 38, h: 27 },
+    boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", color: "#030405", climbSpeed: 155, swimSpeed: 190, w: 94, h: 36 }
   };
 
   const player = {
@@ -92,7 +92,7 @@
     {
       label: "LEVEL 3 · HARD",
       title: "The House",
-      intro: "Cross the living room. A human foot patrols the floor. The Roomba has joined the hunt.",
+      intro: "Cross the living room. A human foot patrols the floor. The Roomba and French bulldog have joined the hunt.",
       completeTitle: "Behind the refrigerator.",
       completeText: "Warm. Dusty. Almost freedom. Then the filter hose gives way and the floor disappears beneath a wall of water.",
       palette: ["#111018", "#292239", "#795b44", "#ef8c73"],
@@ -103,6 +103,7 @@
       hazards: [
         {x:238,y:460,w:96,h:40,type:"slipper",axis:"x",min:210,max:490,speed:145},
         {x:550,y:413,w:72,h:32,type:"roomba",axis:"x",min:510,max:680,speed:118},
+        {x:625,y:456,w:104,h:44,type:"frenchie",axis:"x",min:600,max:755,speed:92},
         {x:800,y:474,w:56,h:26,type:"lego",axis:"none"}
       ],
       decor: "house"
@@ -185,6 +186,8 @@
   function startLevel(index) {
     levelIndex = index;
     const level = levels[index];
+    player.w = characters[selectedCharacter].w;
+    player.h = characters[selectedCharacter].h;
     level.insects.forEach(insect => insect[2] = false);
     level.hazards.forEach((hazard, i) => { hazard.dir = i % 2 ? -1 : 1; hazard.stunnedUntil = 0; });
     lives = 3;
@@ -501,7 +504,8 @@
       ctx.fillRect(18, 45, 924, 455);
       ctx.strokeStyle = "rgba(210,255,230,.15)";
       ctx.lineWidth = 5; ctx.strokeRect(18, 45, 924, 455);
-      drawLeaves(100, 345, "#245f36"); drawLeaves(740, 420, "#1d4e2e");
+      drawEnclosureTrees();
+      drawLeaves(48, 220, "#245f36");drawLeaves(665,180,"#1d4e2e");drawLeaves(720,400,"#245f36");
     } else if (level.decor === "room") {
       ctx.fillStyle = "rgba(230,240,230,.05)"; ctx.fillRect(0, 65, W, 435);
       ctx.fillStyle = "rgba(5,10,13,.38)";
@@ -536,12 +540,36 @@
     }
   }
 
+  function drawEnclosureTrees() {
+    ctx.lineCap="round";
+    ctx.strokeStyle="#3e291b";ctx.lineWidth=34;
+    ctx.beginPath();ctx.moveTo(115,500);ctx.bezierCurveTo(95,390,132,270,108,112);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(755,500);ctx.bezierCurveTo(792,390,733,300,770,185);ctx.stroke();
+    ctx.strokeStyle="#765034";ctx.lineWidth=7;
+    ctx.beginPath();ctx.moveTo(108,490);ctx.bezierCurveTo(93,380,127,270,105,120);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(758,490);ctx.bezierCurveTo(786,390,735,300,768,193);ctx.stroke();
+    ctx.strokeStyle="#4b321f";ctx.lineWidth=14;
+    ctx.beginPath();ctx.moveTo(109,245);ctx.quadraticCurveTo(190,210,280,230);ctx.moveTo(760,270);ctx.quadraticCurveTo(675,235,585,260);ctx.stroke();
+    ctx.strokeStyle="#8b6340";ctx.lineWidth=3;
+    for(let y=160;y<470;y+=54){ctx.beginPath();ctx.moveTo(94,y);ctx.lineTo(120,y-12);ctx.moveTo(746,y+4);ctx.lineTo(776,y-7);ctx.stroke();}
+  }
+
   function drawPlatforms(level) {
     for (const p of level.platforms) {
-      ctx.fillStyle = p[1] >= 490 ? "#111914" : level.palette[2];
-      roundedRect(p[0], p[1], p[2], p[3], 7); ctx.fill();
-      ctx.fillStyle = "rgba(255,255,255,.12)";
-      ctx.fillRect(p[0] + 7, p[1] + 3, Math.max(0, p[2] - 14), 2);
+      if(level.decor==="enclosure"&&p[1]<490){
+        const y=p[1]+p[3]/2;
+        ctx.strokeStyle="#51351f";ctx.lineWidth=p[3];ctx.lineCap="round";
+        ctx.beginPath();ctx.moveTo(p[0]+5,y);ctx.quadraticCurveTo(p[0]+p[2]*.48,y-7,p[0]+p[2]-5,y+2);ctx.stroke();
+        ctx.strokeStyle="#9a7047";ctx.lineWidth=3;
+        ctx.beginPath();ctx.moveTo(p[0]+10,y-4);ctx.quadraticCurveTo(p[0]+p[2]*.5,y-9,p[0]+p[2]-12,y-2);ctx.stroke();
+        ctx.strokeStyle="#624125";ctx.lineWidth=5;
+        ctx.beginPath();ctx.moveTo(p[0]+p[2]*.3,y-5);ctx.lineTo(p[0]+p[2]*.2,y-22);ctx.moveTo(p[0]+p[2]*.72,y);ctx.lineTo(p[0]+p[2]*.82,y-17);ctx.stroke();
+      }else{
+        ctx.fillStyle = p[1] >= 490 ? "#111914" : level.palette[2];
+        roundedRect(p[0], p[1], p[2], p[3], 7); ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.12)";
+        ctx.fillRect(p[0] + 7, p[1] + 3, Math.max(0, p[2] - 14), 2);
+      }
     }
     for (const v of level.vines) {
       ctx.strokeStyle = level.palette[3];
@@ -625,8 +653,24 @@
       ctx.beginPath();ctx.ellipse(8,5,7,11,-.45,0,Math.PI*2);ctx.fill();
       [[25,14,5],[42,10,4],[57,20,5],[19,23,3]].forEach(([x,y,r])=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();});
       ctx.fillRect(22,h.h-13,7,13);ctx.fillRect(h.w-29,h.h-13,7,13);
-      ctx.beginPath();ctx.arc(5,16,3,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#f1e9dd";ctx.beginPath();ctx.ellipse(4,19,11,7,-.08,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#111318";ctx.beginPath();ctx.ellipse(-2,17,5,4,0,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="#4b3b36";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(1,23);ctx.quadraticCurveTo(7,26,13,22);ctx.stroke();
       ctx.fillStyle="#7df5d0";ctx.beginPath();ctx.arc(14,12,2,0,Math.PI*2);ctx.fill();
+    } else if (h.type === "frenchie") {
+      // Black-and-tan French bulldog: compact body, bat ears, broad muzzle, and tan points.
+      ctx.fillStyle="#111315";roundedRect(20,12,h.w-30,h.h-13,13);ctx.fill();
+      roundedRect(4,10,32,29,10);ctx.fill();
+      ctx.beginPath();ctx.moveTo(7,13);ctx.lineTo(10,-4);ctx.lineTo(19,11);ctx.moveTo(22,11);ctx.lineTo(31,-3);ctx.lineTo(33,15);ctx.fill();
+      ctx.fillStyle="#9b5d30";
+      ctx.beginPath();ctx.ellipse(7,27,13,9,-.08,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.ellipse(10,15,5,3,0,0,Math.PI*2);ctx.ellipse(25,15,5,3,0,0,Math.PI*2);ctx.fill();
+      ctx.fillRect(29,h.h-13,9,13);ctx.fillRect(h.w-30,h.h-13,9,13);
+      ctx.beginPath();ctx.moveTo(43,20);ctx.lineTo(57,39);ctx.lineTo(68,39);ctx.lineTo(59,20);ctx.fill();
+      ctx.fillStyle="#050607";ctx.beginPath();ctx.ellipse(-2,25,6,5,0,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="#050607";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(1,31);ctx.quadraticCurveTo(8,35,16,30);ctx.stroke();
+      ctx.fillStyle="#d9e6a0";ctx.beginPath();ctx.arc(12,20,2,0,Math.PI*2);ctx.arc(25,20,2,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#111315";ctx.beginPath();ctx.arc(h.w-7,17,6,0,Math.PI*2);ctx.fill();
     } else if (h.type === "hand") {
       ctx.fillStyle="#c99072";roundedRect(0,5,h.w,h.h-5,10);ctx.fill();
       for(let i=0;i<4;i++){roundedRect(25+i*9,0,8,16,4);ctx.fill();}
@@ -804,11 +848,14 @@
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
     const dark=characters.boa.color;
     if(now<constrictPulseUntil){const pulse=1-(constrictPulseUntil-now)/360;ctx.strokeStyle=`rgba(182,190,200,${.8-pulse*.7})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,27+pulse*28,0,Math.PI*2);ctx.stroke();}
-    ctx.strokeStyle=dark;ctx.lineWidth=10;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-45,4);ctx.bezierCurveTo(-33,-12,-19,13,-6,0);ctx.bezierCurveTo(6,-12,15,8,24,-1);ctx.stroke();
-    ctx.strokeStyle="#3e4247";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-40,2);ctx.bezierCurveTo(-28,-8,-18,10,-6,-1);ctx.bezierCurveTo(5,-10,14,6,24,-2);ctx.stroke();
-    ctx.fillStyle=dark;ctx.beginPath();ctx.moveTo(18,-9);ctx.lineTo(34,-7);ctx.lineTo(37,0);ctx.lineTo(31,7);ctx.lineTo(18,6);ctx.closePath();ctx.fill();
-    ctx.fillStyle="#aeb56c";ctx.beginPath();ctx.arc(30,-4,2,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#6f747b";ctx.lineWidth=1.5;for(let x=-34;x<18;x+=10){ctx.beginPath();ctx.moveTo(x,-3);ctx.lineTo(x+4,4);ctx.stroke();}
+    ctx.strokeStyle=dark;ctx.lineWidth=15;ctx.lineCap="round";
+    ctx.beginPath();ctx.moveTo(-64,5);ctx.bezierCurveTo(-50,-14,-31,15,-15,0);ctx.bezierCurveTo(1,-15,11,10,24,-1);ctx.stroke();
+    ctx.fillStyle=dark;
+    ctx.beginPath();ctx.moveTo(15,-11);ctx.quadraticCurveTo(34,-14,48,-8);ctx.lineTo(54,-1);ctx.lineTo(49,8);ctx.quadraticCurveTo(33,13,16,9);ctx.lineTo(9,3);ctx.lineTo(11,-6);ctx.closePath();ctx.fill();
+    ctx.strokeStyle="#383b3e";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(19,8);ctx.quadraticCurveTo(35,12,49,6);ctx.stroke();
+    ctx.fillStyle="#d0a85d";ctx.beginPath();ctx.ellipse(39,-5,3,2.2,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#070707";ctx.beginPath();ctx.ellipse(40,-5,1,2,0,0,Math.PI*2);ctx.arc(49,-1,1.5,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#bd3c48";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(52,4);ctx.lineTo(65,7);ctx.moveTo(65,7);ctx.lineTo(70,4);ctx.moveTo(65,7);ctx.lineTo(69,11);ctx.stroke();
     ctx.restore();ctx.globalAlpha=1;
   }
 
