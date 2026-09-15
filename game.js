@@ -34,6 +34,9 @@
   let toxinActiveUntil = 0;
   let toxinReady = true;
   let air = 100;
+  let leapCooldownUntil = 0;
+  let constrictCooldownUntil = 0;
+  let constrictPulseUntil = 0;
   let selectedCharacter = "crested";
   let soundOn = true;
   let audioContext = null;
@@ -41,7 +44,9 @@
   const characters = {
     chameleon: { name: "CHAMELEON", ability: "TONGUE", color: "#79a94d", climbSpeed: 135, swimSpeed: 150 },
     crested: { name: "CRESTED GECKO", ability: "DROP TAIL", color: "#d29458", climbSpeed: 195, swimSpeed: 160 },
-    newt: { name: "FIRE-BELLY NEWT", ability: "TOXIN", color: "#252a28", climbSpeed: 130, swimSpeed: 235 }
+    newt: { name: "FIRE-BELLY NEWT", ability: "TOXIN", color: "#252a28", climbSpeed: 130, swimSpeed: 235 },
+    frog: { name: "AZUREUS DART FROG", ability: "POWER LEAP", color: "#2679cb", climbSpeed: 120, swimSpeed: 155 },
+    boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", color: "#111315", climbSpeed: 155, swimSpeed: 190 }
   };
 
   const player = {
@@ -63,7 +68,7 @@
       platforms: [[0,500,960,40],[45,458,190,22],[262,404,190,20],[500,342,185,20],[712,270,190,20],[790,154,150,20]],
       vines: [[215,328,20,135],[456,273,20,135],[680,204,20,140]],
       insects: [[330,370],[570,308],[840,230]],
-      hazards: [{x:420,y:454,w:82,h:46,type:"grab",axis:"x",min:330,max:620,speed:82}],
+      hazards: [{x:420,y:430,w:92,h:70,type:"grab",axis:"x",min:330,max:610,speed:82}],
       decor: "enclosure"
     },
     {
@@ -162,7 +167,7 @@
   function showCharacterSelect() {
     state = "character-select";
     panelKicker.textContent = "CHOOSE YOUR ESCAPE ARTIST";
-    panelTitle.textContent = "Three animals. Three bad decisions.";
+    panelTitle.textContent = "Five animals. Five bad decisions.";
     panelText.textContent = "Each character has a different ability. Your choice lasts for all four levels.";
     primaryButton.classList.add("hidden");
     secondaryButton.classList.add("hidden");
@@ -181,13 +186,16 @@
     levelIndex = index;
     const level = levels[index];
     level.insects.forEach(insect => insect[2] = false);
-    level.hazards.forEach((hazard, i) => { hazard.dir = i % 2 ? -1 : 1; });
+    level.hazards.forEach((hazard, i) => { hazard.dir = i % 2 ? -1 : 1; hazard.stunnedUntil = 0; });
     lives = 3;
     collected = 0;
     tailReady = true;
     toxinReady = true;
     toxinActiveUntil = 0;
     air = 100;
+    leapCooldownUntil = 0;
+    constrictCooldownUntil = 0;
+    constrictPulseUntil = 0;
     tongueActiveUntil = 0;
     tongueCooldownUntil = 0;
     droppedTail = null;
@@ -229,6 +237,10 @@
       abilityLabel.textContent = `TAIL ${tailReady ? "READY" : "GONE"}`;
     } else if (selectedCharacter === "newt") {
       abilityLabel.textContent = `TOXIN ${toxinReady ? "READY" : "USED"}`;
+    } else if (selectedCharacter === "frog") {
+      abilityLabel.textContent = performance.now() >= leapCooldownUntil ? "POWER LEAP READY" : "LEAP RECHARGING";
+    } else if (selectedCharacter === "boa") {
+      abilityLabel.textContent = performance.now() >= constrictCooldownUntil ? "CONSTRICT READY" : "CONSTRICT RECHARGING";
     } else {
       abilityLabel.textContent = "TONGUE READY";
     }
@@ -281,10 +293,44 @@
     tone(155, .18, "sawtooth");
   }
 
+  function usePowerLeap() {
+    const now = performance.now();
+    if (state !== "playing" || selectedCharacter !== "frog" || now < leapCooldownUntil) return;
+    leapCooldownUntil = now + 950;
+    player.vy = levels[levelIndex].underwater ? -characters.frog.swimSpeed * 1.55 : -620;
+    player.vx += player.facing * 170;
+    player.grounded = false;
+    updateHud();
+    tone(360, .1, "triangle");
+  }
+
+  function useConstrict() {
+    const now = performance.now();
+    if (state !== "playing" || selectedCharacter !== "boa" || now < constrictCooldownUntil) return;
+    const level = levels[levelIndex];
+    const px = player.x + player.w / 2;
+    const py = player.y + player.h / 2;
+    let target = null;
+    let nearest = 155;
+    for (const hazard of level.hazards) {
+      if (hazard.axis !== "x") continue;
+      const distance = Math.hypot(px - (hazard.x + hazard.w / 2), py - (hazard.y + hazard.h / 2));
+      if (distance < nearest) { nearest = distance; target = hazard; }
+    }
+    constrictPulseUntil = now + 360;
+    if (!target) { tone(92, .08, "square"); return; }
+    target.stunnedUntil = now + 3500;
+    constrictCooldownUntil = now + 4600;
+    updateHud();
+    tone(105, .22, "sawtooth");
+  }
+
   function useAbility() {
     if (selectedCharacter === "chameleon") useTongue();
     else if (selectedCharacter === "crested") dropTail();
-    else useToxin();
+    else if (selectedCharacter === "newt") useToxin();
+    else if (selectedCharacter === "frog") usePowerLeap();
+    else useConstrict();
   }
 
   function intersects(a, b) {
@@ -312,6 +358,7 @@
     const up = keys.ArrowUp || keys.KeyW || keys.touchJump;
     const down = keys.ArrowDown || keys.KeyS;
     const speed = level.underwater ? character.swimSpeed : levelIndex === 2 ? 236 : 220;
+    if (selectedCharacter === "frog" || selectedCharacter === "boa") updateHud();
 
     const acceleration = level.underwater ? 720 : 1450;
     if (left) { player.vx -= acceleration * dt; player.facing = -1; }
@@ -374,7 +421,7 @@
     }
 
     for (const hazard of level.hazards) {
-      if (hazard.axis === "x") {
+      if (hazard.axis === "x" && now >= (hazard.stunnedUntil || 0)) {
         hazard.x += hazard.speed * hazard.dir * dt;
         if (hazard.x < hazard.min || hazard.x > hazard.max) {
           hazard.x = Math.max(hazard.min, Math.min(hazard.max, hazard.x));
@@ -420,7 +467,7 @@
       return;
     }
     if (player.grounded || player.climbing) {
-      player.vy = -455;
+      player.vy = selectedCharacter === "frog" ? -535 : -455;
       player.grounded = false;
       tone(245, .05, "triangle");
     }
@@ -559,9 +606,10 @@
     }
   }
 
-  function drawHazard(h) {
+  function drawHazard(h, now = 0) {
     ctx.save();
     ctx.translate(h.x, h.y);
+    if (now < (h.stunnedUntil || 0)) ctx.globalAlpha = .48;
     if (h.type === "cat") {
       ctx.fillStyle="#151416";roundedRect(0,4,h.w,h.h-4,9);ctx.fill();
       ctx.beginPath();ctx.moveTo(8,7);ctx.lineTo(13,-4);ctx.lineTo(20,7);ctx.fill();
@@ -583,15 +631,17 @@
       ctx.fillStyle="#c99072";roundedRect(0,5,h.w,h.h-5,10);ctx.fill();
       for(let i=0;i<4;i++){roundedRect(25+i*9,0,8,16,4);ctx.fill();}
     } else if (h.type === "grab") {
-      // A side-on reaching hand: wrist, palm, four fingers, thumb, and fingernails.
-      ctx.fillStyle="#c99072";roundedRect(0,17,45,25,11);ctx.fill();
-      roundedRect(24,10,31,31,13);ctx.fill();
-      const fingers=[[43,4,38,9],[46,13,36,9],[45,22,33,9],[41,31,27,9]];
-      fingers.forEach(([x,y,w,ht])=>{roundedRect(x,y,w,ht,5);ctx.fill();});
-      ctx.save();ctx.translate(29,36);ctx.rotate(-.48);roundedRect(0,0,28,10,5);ctx.fill();ctx.restore();
+      // Top-down open hand. Five spread digits should finally end the foot allegations.
+      ctx.fillStyle="#c99072";
+      roundedRect(33,50,27,24,8);ctx.fill();
+      roundedRect(23,24,48,40,17);ctx.fill();
+      const fingers=[[18,7,12,31,-.12],[32,1,12,35,-.03],[46,0,12,37,.02],[60,5,11,31,.10]];
+      fingers.forEach(([x,y,w,ht,angle])=>{ctx.save();ctx.translate(x+w/2,y+ht);ctx.rotate(angle);roundedRect(-w/2,-ht,w,ht,6);ctx.fill();ctx.restore();});
+      ctx.save();ctx.translate(24,38);ctx.rotate(-.68);roundedRect(-5,-4,30,12,6);ctx.fill();ctx.restore();
       ctx.fillStyle="#e9b69a";
-      fingers.forEach(([x,y,w,ht])=>{roundedRect(x+w-8,y+2,6,ht-4,3);ctx.fill();});
-      ctx.strokeStyle="#9d644e";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(25,18);ctx.quadraticCurveTo(35,22,38,31);ctx.stroke();
+      [[24,10],[38,5],[52,4],[65,10]].forEach(([x,y])=>{roundedRect(x-4,y,8,8,4);ctx.fill();});
+      ctx.strokeStyle="#9d644e";ctx.lineWidth=1.4;
+      ctx.beginPath();ctx.arc(47,43,13,.2,2.9);ctx.moveTo(35,54);ctx.quadraticCurveTo(47,48,59,54);ctx.stroke();
     } else if (h.type === "foodBowl") {
       // A tipped feeding cup with a visible brown puddle, rather than a white mystery brick.
       ctx.fillStyle="#7a5632";ctx.beginPath();ctx.ellipse(h.w*.62,h.h-5,h.w*.38,8,-.08,0,Math.PI*2);ctx.fill();
@@ -630,6 +680,9 @@
       for(let y=9;y<h.h-5;y+=8)ctx.fillRect(13,y,h.w-26,3);
       ctx.strokeStyle="rgba(196,249,255,.7)";ctx.lineWidth=2;
       for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(12+i*19,-8-i*4,4,0,Math.PI*2);ctx.stroke();}
+    }
+    if (now < (h.stunnedUntil || 0)) {
+      ctx.globalAlpha = 1;ctx.fillStyle="#d4e5ff";ctx.font="bold 9px system-ui";ctx.textAlign="center";ctx.fillText("CONSTRICTED",h.w/2,-7);
     }
     ctx.restore();
   }
@@ -731,9 +784,39 @@
     ctx.restore();ctx.globalAlpha=1;
   }
 
+  function drawFrog(now) {
+    const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;
+    if(flash)ctx.globalAlpha=.4;
+    ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
+    const blue=characters.frog.color;
+    ctx.strokeStyle=blue;ctx.lineWidth=6;ctx.lineCap="round";
+    ctx.beginPath();ctx.moveTo(-8,5);ctx.lineTo(-22,14);ctx.lineTo(-31,10);ctx.moveTo(7,6);ctx.lineTo(20,15);ctx.lineTo(29,11);ctx.stroke();
+    ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-7,-3);ctx.lineTo(-18,-10);ctx.lineTo(-24,-8);ctx.moveTo(9,-3);ctx.lineTo(19,-9);ctx.lineTo(25,-7);ctx.stroke();
+    ctx.fillStyle=blue;ctx.beginPath();ctx.ellipse(0,3,18,12,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(12,-5,15,10,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#0a1830";[[-8,1,4],[2,7,3],[13,1,4],[20,-7,3],[-1,-5,3]].forEach(([x,y,r])=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();});
+    ctx.fillStyle="#d8e9a0";ctx.beginPath();ctx.arc(18,-9,3.6,0,Math.PI*2);ctx.fill();ctx.fillStyle="#10171a";ctx.beginPath();ctx.arc(19,-9,1.7,0,Math.PI*2);ctx.fill();
+    ctx.restore();ctx.globalAlpha=1;
+  }
+
+  function drawBoa(now) {
+    const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;
+    if(flash)ctx.globalAlpha=.4;
+    ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
+    const dark=characters.boa.color;
+    if(now<constrictPulseUntil){const pulse=1-(constrictPulseUntil-now)/360;ctx.strokeStyle=`rgba(182,190,200,${.8-pulse*.7})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,27+pulse*28,0,Math.PI*2);ctx.stroke();}
+    ctx.strokeStyle=dark;ctx.lineWidth=10;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-45,4);ctx.bezierCurveTo(-33,-12,-19,13,-6,0);ctx.bezierCurveTo(6,-12,15,8,24,-1);ctx.stroke();
+    ctx.strokeStyle="#3e4247";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-40,2);ctx.bezierCurveTo(-28,-8,-18,10,-6,-1);ctx.bezierCurveTo(5,-10,14,6,24,-2);ctx.stroke();
+    ctx.fillStyle=dark;ctx.beginPath();ctx.moveTo(18,-9);ctx.lineTo(34,-7);ctx.lineTo(37,0);ctx.lineTo(31,7);ctx.lineTo(18,6);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#aeb56c";ctx.beginPath();ctx.arc(30,-4,2,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#6f747b";ctx.lineWidth=1.5;for(let x=-34;x<18;x+=10){ctx.beginPath();ctx.moveTo(x,-3);ctx.lineTo(x+4,4);ctx.stroke();}
+    ctx.restore();ctx.globalAlpha=1;
+  }
+
   function drawPlayer(now) {
     if (selectedCharacter === "chameleon") drawChameleon(now);
     else if (selectedCharacter === "newt") drawNewt(now);
+    else if (selectedCharacter === "frog") drawFrog(now);
+    else if (selectedCharacter === "boa") drawBoa(now);
     else drawCrestedGecko(now);
   }
 
@@ -744,7 +827,7 @@
     drawExit(level);
     drawInsects(level, time);
     drawAirPockets(level, time);
-    level.hazards.forEach(drawHazard);
+    level.hazards.forEach(hazard => drawHazard(hazard, time));
     drawDroppedTail(time);
     drawPlayer(time);
   }

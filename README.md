@@ -18,4 +18,4 @@ Collect three insects per level, avoid hazards, and reach the exit. The game run
 3. The House
 4. The Aquarium
 
-Choose a chameleon, crested gecko, or Chinese fire-bellied newt. Each has a different ability, because equal opportunity does not mean equal biology.
+Choose a chameleon, crested gecko, Chinese fire-bellied newt, Azureus dart frog, or black Colombian boa. Each has a different ability, because equal opportunity does not mean equal biology.
