@@ -226,6 +226,7 @@ canvas {
 }
 
 .touch-controls .ability-control { width: 88px; color: #ffcab0; font-size: .62rem; }
+.touch-controls .tongue-control { width: 72px; color: #ff9eb8; font-size: .62rem; }
 .touch-controls button:active { background: var(--acid-dark); transform: translateY(1px); }
 .hidden { display: none !important; }
 

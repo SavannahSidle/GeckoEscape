@@ -46,7 +46,7 @@
               <button type="button" class="character-card" data-character="frog">
                 <span class="character-icon frog-icon" aria-hidden="true">●</span>
                 <strong>AZUREUS DART FROG</strong>
-                <small>Highest natural jump. Power-leaps through the air.</small>
+                <small>Power-leaps through the air and catches prey with its tongue.</small>
               </button>
               <button type="button" class="character-card" data-character="boa">
                 <span class="character-icon boa-icon" aria-hidden="true">≈</span>
@@ -68,11 +68,12 @@
       </section>
 
       <div class="controls-row">
-        <p class="keyboard-help"><strong>MOVE</strong> WASD / ARROWS &nbsp; <strong>JUMP</strong> SPACE &nbsp; <strong>ABILITY</strong> E / SHIFT</p>
+        <p class="keyboard-help"><strong>MOVE</strong> WASD / ARROWS &nbsp; <strong>JUMP</strong> SPACE &nbsp; <strong>ACTION</strong> E &nbsp; <strong>SPECIAL</strong> SHIFT</p>
         <div class="touch-controls" aria-label="Touch controls">
           <button type="button" data-control="left" aria-label="Move left">◀</button>
           <button type="button" data-control="right" aria-label="Move right">▶</button>
           <button type="button" data-control="jump" aria-label="Jump">↑</button>
+          <button id="tongueButton" type="button" data-control="tongue" class="tongue-control hidden" aria-label="Use tongue">TONGUE</button>
           <button id="abilityButton" type="button" data-control="ability" class="ability-control" aria-label="Use character ability">ABILITY</button>
         </div>
       </div>

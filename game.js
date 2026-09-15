@@ -17,6 +17,7 @@
   const lifeLabel = document.querySelector("#lifeLabel");
   const soundButton = document.querySelector("#soundButton");
   const abilityButton = document.querySelector("#abilityButton");
+  const tongueButton = document.querySelector("#tongueButton");
 
   const W = canvas.width;
   const H = canvas.height;
@@ -42,11 +43,11 @@
   let audioContext = null;
 
   const characters = {
-    chameleon: { name: "CHAMELEON", ability: "TONGUE", color: "#79a94d", climbSpeed: 135, swimSpeed: 150, w: 42, h: 25 },
-    crested: { name: "CRESTED GECKO", ability: "DROP TAIL", color: "#d29458", climbSpeed: 195, swimSpeed: 160, w: 42, h: 25 },
-    newt: { name: "FIRE-BELLY NEWT", ability: "TOXIN", color: "#252a28", climbSpeed: 130, swimSpeed: 235, w: 46, h: 23 },
-    frog: { name: "AZUREUS DART FROG", ability: "POWER LEAP", color: "#2679cb", climbSpeed: 120, swimSpeed: 155, w: 38, h: 27 },
-    boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", color: "#030405", climbSpeed: 155, swimSpeed: 190, w: 94, h: 36 }
+    chameleon: { name: "CHAMELEON", ability: "TONGUE", collectible: "CRICKETS", color: "#79a94d", climbSpeed: 135, swimSpeed: 150, w: 42, h: 25 },
+    crested: { name: "CRESTED GECKO", ability: "DROP TAIL", collectible: "ROACHES", color: "#d29458", climbSpeed: 195, swimSpeed: 160, w: 42, h: 25 },
+    newt: { name: "FIRE-BELLY NEWT", ability: "TOXIN", collectible: "WORMS", color: "#252a28", climbSpeed: 130, swimSpeed: 235, w: 46, h: 23 },
+    frog: { name: "AZUREUS DART FROG", ability: "POWER LEAP", collectible: "FRUIT FLIES", color: "#2679cb", climbSpeed: 120, swimSpeed: 155, w: 38, h: 27 },
+    boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", collectible: "RATS", color: "#030405", climbSpeed: 155, swimSpeed: 190, w: 94, h: 36 }
   };
 
   const player = {
@@ -73,8 +74,8 @@
     },
     {
       label: "LEVEL 2 · MEDIUM",
-      title: "The Reptile Room",
-      intro: "Reach the doorway. Avoid the cat, the Dalmatian, and the spilled gecko food that has achieved structural permanence.",
+      title: "The Kitchen",
+      intro: "Cross the counters and open shelves. Avoid the cat, the Dalmatian, and the armed mousetrap on the floor.",
       completeTitle: "You have breached containment.",
       completeText: "The house stretches before you. Somewhere in the dark, a refrigerator hums like destiny.",
       palette: ["#0c1117", "#1d2830", "#754f31", "#f0cc62"],
@@ -84,10 +85,10 @@
       insects: [[420,355],[120,161],[620,120]],
       hazards: [
         {x:650,y:303,w:66,h:24,type:"cat",axis:"x",min:620,max:820,speed:105},
-        {x:286,y:476,w:76,h:24,type:"foodBowl",axis:"none"},
-        {x:125,y:156,w:82,h:40,type:"dalmatian",axis:"x",min:60,max:170,speed:78}
+        {x:286,y:468,w:76,h:32,type:"mouseTrap",axis:"none"},
+        {x:125,y:152,w:88,h:44,type:"dalmatian",axis:"x",min:60,max:165,speed:78}
       ],
-      decor: "room"
+      decor: "kitchen"
     },
     {
       label: "LEVEL 3 · HARD",
@@ -103,7 +104,7 @@
       hazards: [
         {x:238,y:460,w:96,h:40,type:"slipper",axis:"x",min:210,max:490,speed:145},
         {x:550,y:413,w:72,h:32,type:"roomba",axis:"x",min:510,max:680,speed:118},
-        {x:625,y:456,w:104,h:44,type:"frenchie",axis:"x",min:600,max:755,speed:92},
+        {x:645,y:464,w:78,h:36,type:"frenchie",axis:"x",min:610,max:760,speed:92},
         {x:800,y:474,w:56,h:26,type:"lego",axis:"none"}
       ],
       decor: "house"
@@ -129,6 +130,54 @@
       underwater: true
     }
   ];
+
+  const habitatConfigs = {
+    chameleon: {
+      title:"The Screen Enclosure",habitat:"chameleon",palette:["#08150c","#17351d","#6b4a2b","#8bd85c"],
+      intro:"The screen door is loose. Cross the ficus branches and leave before anyone notices the suspiciously empty vine.",
+      start:[70,420],exit:[870,410,48,90],
+      platforms:[[0,500,960,40],[42,452,190,20],[275,392,175,20],[510,330,190,20],[735,264,180,20],[570,180,165,18]],
+      vines:[[225,315,18,140],[465,255,18,140],[720,190,18,145]],insects:[[330,355],[590,292],[810,225]],
+      hazards:[{x:430,y:430,w:92,h:70,type:"grab",axis:"x",min:340,max:620,speed:82}]
+    },
+    crested: {
+      title:"The Arboreal Terrarium",habitat:"crested",palette:["#07150f","#123120","#6f4d2c","#a9f576"],
+      intro:"The glass door is open. Cross the cork and branches, then make your first terrible decision.",
+      start:[55,433],exit:[870,410,48,90],
+      platforms:[[0,500,960,40],[45,458,190,22],[262,404,190,20],[500,342,185,20],[712,270,190,20],[790,154,150,20]],
+      vines:[[215,328,20,135],[456,273,20,135],[680,204,20,140]],insects:[[330,370],[570,308],[840,230]],
+      hazards:[{x:420,y:430,w:92,h:70,type:"grab",axis:"x",min:330,max:610,speed:82}]
+    },
+    newt: {
+      title:"The Paludarium",habitat:"newt",palette:["#07151a","#153b3d","#536b50","#65d6c4"],
+      intro:"The lid has shifted above the shoreline. Climb from water to stone and investigate this administrative failure.",
+      start:[112,445],exit:[870,410,48,90],
+      platforms:[[0,500,960,40],[55,458,220,22],[310,422,150,18],[490,372,170,18],[690,320,180,18],[760,232,150,18]],
+      vines:[[280,345,18,118],[650,260,18,130],[845,165,18,155]],insects:[[350,390],[560,338],[800,285]],
+      hazards:[{x:465,y:430,w:92,h:70,type:"grab",axis:"x",min:380,max:640,speed:76}]
+    },
+    frog: {
+      title:"The Planted Vivarium",habitat:"frog",palette:["#061810","#164528","#67502d","#74df79"],
+      intro:"A bromeliad has reached the door. Leap through the leaves before the human arrives with entirely too much concern.",
+      start:[170,430],exit:[870,410,48,90],
+      platforms:[[0,500,960,40],[75,455,175,20],[285,405,145,18],[465,350,150,18],[650,295,160,18],[780,215,145,18]],
+      vines:[[250,320,18,140],[610,245,18,120],[760,155,18,145]],insects:[[330,370],[535,315],[825,180]],
+      hazards:[{x:450,y:430,w:92,h:70,type:"grab",axis:"x",min:350,max:630,speed:84}]
+    },
+    boa: {
+      title:"The Boa Enclosure",habitat:"boa",palette:["#0b100d","#242a20","#62472d","#a0b37b"],
+      intro:"The sliding door is open. Follow the heavy logs toward freedom, dignity, and several poorly secured feeder rats.",
+      start:[38,430],exit:[870,410,48,90],
+      platforms:[[0,500,960,40],[35,454,245,26],[315,410,210,25],[560,360,220,25],[760,292,170,24],[600,212,175,22]],
+      vines:[[285,325,22,130],[535,285,22,125],[800,215,22,110]],insects:[[365,373],[640,322],[835,255]],
+      hazards:[{x:455,y:430,w:92,h:70,type:"grab",axis:"x",min:350,max:630,speed:70}]
+    }
+  };
+
+  function applyCharacterHabitat() {
+    const habitat = habitatConfigs[selectedCharacter];
+    Object.assign(levels[0], JSON.parse(JSON.stringify(habitat)), {label:"LEVEL 1 · EASY",decor:"enclosure",completeTitle:"The room is larger than expected.",completeText:"Freedom contains shelves, suspicious noises, and absolutely no climate control."});
+  }
 
   function tone(frequency, duration = 0.08, type = "sine") {
     if (!soundOn) return;
@@ -233,7 +282,7 @@
 
   function updateHud() {
     const character = characters[selectedCharacter];
-    bugLabel.textContent = `BUGS ${collected}/3`;
+    bugLabel.textContent = `${character.collectible} ${collected}/3`;
     if (levels[levelIndex]?.underwater && selectedCharacter !== "newt") {
       abilityLabel.textContent = `AIR ${Math.max(0, Math.ceil(air))}% · ${character.ability}`;
     } else if (selectedCharacter === "crested") {
@@ -249,6 +298,7 @@
     }
     abilityButton.textContent = character.ability;
     abilityButton.setAttribute("aria-label", `Use ${character.ability.toLowerCase()} ability`);
+    tongueButton.classList.toggle("hidden", selectedCharacter !== "frog");
     lifeLabel.textContent = "♥ ".repeat(Math.max(0, lives)).trim();
   }
 
@@ -270,14 +320,14 @@
 
   function useTongue() {
     const now = performance.now();
-    if (state !== "playing" || selectedCharacter !== "chameleon" || now < tongueCooldownUntil) return;
+    if (state !== "playing" || !["chameleon","frog"].includes(selectedCharacter) || now < tongueCooldownUntil) return;
     tongueActiveUntil = now + 230;
     tongueCooldownUntil = now + 520;
     tone(610, .045, "sine");
   }
 
   function tongueHitbox(now) {
-    if (selectedCharacter !== "chameleon" || now >= tongueActiveUntil) return null;
+    if (!["chameleon","frog"].includes(selectedCharacter) || now >= tongueActiveUntil) return null;
     const reach = 112;
     return {
       x: player.facing > 0 ? player.x + player.w - 3 : player.x - reach + 3,
@@ -505,13 +555,24 @@
       ctx.strokeStyle = "rgba(210,255,230,.15)";
       ctx.lineWidth = 5; ctx.strokeRect(18, 45, 924, 455);
       drawEnclosureTrees();
+      drawHabitatDetails(level);
       drawLeaves(48, 220, "#245f36");drawLeaves(665,180,"#1d4e2e");drawLeaves(720,400,"#245f36");
-    } else if (level.decor === "room") {
-      ctx.fillStyle = "rgba(230,240,230,.05)"; ctx.fillRect(0, 65, W, 435);
-      ctx.fillStyle = "rgba(5,10,13,.38)";
-      for (let x = 35; x < W; x += 205) ctx.fillRect(x, 120, 155, 330);
-      ctx.strokeStyle = "rgba(240,204,98,.13)"; ctx.lineWidth = 4;
-      for (let x = 35; x < W; x += 205) ctx.strokeRect(x, 120, 155, 330);
+    } else if (level.decor === "kitchen") {
+      ctx.fillStyle="#20272b";ctx.fillRect(0,70,W,430);
+      for(let y=86;y<322;y+=36){for(let x=(y/36)%2?0:36;x<W;x+=72){ctx.fillStyle="rgba(240,232,205,.055)";ctx.fillRect(x,y,35,35);}}
+      ctx.fillStyle="#171d20";ctx.fillRect(0,344,W,156);
+      ctx.fillStyle="#695541";ctx.fillRect(0,326,W,22);
+      ctx.fillStyle="#b69a76";ctx.fillRect(0,326,W,5);
+      ctx.strokeStyle="rgba(240,204,98,.16)";ctx.lineWidth=3;
+      for(let x=15;x<760;x+=150){ctx.strokeRect(x,360,130,130);ctx.beginPath();ctx.arc(x+112,422,3,0,Math.PI*2);ctx.stroke();}
+      ctx.fillStyle="#11171a";ctx.fillRect(360,344,150,156);ctx.strokeStyle="#778087";ctx.strokeRect(375,374,120,105);
+      ctx.fillStyle="#2c3337";for(let i=0;i<4;i++){ctx.beginPath();ctx.arc(385+i*34,337,10,0,Math.PI*2);ctx.fill();}
+      ctx.fillStyle="#90979a";ctx.fillRect(120,322,150,7);ctx.fillStyle="#0b1215";ctx.beginPath();ctx.ellipse(195,326,52,13,0,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="#9ca4a5";ctx.lineWidth=5;ctx.beginPath();ctx.arc(195,307,18,Math.PI,Math.PI*2);ctx.stroke();
+      ctx.fillStyle="#22282b";ctx.fillRect(775,68,185,432);ctx.strokeStyle="#92999d";ctx.lineWidth=4;ctx.strokeRect(779,72,177,424);ctx.beginPath();ctx.moveTo(779,235);ctx.lineTo(956,235);ctx.stroke();
+      ctx.fillStyle="#aeb5b6";ctx.fillRect(802,116,5,85);ctx.fillRect(802,270,5,115);
+      ctx.fillStyle="rgba(240,240,220,.08)";ctx.fillRect(40,95,210,112);ctx.fillRect(530,90,190,118);
+      ctx.strokeStyle="rgba(240,204,98,.18)";ctx.strokeRect(40,95,210,112);ctx.strokeRect(530,90,190,118);
     } else if (level.decor === "house") {
       ctx.fillStyle = "rgba(255,210,185,.04)"; ctx.fillRect(0, 70, W, 430);
       ctx.fillStyle = "#171820"; ctx.fillRect(760, 70, 200, 430);
@@ -541,17 +602,33 @@
   }
 
   function drawEnclosureTrees() {
-    ctx.lineCap="round";
-    ctx.strokeStyle="#3e291b";ctx.lineWidth=34;
-    ctx.beginPath();ctx.moveTo(115,500);ctx.bezierCurveTo(95,390,132,270,108,112);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(755,500);ctx.bezierCurveTo(792,390,733,300,770,185);ctx.stroke();
-    ctx.strokeStyle="#765034";ctx.lineWidth=7;
-    ctx.beginPath();ctx.moveTo(108,490);ctx.bezierCurveTo(93,380,127,270,105,120);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(758,490);ctx.bezierCurveTo(786,390,735,300,768,193);ctx.stroke();
-    ctx.strokeStyle="#4b321f";ctx.lineWidth=14;
-    ctx.beginPath();ctx.moveTo(109,245);ctx.quadraticCurveTo(190,210,280,230);ctx.moveTo(760,270);ctx.quadraticCurveTo(675,235,585,260);ctx.stroke();
-    ctx.strokeStyle="#8b6340";ctx.lineWidth=3;
-    for(let y=160;y<470;y+=54){ctx.beginPath();ctx.moveTo(94,y);ctx.lineTo(120,y-12);ctx.moveTo(746,y+4);ctx.lineTo(776,y-7);ctx.stroke();}
+    ctx.save();ctx.globalAlpha=.2;ctx.lineCap="round";
+    for(const [x,bend,height] of [[70,-18,390],[235,22,330],[430,-26,420],[650,18,350],[845,-16,410]]){
+      ctx.strokeStyle="#26342b";ctx.lineWidth=28;ctx.beginPath();ctx.moveTo(x,500);ctx.bezierCurveTo(x+bend,390,x-bend,250,x+bend*.4,500-height);ctx.stroke();
+      ctx.strokeStyle="#526453";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(x-3,490);ctx.bezierCurveTo(x+bend-4,385,x-bend-4,255,x+bend*.4-3,510-height);ctx.stroke();
+      ctx.strokeStyle="#2c3a30";ctx.lineWidth=11;ctx.beginPath();ctx.moveTo(x,260);ctx.quadraticCurveTo(x+55,225,x+105,242);ctx.moveTo(x,330);ctx.quadraticCurveTo(x-50,300,x-92,315);ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawHabitatDetails(level) {
+    ctx.save();ctx.globalAlpha=.7;
+    if(level.habitat==="chameleon"){
+      ctx.strokeStyle="rgba(150,190,150,.18)";ctx.lineWidth=1;for(let x=28;x<940;x+=18){ctx.beginPath();ctx.moveTo(x,50);ctx.lineTo(x,498);ctx.stroke();}
+      ctx.fillStyle="#443326";ctx.fillRect(72,414,76,65);drawLeaves(58,380,"#315b35");
+    }else if(level.habitat==="crested"){
+      ctx.fillStyle="#583b24";roundedRect(700,95,105,315,18);ctx.fill();ctx.strokeStyle="#936b43";ctx.lineWidth=4;for(let y=120;y<390;y+=36){ctx.beginPath();ctx.moveTo(710,y);ctx.lineTo(790,y-11);ctx.stroke();}
+    }else if(level.habitat==="newt"){
+      ctx.fillStyle="rgba(45,145,155,.28)";ctx.fillRect(20,410,430,86);ctx.strokeStyle="#62d7d0";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(20,410);ctx.quadraticCurveTo(120,400,220,410);ctx.quadraticCurveTo(330,420,450,410);ctx.stroke();
+      ctx.fillStyle="#52635c";for(const [x,y,r] of [[490,450,34],[555,465,24],[620,444,38]]){ctx.beginPath();ctx.arc(x,y,r,Math.PI,Math.PI*2);ctx.fill();}
+    }else if(level.habitat==="frog"){
+      ctx.fillStyle="#4d3924";ctx.fillRect(20,458,920,38);for(let x=30;x<930;x+=34){ctx.fillStyle=x%68?"#765133":"#3b592f";ctx.beginPath();ctx.ellipse(x,462,28,8,-.25,0,Math.PI*2);ctx.fill();}
+      ctx.fillStyle="#27643b";for(const x of [130,520,820]){for(let i=0;i<6;i++){ctx.save();ctx.translate(x,405);ctx.rotate(i*Math.PI/3);ctx.beginPath();ctx.ellipse(0,-25,9,30,0,0,Math.PI*2);ctx.fill();ctx.restore();}}
+    }else if(level.habitat==="boa"){
+      ctx.fillStyle="#29231b";roundedRect(695,390,175,106,22);ctx.fill();ctx.fillStyle="#090a08";ctx.beginPath();ctx.arc(780,456,42,Math.PI,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="#4d3421";ctx.lineWidth=28;ctx.beginPath();ctx.moveTo(90,438);ctx.quadraticCurveTo(290,365,470,430);ctx.stroke();
+    }
+    ctx.restore();
   }
 
   function drawPlatforms(level) {
@@ -560,8 +637,9 @@
         const y=p[1]+p[3]/2;
         ctx.strokeStyle="#51351f";ctx.lineWidth=p[3];ctx.lineCap="round";
         ctx.beginPath();ctx.moveTo(p[0]+5,y);ctx.quadraticCurveTo(p[0]+p[2]*.48,y-7,p[0]+p[2]-5,y+2);ctx.stroke();
-        ctx.strokeStyle="#9a7047";ctx.lineWidth=3;
+        ctx.strokeStyle=level.palette[3];ctx.globalAlpha=.9;ctx.lineWidth=4;
         ctx.beginPath();ctx.moveTo(p[0]+10,y-4);ctx.quadraticCurveTo(p[0]+p[2]*.5,y-9,p[0]+p[2]-12,y-2);ctx.stroke();
+        ctx.globalAlpha=1;
         ctx.strokeStyle="#624125";ctx.lineWidth=5;
         ctx.beginPath();ctx.moveTo(p[0]+p[2]*.3,y-5);ctx.lineTo(p[0]+p[2]*.2,y-22);ctx.moveTo(p[0]+p[2]*.72,y);ctx.lineTo(p[0]+p[2]*.82,y-17);ctx.stroke();
       }else{
@@ -603,15 +681,26 @@
       if (bug[2]) return;
       const bob = Math.sin(time * .004 + i * 2) * 4;
       ctx.save(); ctx.translate(bug[0], bug[1] + bob);
-      if (level.underwater) {
-        // Aquatic beetle: oval shell, split wing cases, legs, and antennae.
-        ctx.strokeStyle="#c6e9dc";ctx.lineWidth=1.5;
-        ctx.beginPath();ctx.moveTo(-5,-1);ctx.lineTo(-13,-7);ctx.moveTo(-5,2);ctx.lineTo(-14,8);ctx.moveTo(5,-1);ctx.lineTo(13,-7);ctx.moveTo(5,2);ctx.lineTo(14,8);ctx.stroke();
-        ctx.fillStyle="#382d22";ctx.beginPath();ctx.ellipse(0,1,7,11,0,0,Math.PI*2);ctx.fill();
-        ctx.strokeStyle="#b8874d";ctx.beginPath();ctx.moveTo(0,-8);ctx.lineTo(0,10);ctx.stroke();
-        ctx.fillStyle="#19140f";ctx.beginPath();ctx.arc(0,-9,4,0,Math.PI*2);ctx.fill();
-      } else {
-        // Cricket: segmented body, bent jumping legs, antennae, and tiny compound eyes.
+      if(selectedCharacter==="boa"){
+        ctx.strokeStyle="#b99384";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-10,5);ctx.bezierCurveTo(-21,9,-25,1,-31,4);ctx.stroke();
+        ctx.fillStyle="#91817b";ctx.beginPath();ctx.ellipse(0,2,12,8,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(10,0,7,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#c7aaa0";ctx.beginPath();ctx.arc(9,-6,4,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#151515";ctx.beginPath();ctx.arc(13,-1,1.5,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#d8a2a2";ctx.beginPath();ctx.arc(17,2,2,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="#d8d0c8";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(15,3);ctx.lineTo(25,0);ctx.moveTo(15,4);ctx.lineTo(25,7);ctx.stroke();
+      }else if(selectedCharacter==="newt"){
+        ctx.strokeStyle="#b97968";ctx.lineWidth=7;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-14,6);ctx.bezierCurveTo(-7,-8,4,12,15,-4);ctx.stroke();
+        ctx.strokeStyle="#e0a08b";ctx.lineWidth=1.2;for(let x=-9;x<12;x+=6){ctx.beginPath();ctx.moveTo(x,-1);ctx.lineTo(x+2,5);ctx.stroke();}
+      }else if(selectedCharacter==="frog"){
+        ctx.fillStyle="rgba(220,235,245,.55)";ctx.beginPath();ctx.ellipse(-5,-2,7,4,-.4,0,Math.PI*2);ctx.ellipse(5,-2,7,4,.4,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#181513";ctx.beginPath();ctx.ellipse(0,2,3,7,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(0,-5,3,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#9d3030";ctx.beginPath();ctx.arc(-1,-6,1,0,Math.PI*2);ctx.arc(2,-6,1,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="#6d6259";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-2,3);ctx.lineTo(-8,8);ctx.moveTo(2,3);ctx.lineTo(8,8);ctx.stroke();
+      }else if(selectedCharacter==="crested"){
+        ctx.strokeStyle="#bb8b54";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-5,-2);ctx.lineTo(-13,-8);ctx.moveTo(5,-2);ctx.lineTo(13,-8);ctx.moveTo(-5,3);ctx.lineTo(-13,9);ctx.moveTo(5,3);ctx.lineTo(13,9);ctx.stroke();
+        ctx.fillStyle="#5b351d";ctx.beginPath();ctx.ellipse(0,1,8,12,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#9a6c3d";ctx.beginPath();ctx.moveTo(-6,-2);ctx.lineTo(6,-2);ctx.moveTo(-7,3);ctx.lineTo(7,3);ctx.stroke();
+        ctx.fillStyle="#29170d";ctx.beginPath();ctx.ellipse(0,-9,6,4,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#c09a6b";ctx.beginPath();ctx.moveTo(-2,-12);ctx.lineTo(-10,-19);ctx.moveTo(2,-12);ctx.lineTo(10,-19);ctx.stroke();
+      }else{
         ctx.strokeStyle="#b99461";ctx.lineWidth=1.6;ctx.lineCap="round";
         ctx.beginPath();ctx.moveTo(-4,2);ctx.lineTo(-12,10);ctx.lineTo(-16,7);ctx.moveTo(4,2);ctx.lineTo(12,10);ctx.lineTo(16,7);ctx.moveTo(-4,-1);ctx.lineTo(-10,-6);ctx.moveTo(4,-1);ctx.lineTo(10,-6);ctx.stroke();
         ctx.fillStyle="#5a3b20";ctx.beginPath();ctx.ellipse(0,2,6,10,0,0,Math.PI*2);ctx.fill();
@@ -640,37 +729,29 @@
     if (now < (h.stunnedUntil || 0)) ctx.globalAlpha = .48;
     if (h.type === "cat") {
       ctx.fillStyle="#151416";roundedRect(0,4,h.w,h.h-4,9);ctx.fill();
-      ctx.beginPath();ctx.moveTo(8,7);ctx.lineTo(13,-4);ctx.lineTo(20,7);ctx.fill();
+      ctx.beginPath();ctx.moveTo(8,7);ctx.lineTo(13,-4);ctx.lineTo(20,7);ctx.moveTo(24,7);ctx.lineTo(32,-4);ctx.lineTo(39,8);ctx.fill();
       ctx.fillStyle="#d8f56d";ctx.fillRect(13,10,4,3);ctx.fillRect(22,10,4,3);
       ctx.strokeStyle="#151416";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(h.w-4,12);ctx.quadraticCurveTo(h.w+18,-2,h.w+12,-15);ctx.stroke();
     } else if (h.type === "dalmatian") {
-      // White body, black ears, legs, tail, and an unreasonable number of spots.
-      ctx.fillStyle="#f5f3e8";roundedRect(13,8,h.w-25,h.h-17,12);ctx.fill();
-      ctx.beginPath();ctx.arc(15,14,13,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle="#f5f3e8";ctx.lineWidth=6;ctx.lineCap="round";
-      ctx.beginPath();ctx.moveTo(h.w-14,12);ctx.quadraticCurveTo(h.w+7,1,h.w+4,-8);ctx.stroke();
-      ctx.fillStyle="#111318";
-      ctx.beginPath();ctx.ellipse(8,5,7,11,-.45,0,Math.PI*2);ctx.fill();
-      [[25,14,5],[42,10,4],[57,20,5],[19,23,3]].forEach(([x,y,r])=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();});
-      ctx.fillRect(22,h.h-13,7,13);ctx.fillRect(h.w-29,h.h-13,7,13);
-      ctx.fillStyle="#f1e9dd";ctx.beginPath();ctx.ellipse(4,19,11,7,-.08,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#111318";ctx.beginPath();ctx.ellipse(-2,17,5,4,0,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle="#4b3b36";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(1,23);ctx.quadraticCurveTo(7,26,13,22);ctx.stroke();
-      ctx.fillStyle="#7df5d0";ctx.beginPath();ctx.arc(14,12,2,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#f5f3e8";roundedRect(29,10,h.w-35,h.h-18,12);ctx.fill();
+      ctx.strokeStyle="#f5f3e8";ctx.lineWidth=6;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(h.w-11,14);ctx.quadraticCurveTo(h.w+7,4,h.w+2,-6);ctx.stroke();
+      ctx.fillStyle="#f5f3e8";ctx.beginPath();ctx.arc(20,18,16,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#111318";ctx.beginPath();ctx.ellipse(24,8,7,12,.45,0,Math.PI*2);ctx.fill();
+      [[39,16,5],[56,12,4],[70,23,5],[33,27,3]].forEach(([x,y,r])=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();});
+      ctx.fillRect(38,h.h-13,7,13);ctx.fillRect(h.w-23,h.h-13,7,13);
+      ctx.fillStyle="#eee6da";ctx.beginPath();ctx.ellipse(7,25,15,9,-.08,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="#b9a99e";ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(7,25,15,9,-.08,0,Math.PI*2);ctx.stroke();
+      ctx.fillStyle="#090a0b";ctx.beginPath();ctx.ellipse(-4,22,6,5,0,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="#403735";ctx.beginPath();ctx.moveTo(1,29);ctx.quadraticCurveTo(9,34,17,28);ctx.stroke();
+      ctx.fillStyle="#8df4d7";ctx.beginPath();ctx.arc(15,16,2.4,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="#c84d4d";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(29,11);ctx.lineTo(30,32);ctx.stroke();
     } else if (h.type === "frenchie") {
-      // Black-and-tan French bulldog: compact body, bat ears, broad muzzle, and tan points.
-      ctx.fillStyle="#111315";roundedRect(20,12,h.w-30,h.h-13,13);ctx.fill();
-      roundedRect(4,10,32,29,10);ctx.fill();
-      ctx.beginPath();ctx.moveTo(7,13);ctx.lineTo(10,-4);ctx.lineTo(19,11);ctx.moveTo(22,11);ctx.lineTo(31,-3);ctx.lineTo(33,15);ctx.fill();
-      ctx.fillStyle="#9b5d30";
-      ctx.beginPath();ctx.ellipse(7,27,13,9,-.08,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.ellipse(10,15,5,3,0,0,Math.PI*2);ctx.ellipse(25,15,5,3,0,0,Math.PI*2);ctx.fill();
-      ctx.fillRect(29,h.h-13,9,13);ctx.fillRect(h.w-30,h.h-13,9,13);
-      ctx.beginPath();ctx.moveTo(43,20);ctx.lineTo(57,39);ctx.lineTo(68,39);ctx.lineTo(59,20);ctx.fill();
-      ctx.fillStyle="#050607";ctx.beginPath();ctx.ellipse(-2,25,6,5,0,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle="#050607";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(1,31);ctx.quadraticCurveTo(8,35,16,30);ctx.stroke();
-      ctx.fillStyle="#d9e6a0";ctx.beginPath();ctx.arc(12,20,2,0,Math.PI*2);ctx.arc(25,20,2,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#111315";ctx.beginPath();ctx.arc(h.w-7,17,6,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#111315";roundedRect(23,12,h.w-29,h.h-13,11);ctx.fill();roundedRect(6,10,29,24,9);ctx.fill();
+      ctx.beginPath();ctx.moveTo(9,13);ctx.quadraticCurveTo(7,1,13,0);ctx.quadraticCurveTo(19,1,20,13);ctx.moveTo(22,13);ctx.quadraticCurveTo(23,1,29,1);ctx.quadraticCurveTo(35,3,32,15);ctx.fill();
+      ctx.fillStyle="#9b5d30";ctx.beginPath();ctx.ellipse(6,25,11,7,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(12,16,4,2.5,0,0,Math.PI*2);ctx.ellipse(26,16,4,2.5,0,0,Math.PI*2);ctx.fill();
+      ctx.fillRect(30,h.h-10,7,10);ctx.fillRect(h.w-21,h.h-10,7,10);ctx.beginPath();ctx.moveTo(39,20);ctx.lineTo(48,35);ctx.lineTo(57,35);ctx.lineTo(50,20);ctx.fill();
+      ctx.fillStyle="#050607";ctx.beginPath();ctx.ellipse(-2,23,5,4,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#050607";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(1,28);ctx.quadraticCurveTo(7,31,13,27);ctx.stroke();
+      ctx.fillStyle="#d9e6a0";ctx.beginPath();ctx.arc(13,20,1.7,0,Math.PI*2);ctx.arc(25,20,1.7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#111315";ctx.beginPath();ctx.arc(h.w-5,17,4,0,Math.PI*2);ctx.fill();
     } else if (h.type === "hand") {
       ctx.fillStyle="#c99072";roundedRect(0,5,h.w,h.h-5,10);ctx.fill();
       for(let i=0;i<4;i++){roundedRect(25+i*9,0,8,16,4);ctx.fill();}
@@ -681,18 +762,15 @@
       roundedRect(23,24,48,40,17);ctx.fill();
       const fingers=[[18,7,12,31,-.12],[32,1,12,35,-.03],[46,0,12,37,.02],[60,5,11,31,.10]];
       fingers.forEach(([x,y,w,ht,angle])=>{ctx.save();ctx.translate(x+w/2,y+ht);ctx.rotate(angle);roundedRect(-w/2,-ht,w,ht,6);ctx.fill();ctx.restore();});
-      ctx.save();ctx.translate(24,38);ctx.rotate(-.68);roundedRect(-5,-4,30,12,6);ctx.fill();ctx.restore();
+      ctx.save();ctx.translate(23,42);ctx.rotate(-.72);roundedRect(-19,-7,36,15,8);ctx.fill();ctx.strokeStyle="#9d644e";ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle="#e9b69a";roundedRect(-17,-4,9,8,4);ctx.fill();ctx.restore();
       ctx.fillStyle="#e9b69a";
       [[24,10],[38,5],[52,4],[65,10]].forEach(([x,y])=>{roundedRect(x-4,y,8,8,4);ctx.fill();});
       ctx.strokeStyle="#9d644e";ctx.lineWidth=1.4;
       ctx.beginPath();ctx.arc(47,43,13,.2,2.9);ctx.moveTo(35,54);ctx.quadraticCurveTo(47,48,59,54);ctx.stroke();
-    } else if (h.type === "foodBowl") {
-      // A tipped feeding cup with a visible brown puddle, rather than a white mystery brick.
-      ctx.fillStyle="#7a5632";ctx.beginPath();ctx.ellipse(h.w*.62,h.h-5,h.w*.38,8,-.08,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#e9e1c7";ctx.beginPath();ctx.moveTo(4,4);ctx.lineTo(37,8);ctx.lineTo(32,h.h);ctx.lineTo(9,h.h-3);ctx.closePath();ctx.fill();
-      ctx.strokeStyle="#f8f3df";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(4,4);ctx.lineTo(37,8);ctx.stroke();
-      ctx.fillStyle="#5c3a20";ctx.beginPath();ctx.ellipse(21,9,13,4,.12,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#21170f";ctx.font="bold 8px system-ui";ctx.textAlign="center";ctx.fillText("FOOD",21,19);
+    } else if (h.type === "mouseTrap") {
+      ctx.fillStyle="#ad7b42";roundedRect(1,8,h.w-2,h.h-8,3);ctx.fill();ctx.strokeStyle="#e0b77a";ctx.lineWidth=2;roundedRect(1,8,h.w-2,h.h-8,3);ctx.stroke();
+      ctx.strokeStyle="#cfd2cf";ctx.lineWidth=3;ctx.beginPath();ctx.rect(12,3,h.w-25,h.h-10);ctx.stroke();ctx.beginPath();ctx.moveTo(h.w/2,4);ctx.lineTo(h.w/2,h.h-2);ctx.stroke();
+      ctx.fillStyle="#e8c84e";ctx.beginPath();ctx.moveTo(h.w/2-8,h.h-8);ctx.lineTo(h.w/2+9,h.h-8);ctx.lineTo(h.w/2+5,h.h-18);ctx.closePath();ctx.fill();ctx.fillStyle="#997625";ctx.beginPath();ctx.arc(h.w/2,h.h-11,2,0,Math.PI*2);ctx.fill();
     } else if (h.type === "roomba") {
       // Side-view robot vacuum with wheels sitting directly on its platform.
       ctx.fillStyle="#0c0d10";ctx.beginPath();ctx.arc(15,h.h-3,6,0,Math.PI*2);ctx.arc(h.w-15,h.h-3,6,0,Math.PI*2);ctx.fill();
@@ -839,6 +917,7 @@
     ctx.fillStyle=blue;ctx.beginPath();ctx.ellipse(0,3,18,12,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(12,-5,15,10,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#0a1830";[[-8,1,4],[2,7,3],[13,1,4],[20,-7,3],[-1,-5,3]].forEach(([x,y,r])=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();});
     ctx.fillStyle="#d8e9a0";ctx.beginPath();ctx.arc(18,-9,3.6,0,Math.PI*2);ctx.fill();ctx.fillStyle="#10171a";ctx.beginPath();ctx.arc(19,-9,1.7,0,Math.PI*2);ctx.fill();
+    if(now<tongueActiveUntil){const progress=Math.min(1,Math.max(0,(now-(tongueActiveUntil-230))/230));const extension=Math.sin(progress*Math.PI)*92;ctx.strokeStyle="#ff86a8";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(24,-1);ctx.lineTo(24+extension,-1);ctx.stroke();ctx.fillStyle="#ff9bb7";ctx.beginPath();ctx.ellipse(26+extension,-1,5,3.5,0,0,Math.PI*2);ctx.fill();}
     ctx.restore();ctx.globalAlpha=1;
   }
 
@@ -890,7 +969,8 @@
   window.addEventListener("keydown", event => {
     if (["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Space"].includes(event.code)) event.preventDefault();
     if (!keys[event.code] && (event.code === "Space" || event.code === "ArrowUp" || event.code === "KeyW")) jump();
-    if (!keys[event.code] && (event.code === "KeyE" || event.code === "ShiftLeft" || event.code === "ShiftRight" || event.code === "KeyX")) useAbility();
+    if (!keys[event.code] && event.code === "KeyE") (["chameleon","frog"].includes(selectedCharacter) ? useTongue() : useAbility());
+    if (!keys[event.code] && (event.code === "ShiftLeft" || event.code === "ShiftRight" || event.code === "KeyX")) useAbility();
     keys[event.code] = true;
   });
   window.addEventListener("keyup", event => keys[event.code] = false);
@@ -900,6 +980,7 @@
     const key = control === "left" ? "touchLeft" : control === "right" ? "touchRight" : "touchJump";
     const press = event => {
       event.preventDefault();
+      if (control === "tongue") return useTongue();
       if (control === "ability") return useAbility();
       if (control === "jump" && !keys[key]) jump();
       keys[key] = true;
@@ -915,6 +996,7 @@
   characterSelect.querySelectorAll("[data-character]").forEach(button => {
     button.addEventListener("click", () => {
       selectedCharacter = button.dataset.character;
+      applyCharacterHabitat();
       abilityButton.textContent = characters[selectedCharacter].ability;
       showIntro(0);
     });
