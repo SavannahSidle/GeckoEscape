@@ -43,7 +43,8 @@
   let chameleonColorIndex = 0;
   let strikeActiveUntil = 0;
   let strikeCooldownUntil = 0;
-  let regenerateReady = true;
+  let regenerateUntil = 0;
+  let regenerateCooldownUntil = 0;
   let miceCollected = 0;
   let selectedCharacter = "crested";
   let soundOn = true;
@@ -87,7 +88,7 @@
       completeText: "The house stretches before you. Somewhere in the dark, a refrigerator hums like destiny.",
       palette: ["#0c1117", "#1d2830", "#754f31", "#f0cc62"],
       start: [45, 445], exit: [876,88,50,82],
-      platforms: [[0,500,960,40],[28,442,235,20],[0,326,960,18],[340,390,205,20],[615,327,285,20],[280,262,170,18],[55,196,180,18],[530,155,180,18],[815,174,125,18]],
+      platforms: [[0,500,960,40],[28,442,235,20],[0,326,445,18],[515,326,445,18],[340,390,205,20],[615,327,285,20],[280,262,170,18],[55,196,180,18],[530,155,180,18],[815,174,125,18]],
       vines: [[258,317,18,130],[545,270,18,123],[705,95,18,235]],
       insects: [[80,410],[420,355],[300,294],[510,294],[740,294],[120,161],[620,120],[875,142]],
       hazards: [
@@ -294,7 +295,8 @@
     camouflageCooldownUntil = 0;
     strikeActiveUntil = 0;
     strikeCooldownUntil = 0;
-    regenerateReady = true;
+    regenerateUntil = 0;
+    regenerateCooldownUntil = 0;
     miceCollected = 0;
     (level.mice||[]).forEach(mouse=>mouse[2]=false);
     tongueActiveUntil = 0;
@@ -340,7 +342,8 @@
     } else if (selectedCharacter === "crested") {
       abilityLabel.textContent = `SHORT TONGUE · TAIL ${tailReady ? "READY" : "GONE"}`;
     } else if (selectedCharacter === "newt") {
-      abilityLabel.textContent = `REGENERATE ${regenerateReady ? "READY" : "USED"} · TOXIN ${toxinReady ? "READY" : "USED"}`;
+      const regenerateState = performance.now() >= regenerateCooldownUntil ? "REGENERATE READY" : "REGENERATE RECHARGING";
+      abilityLabel.textContent = `${regenerateState} · TOXIN ${toxinReady ? "READY" : "USED"}`;
     } else if (selectedCharacter === "frog") {
       abilityLabel.textContent = `TONGUE · ${performance.now() >= leapCooldownUntil ? "POWER LEAP READY" : "LEAP RECHARGING"}`;
     } else if (selectedCharacter === "boa") {
@@ -405,8 +408,12 @@
   }
 
   function useRegenerate(){
-    if(state!=="playing"||selectedCharacter!=="newt"||!regenerateReady||lives>=3)return;
-    regenerateReady=false;lives=Math.min(3,lives+1);invulnerableUntil=performance.now()+900;
+    const now=performance.now();
+    if(state!=="playing"||selectedCharacter!=="newt"||now<regenerateCooldownUntil)return;
+    regenerateUntil=now+2600;
+    regenerateCooldownUntil=now+5200;
+    if(lives<3)lives=Math.min(3,lives+1);
+    invulnerableUntil=Math.max(invulnerableUntil,regenerateUntil);
     updateHud();tone(390,.18,"sine");
   }
 
@@ -703,8 +710,10 @@
       ctx.fillStyle="#20272b";ctx.fillRect(0,70,W,430);
       for(let y=86;y<322;y+=36){for(let x=(y/36)%2?0:36;x<W;x+=72){ctx.fillStyle="rgba(240,232,205,.055)";ctx.fillRect(x,y,35,35);}}
       ctx.fillStyle="#171d20";ctx.fillRect(0,344,W,156);
-      ctx.fillStyle="#695541";ctx.fillRect(0,326,W,22);
-      ctx.fillStyle="#b69a76";ctx.fillRect(0,326,W,5);
+      // Two counter sections leave a visible drop-through gap in the middle.
+      ctx.fillStyle="#695541";ctx.fillRect(0,326,445,22);ctx.fillRect(515,326,W-515,22);
+      ctx.fillStyle="#b69a76";ctx.fillRect(0,326,445,5);ctx.fillRect(515,326,W-515,5);
+      ctx.fillStyle="#0e1417";ctx.fillRect(445,326,70,174);
       ctx.strokeStyle="rgba(240,204,98,.16)";ctx.lineWidth=3;
       for(let x=15;x<760;x+=150){ctx.strokeRect(x,360,130,130);ctx.beginPath();ctx.arc(x+112,422,3,0,Math.PI*2);ctx.stroke();}
       ctx.fillStyle="#11171a";ctx.fillRect(360,344,150,156);ctx.strokeStyle="#778087";ctx.strokeRect(375,374,120,105);
@@ -1166,6 +1175,13 @@
     const flash = now < invulnerableUntil && Math.floor(now / 90) % 2 === 0;
     if (flash) ctx.globalAlpha=.4;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
+    if(now<regenerateUntil){
+      const pulse=4+Math.sin(now*.018)*3;
+      ctx.strokeStyle="rgba(105,244,174,.82)";ctx.lineWidth=3;
+      ctx.beginPath();ctx.ellipse(0,0,40+pulse,21+pulse*.45,0,0,Math.PI*2);ctx.stroke();
+      ctx.fillStyle="rgba(105,244,174,.72)";
+      [[-31,-17],[4,-23],[34,-10],[-24,19],[24,17]].forEach(([x,y],i)=>{ctx.beginPath();ctx.arc(x,y,1.8+Math.sin(now*.012+i)*.7,0,Math.PI*2);ctx.fill();});
+    }
     if(now<toxinActiveUntil){ctx.strokeStyle="rgba(255,105,49,.72)";ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(0,0,43,24,0,0,Math.PI*2);ctx.stroke();}
     const dark=characters.newt.color;
     ctx.strokeStyle=dark;ctx.lineWidth=8;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-12,1);ctx.bezierCurveTo(-29,0,-38,5,-49,1);ctx.stroke();
