@@ -188,7 +188,10 @@ canvas {
   touch-action: manipulation;
 }
 
-.touch-controls .tail-control { width: 64px; color: #f2a19b; font-size: .72rem; }
+.touch-controls .tail-control,
+.touch-controls .tongue-control { width: 68px; font-size: .66rem; }
+.touch-controls .tail-control { color: #f2a19b; }
+.touch-controls .tongue-control { color: #ff9eb8; }
 .touch-controls button:active { background: var(--acid-dark); transform: translateY(1px); }
 .hidden { display: none !important; }
 
@@ -199,6 +202,9 @@ canvas {
   .icon-button { padding: 8px 9px; }
   .keyboard-help { display: none; }
   .touch-controls { display: flex; width: 100%; justify-content: center; }
+  .touch-controls button { width: 46px; }
+  .touch-controls .tail-control,
+  .touch-controls .tongue-control { width: 62px; }
   .controls-row { justify-content: center; }
   .overlay { padding: 10px; }
   .panel { padding: 18px; }
