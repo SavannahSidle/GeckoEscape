@@ -90,6 +90,7 @@
       palette: ["#0c1117", "#1d2830", "#754f31", "#f0cc62"],
       start: [45, 445], exit: [876,88,50,82],
       platforms: [[0,500,960,40],[28,442,235,20],[425,390,205,20],[615,327,285,20],[40,262,170,18],[55,196,180,18],[530,155,180,18],[815,174,125,18]],
+      angledPlatforms: [[300,330,185,215,18]],
       vines: [[258,317,18,130],[545,270,18,123],[705,95,18,235]],
       insects: [[80,410],[420,355],[300,294],[510,294],[740,294],[120,161],[620,120],[875,142]],
       hazards: [
@@ -143,6 +144,7 @@
 
   const standardStoryLayouts=levels.slice(1).map(level=>({
     platforms:level.platforms.map(platform=>[...platform]),
+    angledPlatforms:(level.angledPlatforms||[]).map(platform=>[...platform]),
     vines:level.vines.map(vine=>[...vine]),
     insects:level.insects.map(insect=>insect.slice(0,2)),
     mice:(level.mice||[]).map(mouse=>mouse.slice(0,2))
@@ -214,6 +216,7 @@
     standardStoryLayouts.forEach((layout,index)=>{
       const level=levels[index+1];
       level.platforms=layout.platforms.map(platform=>[...platform]);
+      level.angledPlatforms=layout.angledPlatforms.map(platform=>[...platform]);
       level.vines=selectedCharacter==="frog"?[]:layout.vines.map(vine=>[...vine]);
       level.insects=layout.insects.map(insect=>[...insect]);
       level.mice=selectedCharacter==="crested"?[]:layout.mice.map(mouse=>[...mouse]);
@@ -596,6 +599,14 @@
         player.grounded = true;
       }
     }
+    for(const p of level.angledPlatforms||[]){
+      if(level.underwater||swimming||player.vy<0)continue;
+      const minX=Math.min(p[0],p[2]),maxX=Math.max(p[0],p[2]);
+      const centerX=player.x+player.w/2;
+      if(centerX<minX||centerX>maxX)continue;
+      const surfaceY=angledPlatformY(p,centerX);
+      if(oldY+player.h<=surfaceY+6&&player.y+player.h>=surfaceY){player.y=surfaceY-player.h;player.vy=0;player.grounded=true;}
+    }
 
     if (player.y > H + 80) {
       tone(90, .25, "square");
@@ -702,6 +713,12 @@
     return Math.hypot(px-nearestX,py-nearestY)<(width||18)+Math.max(body.w,body.h)*.35;
   }
 
+  function angledPlatformY(platform,worldX){
+    const [x1,y1,x2,y2]=platform;
+    const t=Math.max(0,Math.min(1,(worldX-x1)/(x2-x1)));
+    return y1+(y2-y1)*t;
+  }
+
   function drawBackdrop(level) {
     const gradient = ctx.createLinearGradient(0, 0, 0, H);
     gradient.addColorStop(0, level.palette[0]);
@@ -749,12 +766,16 @@
       ctx.strokeStyle="#545c60";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(779,282);ctx.lineTo(956,282);ctx.stroke();
       ctx.fillStyle="#d8ddde";roundedRect(797,202,7,58,3);ctx.fill();roundedRect(797,310,7,92,3);ctx.fill();
       ctx.fillStyle="#647075";ctx.font="800 11px system-ui";ctx.textAlign="center";ctx.fillText("FRIDGE",866,300);
-      // Real windows with a night view instead of mysterious wall squares.
-      for(const [wx,wy,ww,wh] of [[40,88,210,118],[530,88,190,118]]){
-        ctx.fillStyle="#071625";ctx.fillRect(wx,wy,ww,wh);
-        const glow=ctx.createRadialGradient(wx+ww*.72,wy+32,2,wx+ww*.72,wy+32,25);glow.addColorStop(0,"rgba(255,244,191,.85)");glow.addColorStop(1,"rgba(255,244,191,0)");ctx.fillStyle=glow;ctx.fillRect(wx,wy,ww,wh);
-        ctx.fillStyle="#cfd8b0";ctx.beginPath();ctx.arc(wx+ww*.72,wy+32,10,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle="#0d2a22";ctx.beginPath();ctx.moveTo(wx,wy+wh);ctx.lineTo(wx+35,wy+68);ctx.lineTo(wx+68,wy+wh);ctx.lineTo(wx+108,wy+60);ctx.lineTo(wx+150,wy+wh);ctx.fill();
+      // A bright daytime view. One sky, one sun, no accidental binary star system.
+      for(const [index,window] of [[0,[40,88,210,118]],[1,[530,88,190,118]]]){
+        const [wx,wy,ww,wh]=window;
+        const sky=ctx.createLinearGradient(0,wy,0,wy+wh);sky.addColorStop(0,"#65bce8");sky.addColorStop(1,"#c9ebed");ctx.fillStyle=sky;ctx.fillRect(wx,wy,ww,wh);
+        if(index===1){
+          const glow=ctx.createRadialGradient(wx+ww*.76,wy+30,3,wx+ww*.76,wy+30,30);glow.addColorStop(0,"rgba(255,246,168,.95)");glow.addColorStop(1,"rgba(255,246,168,0)");ctx.fillStyle=glow;ctx.fillRect(wx,wy,ww,wh);
+          ctx.fillStyle="#ffe66f";ctx.beginPath();ctx.arc(wx+ww*.76,wy+30,12,0,Math.PI*2);ctx.fill();
+        }
+        ctx.fillStyle="rgba(255,255,255,.78)";ctx.beginPath();ctx.ellipse(wx+42,wy+35,25,9,0,0,Math.PI*2);ctx.ellipse(wx+65,wy+32,18,11,0,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#3d7e42";ctx.beginPath();ctx.moveTo(wx,wy+wh);ctx.lineTo(wx+35,wy+70);ctx.lineTo(wx+68,wy+wh);ctx.lineTo(wx+108,wy+64);ctx.lineTo(wx+150,wy+wh);ctx.fill();
         ctx.strokeStyle="#b9a77e";ctx.lineWidth=7;ctx.strokeRect(wx,wy,ww,wh);ctx.beginPath();ctx.moveTo(wx+ww/2,wy);ctx.lineTo(wx+ww/2,wy+wh);ctx.stroke();
       }
     } else if (level.decor === "house") {
@@ -941,6 +962,14 @@
     ctx.restore();
   }
 
+  function drawAngledPlatform(platform,level){
+    const [x1,y1,x2,y2,width]=platform;
+    ctx.save();ctx.lineCap="round";
+    ctx.strokeStyle=level.palette[2];ctx.lineWidth=width||18;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+    ctx.strokeStyle="rgba(255,255,255,.18)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x1-2,y1-4);ctx.lineTo(x2-2,y2-4);ctx.stroke();
+    ctx.restore();
+  }
+
   function drawCeilingVine(v) {
     const [x,y,w,h,kind]=v;const cy=y+h/2;
     ctx.save();ctx.lineCap="round";
@@ -988,6 +1017,7 @@
       }
     }
     for (const v of level.vines) drawClimbablePlant(v,level);
+    for (const p of level.angledPlatforms||[]) drawAngledPlatform(p,level);
     for (const v of level.diagonalVines||[]) drawDiagonalVine(v);
     for (const v of level.ceilingVines||[]) drawCeilingVine(v);
   }
