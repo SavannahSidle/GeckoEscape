@@ -25,6 +25,9 @@
   let collected = 0;
   let tailReady = true;
   let invulnerableUntil = 0;
+  let tongueActiveUntil = 0;
+  let tongueCooldownUntil = 0;
+  let droppedTail = null;
   let soundOn = true;
   let audioContext = null;
 
@@ -43,7 +46,7 @@
       completeTitle: "The room is larger than expected.",
       completeText: "Freedom contains shelves, suspicious noises, and absolutely no climate control.",
       palette: ["#07150f", "#123120", "#6f4d2c", "#a9f576"],
-      start: [66, 445], exit: [870, 66, 48, 74],
+      start: [66, 445], exit: [870, 410, 48, 90],
       platforms: [[0,500,960,40],[45,458,190,22],[262,404,190,20],[500,342,185,20],[712,270,190,20],[790,154,150,20]],
       vines: [[215,328,20,135],[456,273,20,135],[680,204,20,140]],
       insects: [[330,370],[570,308],[840,230]],
@@ -136,6 +139,9 @@
     lives = 3;
     collected = 0;
     tailReady = true;
+    tongueActiveUntil = 0;
+    tongueCooldownUntil = 0;
+    droppedTail = null;
     player.spawnX = level.start[0];
     player.spawnY = level.start[1];
     resetPlayer(false);
@@ -171,12 +177,37 @@
 
   function dropTail() {
     if (state !== "playing" || !tailReady) return;
+    droppedTail = {
+      x: player.x + player.w / 2 - player.facing * 24,
+      y: player.y + player.h / 2 + 3,
+      facing: player.facing,
+      droppedAt: performance.now()
+    };
     tailReady = false;
     invulnerableUntil = performance.now() + 2400;
     player.vx = -player.facing * 190;
     player.vy = -180;
     updateHud();
     tone(115, .22, "sawtooth");
+  }
+
+  function useTongue() {
+    const now = performance.now();
+    if (state !== "playing" || now < tongueCooldownUntil) return;
+    tongueActiveUntil = now + 230;
+    tongueCooldownUntil = now + 520;
+    tone(610, .045, "sine");
+  }
+
+  function tongueHitbox(now) {
+    if (now >= tongueActiveUntil) return null;
+    const reach = 112;
+    return {
+      x: player.facing > 0 ? player.x + player.w - 3 : player.x - reach + 3,
+      y: player.y + 5,
+      w: reach,
+      h: 20
+    };
   }
 
   function intersects(a, b) {
@@ -258,7 +289,8 @@
     level.insects.forEach(insect => {
       if (!insect[2]) {
         const bug = {x:insect[0]-10,y:insect[1]-10,w:20,h:20};
-        if (intersects(player, bug)) {
+        const tongue = tongueHitbox(now);
+        if (intersects(player, bug) || (tongue && intersects(tongue, bug))) {
           insect[2] = true;
           collected += 1;
           updateHud();
@@ -274,7 +306,7 @@
   function jump() {
     if (state !== "playing") return;
     if (player.grounded || player.climbing) {
-      player.vy = -365;
+      player.vy = -455;
       player.grounded = false;
       tone(245, .05, "triangle");
     }
@@ -364,6 +396,8 @@
     ctx.strokeStyle = level.palette[3]; ctx.lineWidth = 3; ctx.strokeRect(x,y,w,h);
     ctx.fillStyle = level.palette[3];
     ctx.font = "900 12px system-ui"; ctx.textAlign = "center"; ctx.fillText(levelIndex === 2 ? "FRIDGE" : "EXIT", x+w/2, y-10);
+    ctx.font = "900 24px system-ui";
+    ctx.fillText("↓", x+w/2, y-28);
   }
 
   function drawInsects(level, time) {
@@ -407,6 +441,27 @@
     ctx.restore();
   }
 
+  function drawDroppedTail(now) {
+    if (!droppedTail) return;
+    const age = now - droppedTail.droppedAt;
+    if (age > 7000) return;
+    const wiggle = age < 3200 ? Math.sin(age * .026) * 7 * (1 - age / 4000) : 0;
+    const green = levels[levelIndex]?.palette[3] || "#a9f576";
+    ctx.save();
+    ctx.translate(droppedTail.x, droppedTail.y);
+    ctx.scale(droppedTail.facing, 1);
+    ctx.rotate(wiggle * .025);
+    ctx.globalAlpha = Math.max(.28, 1 - age / 9000);
+    ctx.strokeStyle = green;
+    ctx.lineWidth = 8;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.bezierCurveTo(-10, -wiggle, -24, wiggle, -43, 3);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   function drawGecko(now) {
     const flash = now < invulnerableUntil && Math.floor(now / 90) % 2 === 0;
     if (flash) ctx.globalAlpha = .4;
@@ -414,14 +469,47 @@
     ctx.translate(player.x + player.w/2, player.y + player.h/2);
     ctx.scale(player.facing, 1);
     const green = levels[levelIndex]?.palette[3] || "#a9f576";
-    ctx.strokeStyle = green; ctx.lineWidth = 7; ctx.lineCap = "round";
-    ctx.beginPath();ctx.moveTo(-12,3);ctx.bezierCurveTo(-27,8,-26,19,-39,14);ctx.stroke();
-    ctx.strokeStyle = green;ctx.lineWidth=4;
-    ctx.beginPath();ctx.moveTo(-7,7);ctx.lineTo(-14,15);ctx.lineTo(-20,15);ctx.moveTo(7,7);ctx.lineTo(14,15);ctx.lineTo(20,15);ctx.moveTo(-5,-5);ctx.lineTo(-13,-12);ctx.moveTo(7,-5);ctx.lineTo(15,-12);ctx.stroke();
-    ctx.fillStyle = green;ctx.beginPath();ctx.ellipse(0,0,18,10,0,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.ellipse(16,-2,11,9,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#071008";ctx.beginPath();ctx.arc(20,-5,2.6,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#fff6c5";ctx.beginPath();ctx.arc(21,-6,1,0,Math.PI*2);ctx.fill();
+    // Long, gently tapering tail. Crested geckos are not curly-tailed chameleons.
+    if (tailReady) {
+      ctx.strokeStyle = green; ctx.lineWidth = 7; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(-14, 2); ctx.bezierCurveTo(-27, 3, -37, 8, -49, 5); ctx.stroke();
+    }
+
+    // Splayed legs and round adhesive toe pads.
+    ctx.strokeStyle = green; ctx.lineWidth = 4;
+    const feet = [[-9,6,-18,14,-25,13],[7,6,14,14,22,13],[-8,-5,-17,-11,-23,-10],[7,-5,15,-11,22,-9]];
+    feet.forEach(([x1,y1,x2,y2,x3,y3]) => {
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.lineTo(x3,y3); ctx.stroke();
+      ctx.beginPath(); ctx.arc(x3,y3,3,0,Math.PI*2); ctx.fillStyle=green; ctx.fill();
+    });
+
+    // Slender body and broad wedge-shaped crested-gecko head.
+    ctx.fillStyle = green;
+    ctx.beginPath(); ctx.ellipse(-1,0,20,9,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(10,-8); ctx.lineTo(29,-7); ctx.quadraticCurveTo(34,-1,29,7); ctx.lineTo(11,8); ctx.quadraticCurveTo(18,0,10,-8); ctx.fill();
+
+    // Eyelash crests continue from above the eye down the back.
+    ctx.beginPath();
+    ctx.moveTo(27,-7); ctx.lineTo(29,-14); ctx.lineTo(23,-8);
+    ctx.lineTo(23,-13); ctx.lineTo(18,-8);
+    ctx.lineTo(16,-12); ctx.lineTo(11,-7);
+    ctx.lineTo(8,-11); ctx.lineTo(3,-8);
+    ctx.lineTo(0,-11); ctx.lineTo(-5,-8);
+    ctx.lineTo(-8,-10); ctx.lineTo(-12,-7);
+    ctx.closePath(); ctx.fill();
+
+    ctx.fillStyle="#071008"; ctx.beginPath(); ctx.ellipse(24,-5,3,3.8,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle="#fff6c5"; ctx.beginPath(); ctx.arc(25,-6,1,0,Math.PI*2); ctx.fill();
+
+    // Tongue reaches forward and can actually collect bugs.
+    if (now < tongueActiveUntil) {
+      const progress = Math.min(1, Math.max(0, (now - (tongueActiveUntil - 230)) / 230));
+      const extension = Math.sin(progress * Math.PI) * 106;
+      ctx.strokeStyle="#ff86a8"; ctx.lineWidth=3; ctx.lineCap="round";
+      ctx.beginPath(); ctx.moveTo(29,2); ctx.lineTo(29 + extension,2); ctx.stroke();
+      ctx.fillStyle="#ff9bb7"; ctx.beginPath(); ctx.ellipse(31 + extension,2,6,4,0,0,Math.PI*2); ctx.fill();
+    }
     ctx.restore();
     ctx.globalAlpha = 1;
   }
@@ -433,6 +521,7 @@
     drawExit(level);
     drawInsects(level, time);
     level.hazards.forEach(drawHazard);
+    drawDroppedTail(time);
     drawGecko(time);
   }
 
@@ -447,6 +536,7 @@
   window.addEventListener("keydown", event => {
     if (["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Space"].includes(event.code)) event.preventDefault();
     if (!keys[event.code] && (event.code === "Space" || event.code === "ArrowUp" || event.code === "KeyW")) jump();
+    if (!keys[event.code] && event.code === "KeyE") useTongue();
     if (!keys[event.code] && (event.code === "ShiftLeft" || event.code === "ShiftRight" || event.code === "KeyX")) dropTail();
     keys[event.code] = true;
   });
@@ -458,6 +548,7 @@
     const press = event => {
       event.preventDefault();
       if (control === "tail") return dropTail();
+      if (control === "tongue") return useTongue();
       if (control === "jump" && !keys[key]) jump();
       keys[key] = true;
     };
