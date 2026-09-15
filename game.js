@@ -56,7 +56,7 @@
     {
       label: "LEVEL 2 · MEDIUM",
       title: "The Reptile Room",
-      intro: "Reach the doorway. Avoid the hand, the cat, and the cup of Repashy that has achieved structural permanence.",
+      intro: "Reach the doorway. Avoid the cat, the Dalmatian, and the spilled gecko food that has achieved structural permanence.",
       completeTitle: "You have breached containment.",
       completeText: "The house stretches before you. Somewhere in the dark, a refrigerator hums like destiny.",
       palette: ["#0c1117", "#1d2830", "#754f31", "#f0cc62"],
@@ -66,15 +66,15 @@
       insects: [[420,355],[120,161],[620,120]],
       hazards: [
         {x:650,y:303,w:66,h:24,type:"cat",axis:"x",min:620,max:820,speed:105},
-        {x:292,y:478,w:62,h:22,type:"repashy",axis:"none"},
-        {x:135,y:164,w:70,h:24,type:"hand",axis:"x",min:60,max:190,speed:78}
+        {x:286,y:476,w:76,h:24,type:"foodBowl",axis:"none"},
+        {x:125,y:156,w:82,h:40,type:"dalmatian",axis:"x",min:60,max:170,speed:78}
       ],
       decor: "room"
     },
     {
       label: "LEVEL 3 · HARD",
       title: "The House",
-      intro: "Cross the living room. The dog has noticed you. The refrigerator waits beyond all reason and hygiene.",
+      intro: "Cross the living room. A human foot patrols the floor. The Roomba has joined the hunt.",
       completeTitle: "Behind the refrigerator.",
       completeText: "Warm. Dusty. Inaccessible to humans. You have found paradise, which is mostly crumbs and one dead spider.",
       palette: ["#111018", "#292239", "#795b44", "#ef8c73"],
@@ -83,9 +83,9 @@
       vines: [[190,326,18,112],[380,265,18,110],[742,205,18,190]],
       insects: [[290,337],[665,233],[850,177]],
       hazards: [
-        {x:238,y:478,w:92,h:22,type:"dog",axis:"x",min:210,max:490,speed:145},
-        {x:555,y:423,w:62,h:22,type:"roomba",axis:"x",min:510,max:680,speed:118},
-        {x:800,y:478,w:52,h:22,type:"sock",axis:"none"}
+        {x:238,y:460,w:96,h:40,type:"slipper",axis:"x",min:210,max:490,speed:145},
+        {x:550,y:413,w:72,h:32,type:"roomba",axis:"x",min:510,max:680,speed:118},
+        {x:800,y:474,w:56,h:26,type:"lego",axis:"none"}
       ],
       decor: "house"
     }
@@ -421,10 +421,18 @@
       ctx.beginPath();ctx.moveTo(8,7);ctx.lineTo(13,-4);ctx.lineTo(20,7);ctx.fill();
       ctx.fillStyle="#d8f56d";ctx.fillRect(13,10,4,3);ctx.fillRect(22,10,4,3);
       ctx.strokeStyle="#151416";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(h.w-4,12);ctx.quadraticCurveTo(h.w+18,-2,h.w+12,-15);ctx.stroke();
-    } else if (h.type === "dog") {
-      ctx.fillStyle="#9c7655";roundedRect(0,2,h.w,h.h-2,10);ctx.fill();
-      ctx.fillStyle="#6d4b35";ctx.beginPath();ctx.ellipse(16,7,12,9,-.3,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#111";ctx.beginPath();ctx.arc(8,8,3,0,Math.PI*2);ctx.fill();
+    } else if (h.type === "dalmatian") {
+      // White body, black ears, legs, tail, and an unreasonable number of spots.
+      ctx.fillStyle="#f5f3e8";roundedRect(13,8,h.w-25,h.h-17,12);ctx.fill();
+      ctx.beginPath();ctx.arc(15,14,13,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="#f5f3e8";ctx.lineWidth=6;ctx.lineCap="round";
+      ctx.beginPath();ctx.moveTo(h.w-14,12);ctx.quadraticCurveTo(h.w+7,1,h.w+4,-8);ctx.stroke();
+      ctx.fillStyle="#111318";
+      ctx.beginPath();ctx.ellipse(8,5,7,11,-.45,0,Math.PI*2);ctx.fill();
+      [[25,14,5],[42,10,4],[57,20,5],[19,23,3]].forEach(([x,y,r])=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();});
+      ctx.fillRect(22,h.h-13,7,13);ctx.fillRect(h.w-29,h.h-13,7,13);
+      ctx.beginPath();ctx.arc(5,16,3,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#7df5d0";ctx.beginPath();ctx.arc(14,12,2,0,Math.PI*2);ctx.fill();
     } else if (h.type === "hand") {
       ctx.fillStyle="#c99072";roundedRect(0,5,h.w,h.h-5,10);ctx.fill();
       for(let i=0;i<4;i++){roundedRect(25+i*9,0,8,16,4);ctx.fill();}
@@ -438,12 +446,31 @@
       roundedRect(h.w-20,29,28,15,7);ctx.fill();
       ctx.fillStyle="rgba(255,255,255,.18)";
       roundedRect(18,23,h.w-42,4,2);ctx.fill();
-    } else if (h.type === "repashy") {
-      ctx.fillStyle="#d6d1b4";roundedRect(4,0,h.w-8,h.h,6);ctx.fill();ctx.fillStyle="#6d5938";ctx.fillRect(8,4,h.w-16,7);
+    } else if (h.type === "foodBowl") {
+      // A tipped feeding cup with a visible brown puddle, rather than a white mystery brick.
+      ctx.fillStyle="#7a5632";ctx.beginPath();ctx.ellipse(h.w*.62,h.h-5,h.w*.38,8,-.08,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#e9e1c7";ctx.beginPath();ctx.moveTo(4,4);ctx.lineTo(37,8);ctx.lineTo(32,h.h);ctx.lineTo(9,h.h-3);ctx.closePath();ctx.fill();
+      ctx.strokeStyle="#f8f3df";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(4,4);ctx.lineTo(37,8);ctx.stroke();
+      ctx.fillStyle="#5c3a20";ctx.beginPath();ctx.ellipse(21,9,13,4,.12,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#21170f";ctx.font="bold 8px system-ui";ctx.textAlign="center";ctx.fillText("FOOD",21,19);
     } else if (h.type === "roomba") {
-      ctx.fillStyle="#26272a";ctx.beginPath();ctx.ellipse(h.w/2,h.h/2,h.w/2,h.h/2,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#ef8c73";ctx.stroke();
-    } else {
-      ctx.fillStyle="#524957";ctx.beginPath();ctx.ellipse(h.w/2,h.h/2,h.w/2,h.h/2,-.25,0,Math.PI*2);ctx.fill();
+      // Side-view robot vacuum with wheels sitting directly on its platform.
+      ctx.fillStyle="#0c0d10";ctx.beginPath();ctx.arc(15,h.h-3,6,0,Math.PI*2);ctx.arc(h.w-15,h.h-3,6,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#3a3d43";roundedRect(2,8,h.w-4,h.h-12,9);ctx.fill();
+      ctx.strokeStyle="#8f959f";ctx.lineWidth=2;ctx.stroke();
+      ctx.fillStyle="#1e2025";ctx.beginPath();ctx.ellipse(h.w/2,9,h.w*.35,8,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#65d9f5";ctx.beginPath();ctx.arc(h.w/2,8,3,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="#ef8c73";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(h.w-4,h.h-7);ctx.lineTo(h.w+9,h.h-13);ctx.moveTo(h.w-4,h.h-7);ctx.lineTo(h.w+9,h.h-4);ctx.stroke();
+    } else if (h.type === "slipper") {
+      ctx.fillStyle="#d7aa86";roundedRect(0,0,28,h.h,9);ctx.fill();
+      ctx.fillStyle="#24252a";ctx.beginPath();ctx.moveTo(17,14);ctx.quadraticCurveTo(48,5,h.w-5,19);ctx.lineTo(h.w,34);ctx.lineTo(23,34);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#666a73";roundedRect(26,18,h.w-34,10,5);ctx.fill();
+      ctx.fillStyle="#111318";ctx.fillRect(20,h.h-6,h.w-20,6);
+    } else if (h.type === "lego") {
+      ctx.fillStyle="#e3343f";roundedRect(2,7,h.w-4,h.h-7,3);ctx.fill();
+      ctx.fillStyle="#ff5b62";
+      for(let x=9;x<h.w-5;x+=13){ctx.beginPath();ctx.ellipse(x,7,5,3,0,Math.PI,Math.PI*2);ctx.fill();}
+      ctx.strokeStyle="#9e1720";ctx.lineWidth=2;roundedRect(2,7,h.w-4,h.h-7,3);ctx.stroke();
     }
     ctx.restore();
   }
