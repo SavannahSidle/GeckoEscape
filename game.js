@@ -1407,19 +1407,26 @@
     if(flash)ctx.globalAlpha=.4;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
     const dark=characters.boa.color;
-    const slither=Math.abs(player.vx)>12?Math.sin(now*.018)*5:0;
+    const moving=Math.min(1,Math.abs(player.vx)/110);
+    const slitherPhase=now*.026;
+    const tailWave=moving*Math.sin(slitherPhase)*10;
+    const midWave=moving*Math.sin(slitherPhase+1.7)*11;
+    const neckWave=moving*Math.sin(slitherPhase+3.25)*8;
     ctx.strokeStyle=dark;ctx.lineWidth=15;ctx.lineCap="round";
     if(now<constrictPulseUntil){
       ctx.beginPath();ctx.ellipse(-22,4,32,14,-.08,0,Math.PI*2);ctx.stroke();
       ctx.lineWidth=11;ctx.beginPath();ctx.ellipse(-17,1,22,9,.1,0,Math.PI*2);ctx.stroke();
       ctx.strokeStyle="#414448";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(-21,4,29,12,-.08,0,Math.PI*2);ctx.stroke();
     }else{
-      ctx.beginPath();ctx.moveTo(-64,5);ctx.bezierCurveTo(-50,-14+slither,-31,15-slither,-15,0);ctx.bezierCurveTo(1,-15-slither,11,10+slither,24,-1);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-64,5+tailWave*.55);
+      ctx.bezierCurveTo(-53,-17+tailWave,-40,19-midWave,-25,3+midWave*.35);
+      ctx.bezierCurveTo(-10,-18+midWave,4,15-neckWave,20,-1+neckWave*.3);ctx.stroke();
     }
     const strikeProgress=now<strikeActiveUntil?Math.max(0,1-(strikeActiveUntil-now)/300):0;
     const lunge=now<strikeActiveUntil?Math.sin(strikeProgress*Math.PI)*38:0;
-    ctx.strokeStyle=dark;ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(now<constrictPulseUntil?-1:14,-1);ctx.quadraticCurveTo(20+lunge*.45,-5,24+lunge,-2);ctx.stroke();
-    ctx.save();ctx.translate(lunge,0);
+    const headWave=now<constrictPulseUntil?0:neckWave*.35;
+    ctx.strokeStyle=dark;ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(now<constrictPulseUntil?-1:14,-1+headWave);ctx.quadraticCurveTo(20+lunge*.45,-5+headWave,24+lunge,-2+headWave);ctx.stroke();
+    ctx.save();ctx.translate(lunge,headWave);ctx.rotate(moving*Math.sin(slitherPhase+3.25)*.055);
     ctx.fillStyle=dark;
     ctx.beginPath();ctx.moveTo(15,-11);ctx.quadraticCurveTo(34,-14,48,-8);ctx.lineTo(54,-1);ctx.lineTo(49,8);ctx.quadraticCurveTo(33,13,16,9);ctx.lineTo(9,3);ctx.lineTo(11,-6);ctx.closePath();ctx.fill();
     ctx.strokeStyle="#383b3e";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(19,8);ctx.quadraticCurveTo(35,12,49,6);ctx.stroke();
