@@ -867,15 +867,18 @@
   function drawPortraitDog(x,y,type){
     ctx.save();ctx.translate(x,y);
     if(type==="dalmatian"){
-      ctx.fillStyle="#f3f0e6";ctx.beginPath();ctx.ellipse(0,5,25,20,0,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#17171a";ctx.beginPath();ctx.ellipse(-16,-6,8,13,-.4,0,Math.PI*2);ctx.fill();ctx.arc(9,2,5,0,Math.PI*2);ctx.arc(-7,12,4,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#6b442c";ctx.beginPath();ctx.arc(-8,2,2.2,0,Math.PI*2);ctx.arc(8,2,2.2,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#18191b";ctx.beginPath();ctx.ellipse(0,13,6,4,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#f5f3e8";ctx.beginPath();ctx.ellipse(4,12,27,17,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(-4,-3,19,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#15171a";ctx.beginPath();ctx.ellipse(-17,-10,8,14,-.35,0,Math.PI*2);ctx.ellipse(9,-12,7,12,.4,0,Math.PI*2);ctx.fill();
+      [[5,8,4],[-10,5,3],[16,16,4],[-1,19,2.5]].forEach(([sx,sy,r])=>{ctx.beginPath();ctx.arc(sx,sy,r,0,Math.PI*2);ctx.fill();});
+      ctx.fillStyle="#74462d";ctx.beginPath();ctx.arc(-10,-3,2.5,0,Math.PI*2);ctx.arc(7,-3,2.5,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#eee6da";ctx.beginPath();ctx.ellipse(-5,7,14,8,-.05,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#111318";ctx.beginPath();ctx.ellipse(-16,5,5,4,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#554842";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(-11,11);ctx.quadraticCurveTo(-4,15,3,10);ctx.stroke();
     }else{
-      ctx.fillStyle="#6f7378";ctx.beginPath();ctx.ellipse(0,6,24,20,0,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.ellipse(-13,-9,8,14,-.2,0,Math.PI*2);ctx.ellipse(13,-9,8,14,.2,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#c4956c";ctx.beginPath();ctx.ellipse(0,12,12,8,0,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#222326";ctx.beginPath();ctx.ellipse(0,10,5,4,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#25292e";ctx.beginPath();ctx.ellipse(0,8,25,20,0,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.moveTo(-20,-2);ctx.quadraticCurveTo(-20,-18,-12,-19);ctx.quadraticCurveTo(-4,-15,-6,0);ctx.moveTo(7,0);ctx.quadraticCurveTo(6,-16,14,-18);ctx.quadraticCurveTo(23,-15,20,1);ctx.fill();
+      ctx.fillStyle="#b98b68";ctx.beginPath();ctx.ellipse(-11,3,4,3,0,0,Math.PI*2);ctx.ellipse(11,3,4,3,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(0,14,13,8,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#d7b776";ctx.beginPath();ctx.arc(-10,5,1.7,0,Math.PI*2);ctx.arc(10,5,1.7,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#15171a";ctx.beginPath();ctx.ellipse(-7,13,7,5,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#15171a";ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(-7,17);ctx.lineTo(-2,19);ctx.quadraticCurveTo(3,20,7,17);ctx.stroke();
     }
     ctx.restore();
   }
@@ -1180,7 +1183,7 @@
       ctx.fillStyle="#74462d";ctx.beginPath();ctx.arc(15,16,2.6,0,Math.PI*2);ctx.fill();ctx.fillStyle="#17110d";ctx.beginPath();ctx.arc(15.5,16,1.2,0,Math.PI*2);ctx.fill();
       ctx.strokeStyle="#c84d4d";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(29,11);ctx.lineTo(30,32);ctx.stroke();
     } else if (h.type === "frenchie") {
-      ctx.fillStyle="#42484d";roundedRect(23,12,h.w-29,h.h-13,11);ctx.fill();roundedRect(8,9,27,25,9);ctx.fill();
+      ctx.fillStyle="#25292e";roundedRect(23,12,h.w-29,h.h-13,11);ctx.fill();roundedRect(8,9,27,25,9);ctx.fill();
       ctx.beginPath();ctx.moveTo(10,13);ctx.quadraticCurveTo(8,1,14,0);ctx.quadraticCurveTo(20,1,20,13);ctx.moveTo(23,13);ctx.quadraticCurveTo(23,1,29,1);ctx.quadraticCurveTo(35,3,32,15);ctx.fill();
       ctx.fillStyle="#c49a76";ctx.beginPath();ctx.ellipse(10,25,7,5,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(13,16,4,2.5,0,0,Math.PI*2);ctx.ellipse(27,16,4,2.5,0,0,Math.PI*2);ctx.fill();
       ctx.fillRect(30,h.h-13,7,13);ctx.fillRect(h.w-21,h.h-13,7,13);ctx.beginPath();ctx.moveTo(39,20);ctx.lineTo(48,35);ctx.lineTo(57,35);ctx.lineTo(50,20);ctx.fill();
