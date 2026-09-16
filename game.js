@@ -46,6 +46,7 @@
   let regenerateUntil = 0;
   let regenerateCooldownUntil = 0;
   let frogHopCooldownUntil = 0;
+  let frogAutoHopping = false;
   let miceCollected = 0;
   let selectedCharacter = "crested";
   let soundOn = true;
@@ -89,7 +90,7 @@
       completeText: "The house stretches before you. Somewhere in the dark, a refrigerator hums like destiny.",
       palette: ["#0c1117", "#1d2830", "#754f31", "#f0cc62"],
       start: [45, 445], exit: [876,88,50,82],
-      platforms: [[0,500,960,40],[28,442,235,20],[425,390,205,20],[615,327,285,20],[380,270,120,18],[105,322,180,18,"sink"],[40,196,210,18,"sill"],[530,206,190,18,"sill"],[775,174,185,18,"fridgeTop"]],
+      platforms: [[0,500,960,40],[28,442,235,20,"counter"],[425,390,205,20,"counter"],[615,327,285,20,"counter"],[380,270,120,18,"shelf"],[105,322,180,18,"sink"],[40,196,210,18,"sill"],[530,206,190,18,"sill"],[775,174,185,18,"fridgeTop"]],
       angledPlatforms: [[350,330,235,215,18]],
       vines: [],
       insects: [[80,410],[420,355],[300,294],[510,294],[740,294],[120,161],[620,120],[875,142]],
@@ -264,6 +265,7 @@
     primaryButton.classList.remove("hidden");
     characterSelect.classList.add("hidden");
     secondaryButton.classList.toggle("hidden", !allowSelect);
+    if(allowSelect){secondaryButton.textContent="LEVEL SELECT";secondaryButton.onclick=showMenu;}
     overlay.classList.remove("hidden");
     hud.classList.add("hidden");
     primaryButton.focus();
@@ -290,6 +292,11 @@
     const level = levels[index];
     state = "intro";
     showPanel(level.label, level.title, level.intro, index === 0 ? "START LEVEL" : "CONTINUE", () => startLevel(index));
+    if(index===0){
+      secondaryButton.textContent="BACK TO CHARACTERS";
+      secondaryButton.onclick=showCharacterSelect;
+      secondaryButton.classList.remove("hidden");
+    }
   }
 
   function startLevel(index) {
@@ -315,6 +322,7 @@
     regenerateUntil = 0;
     regenerateCooldownUntil = 0;
     frogHopCooldownUntil = 0;
+    frogAutoHopping = false;
     miceCollected = 0;
     (level.mice||[]).forEach(mouse=>mouse[2]=false);
     tongueActiveUntil = 0;
@@ -345,6 +353,7 @@
     player.vy = 0;
     player.grounded = false;
     player.ceilingClimbing = false;
+    frogAutoHopping = false;
     air = 100;
     invulnerableUntil = performance.now() + 1100;
     updateHud();
@@ -591,7 +600,7 @@
         player.vy += 820 * dt;
         player.vy = Math.min(player.vy, 570);
         if(selectedCharacter==="frog"&&player.grounded&&(left||right)&&now>=frogHopCooldownUntil){
-          player.vy=-145;player.grounded=false;frogHopCooldownUntil=now+330;
+          player.vy=-145;player.grounded=false;frogAutoHopping=true;frogHopCooldownUntil=now+330;
         }
       }
     }
@@ -609,6 +618,7 @@
         player.y = platform.y - player.h;
         player.vy = 0;
         player.grounded = true;
+        if(selectedCharacter==="frog")frogAutoHopping=false;
       }
     }
     for(const p of level.angledPlatforms||[]){
@@ -704,9 +714,10 @@
       tone(210, .05, "sine");
       return;
     }
-    if (player.grounded || player.climbing) {
+    if (player.grounded || player.climbing || (selectedCharacter === "frog" && frogAutoHopping)) {
       player.vy = selectedCharacter === "frog" ? -535 : -455;
       player.grounded = false;
+      if(selectedCharacter==="frog")frogAutoHopping=false;
       tone(245, .05, "triangle");
     }
   }
@@ -1028,6 +1039,17 @@
         ctx.fillStyle="#526067";ctx.beginPath();ctx.ellipse(p[0]+p[2]/2,p[1]+9,55,7,0,0,Math.PI*2);ctx.fill();
         ctx.strokeStyle="#e0e4e4";ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(p[0]+p[2]/2,p[1]+8,58,8,0,0,Math.PI*2);ctx.stroke();
         ctx.strokeStyle="#c8ced0";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(p[0]+p[2]/2-7,p[1]);ctx.arc(p[0]+p[2]/2+8,p[1]-10,15,Math.PI,Math.PI*2);ctx.lineTo(p[0]+p[2]/2+23,p[1]-3);ctx.stroke();
+      }else if(level.decor==="kitchen"&&p[4]==="counter"){
+        // Marble worktop with a cabinet face, so routes read as part of the kitchen.
+        ctx.fillStyle="#d6d0c3";roundedRect(p[0],p[1],p[2],Math.min(10,p[3]),3);ctx.fill();
+        ctx.fillStyle="#776655";ctx.fillRect(p[0]+5,p[1]+10,p[2]-10,p[3]-10);
+        ctx.strokeStyle="#9b8974";ctx.lineWidth=2;
+        for(let doorX=p[0]+8;doorX<p[0]+p[2]-24;doorX+=62){ctx.strokeRect(doorX,p[1]+12,52,Math.max(4,p[3]-15));}
+        ctx.fillStyle="rgba(255,255,255,.55)";ctx.fillRect(p[0]+6,p[1]+3,p[2]-12,2);
+      }else if(level.decor==="kitchen"&&p[4]==="shelf"){
+        ctx.fillStyle="#9a7454";roundedRect(p[0],p[1],p[2],p[3],3);ctx.fill();
+        ctx.fillStyle="#d8c5a4";ctx.fillRect(p[0]+4,p[1]+2,p[2]-8,4);
+        ctx.fillStyle="#5b493b";ctx.beginPath();ctx.moveTo(p[0]+14,p[1]+p[3]);ctx.lineTo(p[0]+25,p[1]+p[3]+12);ctx.lineTo(p[0]+34,p[1]+p[3]);ctx.fill();ctx.beginPath();ctx.moveTo(p[0]+p[2]-34,p[1]+p[3]);ctx.lineTo(p[0]+p[2]-25,p[1]+p[3]+12);ctx.lineTo(p[0]+p[2]-14,p[1]+p[3]);ctx.fill();
       }else if(level.decor==="enclosure"&&p[1]<490){
         const y=p[1]+p[3]/2;
         ctx.strokeStyle="#51351f";ctx.lineWidth=p[3];ctx.lineCap="round";
@@ -1044,7 +1066,12 @@
       }
     }
     for (const v of level.vines) drawClimbablePlant(v,level);
-    for (const p of level.angledPlatforms||[]) drawAngledPlatform(p,level);
+    for (const p of level.angledPlatforms||[]) {
+      if(level.decor==="kitchen"){
+        const [x1,y1,x2,y2,width]=p;
+        ctx.save();ctx.lineCap="round";ctx.strokeStyle="#8d7358";ctx.lineWidth=width||18;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.strokeStyle="#d8c5a4";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x1,y1-3);ctx.lineTo(x2,y2-3);ctx.stroke();ctx.restore();
+      }else drawAngledPlatform(p,level);
+    }
     for (const v of level.diagonalVines||[]) drawDiagonalVine(v);
     for (const v of level.ceilingVines||[]) drawCeilingVine(v);
   }
@@ -1351,15 +1378,23 @@
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
     const blue=characters.frog.color;
     const airborne=!player.grounded;
-    const extension=airborne?Math.min(1,.35+Math.abs(player.vy)/520):0;
-    const rearKneeX=-22-extension*7,rearKneeY=airborne?7:15;
-    const rearAnkleX=-34-extension*13,rearAnkleY=airborne?9:8;
-    const frontKneeX=18,frontKneeY=airborne?6:11,frontFootX=28+extension*4,frontFootY=airborne?4:8;
-    // One clearly jointed hind leg and one foreleg, crouched on land and extended in flight.
-    ctx.strokeStyle=blue;ctx.lineWidth=6;ctx.lineCap="round";
-    ctx.beginPath();ctx.moveTo(-8,5);ctx.lineTo(rearKneeX,rearKneeY);ctx.lineTo(rearAnkleX,rearAnkleY);ctx.stroke();
-    ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(10,3);ctx.lineTo(frontKneeX,frontKneeY);ctx.lineTo(frontFootX,frontFootY);ctx.stroke();
-    ctx.lineWidth=2;ctx.beginPath();[-4,0,4].forEach(offset=>{ctx.moveTo(rearAnkleX,rearAnkleY);ctx.lineTo(rearAnkleX-8,rearAnkleY+offset);ctx.moveTo(frontFootX,frontFootY);ctx.lineTo(frontFootX+7,frontFootY+offset*.65);});ctx.stroke();
+    const rising=airborne?Math.max(0,Math.min(1,-player.vy/535)):0;
+    const falling=airborne?Math.max(0,Math.min(1,player.vy/480)):0;
+    const stride=airborne?Math.max(.32,rising,falling*.65):Math.abs(player.vx)>15?.25:0;
+    const knee={x:-17-stride*7,y:12-stride*7};
+    const ankle={x:-29-stride*12,y:8+falling*4};
+    const hindToe={x:-40-stride*10,y:10+falling*5};
+    const elbow={x:17+stride*2,y:7+falling*4};
+    const wrist={x:27+stride*6,y:9+falling*6};
+    const drawLeg=(color,offsetX,offsetY,near=true)=>{
+      ctx.strokeStyle=color;ctx.lineCap="round";
+      ctx.lineWidth=near?6:4.5;ctx.beginPath();ctx.moveTo(-7+offsetX,5+offsetY);ctx.lineTo(knee.x+offsetX,knee.y+offsetY);ctx.lineTo(ankle.x+offsetX,ankle.y+offsetY);ctx.lineTo(hindToe.x+offsetX,hindToe.y+offsetY);ctx.stroke();
+      ctx.lineWidth=near?4:3;ctx.beginPath();ctx.moveTo(10+offsetX,3+offsetY);ctx.lineTo(elbow.x+offsetX,elbow.y+offsetY);ctx.lineTo(wrist.x+offsetX,wrist.y+offsetY);ctx.stroke();
+      ctx.lineWidth=1.8;ctx.beginPath();[-3,0,3].forEach(toe=>{ctx.moveTo(hindToe.x+offsetX,hindToe.y+offsetY);ctx.lineTo(hindToe.x-7+offsetX,hindToe.y+toe+offsetY);ctx.moveTo(wrist.x+offsetX,wrist.y+offsetY);ctx.lineTo(wrist.x+7+offsetX,wrist.y+toe*.65+offsetY);});ctx.stroke();
+    };
+    // Far limbs remain below the body; near limbs lead the hop with visible knee and ankle bends.
+    drawLeg("#15569a",3,2,false);
+    drawLeg(blue,0,0,true);
     ctx.fillStyle=blue;ctx.beginPath();ctx.ellipse(0,3,18,12,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(12,-5,15,10,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#0a1830";[[-8,1,4],[2,7,3],[13,1,4],[20,-7,3],[-1,-5,3]].forEach(([x,y,r])=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();});
     ctx.fillStyle="#d8e9a0";ctx.beginPath();ctx.arc(18,-9,3.6,0,Math.PI*2);ctx.fill();ctx.fillStyle="#10171a";ctx.beginPath();ctx.arc(19,-9,1.7,0,Math.PI*2);ctx.fill();
@@ -1453,7 +1488,6 @@
     button.addEventListener("pointerleave", release);
   });
 
-  secondaryButton.addEventListener("click", showMenu);
   characterSelect.querySelectorAll("[data-character]").forEach(button => {
     button.addEventListener("click", () => {
       selectedCharacter = button.dataset.character;
