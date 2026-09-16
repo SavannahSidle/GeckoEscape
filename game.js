@@ -89,8 +89,8 @@
       completeText: "The house stretches before you. Somewhere in the dark, a refrigerator hums like destiny.",
       palette: ["#0c1117", "#1d2830", "#754f31", "#f0cc62"],
       start: [45, 445], exit: [876,88,50,82],
-      platforms: [[0,500,960,40],[28,442,235,20],[425,390,205,20],[615,327,285,20],[265,285,105,18],[40,262,170,18],[55,196,180,18],[530,155,180,18],[815,174,125,18]],
-      angledPlatforms: [[300,330,185,215,18]],
+      platforms: [[0,500,960,40],[28,442,235,20],[425,390,205,20],[615,327,285,20],[380,270,120,18],[105,322,180,18,"sink"],[40,196,210,18,"sill"],[530,206,190,18,"sill"],[775,174,185,18,"fridgeTop"]],
+      angledPlatforms: [[350,330,235,215,18]],
       vines: [],
       insects: [[80,410],[420,355],[300,294],[510,294],[740,294],[120,161],[620,120],[875,142]],
       hazards: [
@@ -771,22 +771,23 @@
       for(let x=15;x<760;x+=150){ctx.strokeRect(x,360,130,130);ctx.beginPath();ctx.arc(x+112,422,3,0,Math.PI*2);ctx.stroke();}
       ctx.fillStyle="#11171a";ctx.fillRect(360,344,150,156);ctx.strokeStyle="#778087";ctx.strokeRect(375,374,120,105);
       ctx.fillStyle="#2c3337";for(let i=0;i<4;i++){ctx.beginPath();ctx.arc(385+i*34,337,10,0,Math.PI*2);ctx.fill();}
-      ctx.fillStyle="#90979a";ctx.fillRect(120,322,150,7);ctx.fillStyle="#0b1215";ctx.beginPath();ctx.ellipse(195,326,52,13,0,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle="#9ca4a5";ctx.lineWidth=5;ctx.beginPath();ctx.arc(195,307,18,Math.PI,Math.PI*2);ctx.stroke();
+      // Spice shelf above the stove.
+      ctx.fillStyle="#8d7358";roundedRect(372,248,126,8,3);ctx.fill();
+      const spiceColors=["#c4773d","#d0a84a","#8d4b38","#628352","#b6b0a3"];
+      spiceColors.forEach((color,index)=>{const x=380+index*23;ctx.fillStyle=color;roundedRect(x,225,15,23,3);ctx.fill();ctx.fillStyle="#ded8c8";ctx.fillRect(x+2,228,11,4);});
       // Short, unmistakable fridge beneath the exit shelf.
       ctx.fillStyle="#8d9699";roundedRect(775,174,185,326,8);ctx.fill();ctx.strokeStyle="#d4dadb";ctx.lineWidth=4;ctx.stroke();
       ctx.strokeStyle="#545c60";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(779,282);ctx.lineTo(956,282);ctx.stroke();
       ctx.fillStyle="#d8ddde";roundedRect(797,202,7,58,3);ctx.fill();roundedRect(797,310,7,92,3);ctx.fill();
-      ctx.fillStyle="#647075";ctx.font="800 11px system-ui";ctx.textAlign="center";ctx.fillText("FRIDGE",866,300);
       // A bright daytime view. One sky, one sun, no accidental binary star system.
       for(const [index,window] of [[0,[40,88,210,118]],[1,[530,88,190,118]]]){
         const [wx,wy,ww,wh]=window;
         const sky=ctx.createLinearGradient(0,wy,0,wy+wh);sky.addColorStop(0,"#65bce8");sky.addColorStop(1,"#c9ebed");ctx.fillStyle=sky;ctx.fillRect(wx,wy,ww,wh);
-        if(index===1){
-          const glow=ctx.createRadialGradient(wx+ww*.76,wy+30,3,wx+ww*.76,wy+30,30);glow.addColorStop(0,"rgba(255,246,168,.95)");glow.addColorStop(1,"rgba(255,246,168,0)");ctx.fillStyle=glow;ctx.fillRect(wx,wy,ww,wh);
-          ctx.fillStyle="#ffe66f";ctx.beginPath();ctx.arc(wx+ww*.76,wy+30,12,0,Math.PI*2);ctx.fill();
+        if(index===0){
+          const glow=ctx.createRadialGradient(wx+30,wy+28,3,wx+30,wy+28,30);glow.addColorStop(0,"rgba(255,246,168,.95)");glow.addColorStop(1,"rgba(255,246,168,0)");ctx.fillStyle=glow;ctx.fillRect(wx,wy,ww,wh);
+          ctx.fillStyle="#ffe66f";ctx.beginPath();ctx.arc(wx+30,wy+28,12,0,Math.PI*2);ctx.fill();
         }
-        ctx.fillStyle="rgba(255,255,255,.78)";ctx.beginPath();ctx.ellipse(wx+42,wy+35,25,9,0,0,Math.PI*2);ctx.ellipse(wx+65,wy+32,18,11,0,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="rgba(255,255,255,.78)";ctx.beginPath();ctx.ellipse(wx+80,wy+35,25,9,0,0,Math.PI*2);ctx.ellipse(wx+103,wy+32,18,11,0,0,Math.PI*2);ctx.fill();
         ctx.fillStyle="#3d7e42";ctx.beginPath();ctx.moveTo(wx,wy+wh);ctx.lineTo(wx+35,wy+70);ctx.lineTo(wx+68,wy+wh);ctx.lineTo(wx+108,wy+64);ctx.lineTo(wx+150,wy+wh);ctx.fill();
         ctx.strokeStyle="#b9a77e";ctx.lineWidth=7;ctx.strokeRect(wx,wy,ww,wh);ctx.beginPath();ctx.moveTo(wx+ww/2,wy);ctx.lineTo(wx+ww/2,wy+wh);ctx.stroke();
       }
@@ -1015,7 +1016,19 @@
 
   function drawPlatforms(level) {
     for (const p of level.platforms) {
-      if(level.decor==="enclosure"&&p[1]<490){
+      if(level.decor==="kitchen"&&p[4]==="fridgeTop"){
+        // The refrigerator artwork itself is the collision surface.
+        continue;
+      }else if(level.decor==="kitchen"&&p[4]==="sill"){
+        ctx.fillStyle="#d8c5a4";roundedRect(p[0],p[1],p[2],p[3],3);ctx.fill();
+        ctx.fillStyle="#8b775f";ctx.fillRect(p[0]+4,p[1]+p[3]-4,p[2]-8,4);
+        ctx.fillStyle="rgba(255,255,255,.38)";ctx.fillRect(p[0]+7,p[1]+3,p[2]-14,3);
+      }else if(level.decor==="kitchen"&&p[4]==="sink"){
+        ctx.fillStyle="#aeb5b6";roundedRect(p[0],p[1],p[2],p[3],5);ctx.fill();
+        ctx.fillStyle="#526067";ctx.beginPath();ctx.ellipse(p[0]+p[2]/2,p[1]+9,55,7,0,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="#e0e4e4";ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(p[0]+p[2]/2,p[1]+8,58,8,0,0,Math.PI*2);ctx.stroke();
+        ctx.strokeStyle="#c8ced0";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(p[0]+p[2]/2-7,p[1]);ctx.arc(p[0]+p[2]/2+8,p[1]-10,15,Math.PI,Math.PI*2);ctx.lineTo(p[0]+p[2]/2+23,p[1]-3);ctx.stroke();
+      }else if(level.decor==="enclosure"&&p[1]<490){
         const y=p[1]+p[3]/2;
         ctx.strokeStyle="#51351f";ctx.lineWidth=p[3];ctx.lineCap="round";
         ctx.beginPath();ctx.moveTo(p[0]+5,y);ctx.quadraticCurveTo(p[0]+p[2]*.48,y-7,p[0]+p[2]-5,y+2);ctx.stroke();
@@ -1046,7 +1059,7 @@
     ctx.fillStyle = "#020604"; ctx.fillRect(x,y,w,h);
     ctx.strokeStyle = locked?"#c75b4e":level.palette[3]; ctx.lineWidth = 3; ctx.strokeRect(x,y,w,h);
     ctx.fillStyle = locked?"#df7b6c":level.palette[3];
-    const exitLabel = locked?`${remaining} PREY LEFT`:levelIndex === 2 ? "FRIDGE" : level.underwater ? "FILTER OUT" : "EXIT";
+    const exitLabel = locked?`${remaining} PREY LEFT`:level.underwater ? "FILTER OUT" : "EXIT";
     ctx.font = "900 12px system-ui"; ctx.textAlign = "center"; ctx.fillText(exitLabel, x+w/2, y-10);
     ctx.font = "900 24px system-ui";
     ctx.fillText(locked?"×":"↓", x+w/2, y-28);
