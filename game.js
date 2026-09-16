@@ -864,22 +864,40 @@
     for(let i=1;i<6;i+=2){const sx=x+i*24;const sy=y-(i%3)*28;ctx.beginPath();ctx.moveTo(sx-5,sy+4);ctx.bezierCurveTo(sx-8,sy+20,sx+6,sy+26,sx+2,sy+42);ctx.stroke();}
   }
 
+  function drawDalmatianSprite(w=88,h=54){
+    ctx.save();
+    ctx.fillStyle="#f5f3e8";roundedRect(29,10,w-35,h-18,12);ctx.fill();
+    ctx.strokeStyle="#f5f3e8";ctx.lineWidth=6;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(w-11,14);ctx.quadraticCurveTo(w+7,4,w+2,-6);ctx.stroke();
+    ctx.fillStyle="#111318";ctx.beginPath();ctx.arc(w-1,-3,3,0,Math.PI*2);ctx.arc(w+3,2,2.5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#f5f3e8";ctx.beginPath();ctx.arc(20,18,16,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#111318";ctx.beginPath();ctx.ellipse(24,8,7,12,.45,0,Math.PI*2);ctx.fill();
+    [[39,16,5],[50,28,3],[56,12,4],[66,18,2.5],[70,30,5],[78,13,3],[33,31,3]].forEach(([sx,sy,r])=>{ctx.beginPath();ctx.arc(sx,sy,r,0,Math.PI*2);ctx.fill();});
+    ctx.fillRect(38,h-18,7,18);ctx.fillRect(w-23,h-18,7,18);
+    ctx.fillStyle="#eee6da";ctx.beginPath();ctx.ellipse(7,25,15,9,-.08,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#b9a99e";ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(7,25,15,9,-.08,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle="#090a0b";ctx.beginPath();ctx.ellipse(-4,22,6,5,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#403735";ctx.beginPath();ctx.moveTo(1,29);ctx.quadraticCurveTo(9,34,17,28);ctx.stroke();
+    ctx.fillStyle="#74462d";ctx.beginPath();ctx.arc(15,16,2.6,0,Math.PI*2);ctx.fill();ctx.fillStyle="#17110d";ctx.beginPath();ctx.arc(15.5,16,1.2,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#c84d4d";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(29,11);ctx.lineTo(30,32);ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawFrenchieSprite(w=78,h=40){
+    ctx.save();
+    ctx.fillStyle="#20252a";roundedRect(23,12,w-29,h-13,11);ctx.fill();roundedRect(8,9,27,25,9);ctx.fill();
+    ctx.beginPath();ctx.moveTo(10,13);ctx.quadraticCurveTo(8,1,14,0);ctx.quadraticCurveTo(20,1,20,13);ctx.moveTo(23,13);ctx.quadraticCurveTo(23,1,29,1);ctx.quadraticCurveTo(35,3,32,15);ctx.fill();
+    ctx.fillStyle="#c49a76";ctx.beginPath();ctx.ellipse(10,25,7,5,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(13,16,4,2.5,0,0,Math.PI*2);ctx.ellipse(27,16,4,2.5,0,0,Math.PI*2);ctx.fill();
+    ctx.fillRect(30,h-13,7,13);ctx.fillRect(w-21,h-13,7,13);ctx.beginPath();ctx.moveTo(39,20);ctx.lineTo(48,35);ctx.lineTo(57,35);ctx.lineTo(50,20);ctx.fill();
+    ctx.fillStyle="#171a1e";ctx.beginPath();ctx.ellipse(5,23,4,3.6,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#171a1e";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(7,27);ctx.lineTo(10,29);ctx.quadraticCurveTo(13,30,16,27);ctx.stroke();
+    ctx.strokeStyle="#9c7457";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(10,19);ctx.lineTo(10,26);ctx.stroke();
+    ctx.fillStyle="#c9b06c";ctx.beginPath();ctx.arc(14,20,1.7,0,Math.PI*2);ctx.arc(26,20,1.7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#171b1f";ctx.beginPath();ctx.arc(w-5,17,4,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+
   function drawPortraitDog(x,y,type){
     ctx.save();ctx.translate(x,y);
-    if(type==="dalmatian"){
-      ctx.fillStyle="#f5f3e8";ctx.beginPath();ctx.ellipse(4,12,27,17,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(-4,-3,19,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#15171a";ctx.beginPath();ctx.ellipse(-17,-10,8,14,-.35,0,Math.PI*2);ctx.ellipse(9,-12,7,12,.4,0,Math.PI*2);ctx.fill();
-      [[5,8,4],[-10,5,3],[16,16,4],[-1,19,2.5]].forEach(([sx,sy,r])=>{ctx.beginPath();ctx.arc(sx,sy,r,0,Math.PI*2);ctx.fill();});
-      ctx.fillStyle="#74462d";ctx.beginPath();ctx.arc(-10,-3,2.5,0,Math.PI*2);ctx.arc(7,-3,2.5,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#eee6da";ctx.beginPath();ctx.ellipse(-5,7,14,8,-.05,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#111318";ctx.beginPath();ctx.ellipse(-16,5,5,4,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#554842";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(-11,11);ctx.quadraticCurveTo(-4,15,3,10);ctx.stroke();
-    }else{
-      ctx.fillStyle="#25292e";ctx.beginPath();ctx.ellipse(0,8,25,20,0,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.moveTo(-20,-2);ctx.quadraticCurveTo(-20,-18,-12,-19);ctx.quadraticCurveTo(-4,-15,-6,0);ctx.moveTo(7,0);ctx.quadraticCurveTo(6,-16,14,-18);ctx.quadraticCurveTo(23,-15,20,1);ctx.fill();
-      ctx.fillStyle="#b98b68";ctx.beginPath();ctx.ellipse(-11,3,4,3,0,0,Math.PI*2);ctx.ellipse(11,3,4,3,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(0,14,13,8,0,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#d7b776";ctx.beginPath();ctx.arc(-10,5,1.7,0,Math.PI*2);ctx.arc(10,5,1.7,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#15171a";ctx.beginPath();ctx.ellipse(-7,13,7,5,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#15171a";ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(-7,17);ctx.lineTo(-2,19);ctx.quadraticCurveTo(3,20,7,17);ctx.stroke();
-    }
+    if(type==="dalmatian"){ctx.scale(.7,.7);ctx.translate(-44,-27);drawDalmatianSprite();}
+    else{ctx.scale(.8,.8);ctx.translate(-39,-20);drawFrenchieSprite();}
     ctx.restore();
   }
 
@@ -1169,27 +1187,9 @@
       ctx.fillStyle="#d8f56d";ctx.fillRect(13,10,4,3);ctx.fillRect(22,10,4,3);
       ctx.strokeStyle="#151416";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(h.w-4,12);ctx.quadraticCurveTo(h.w+18,-2,h.w+12,-15);ctx.stroke();
     } else if (h.type === "dalmatian") {
-      ctx.fillStyle="#f5f3e8";roundedRect(29,10,h.w-35,h.h-18,12);ctx.fill();
-      ctx.strokeStyle="#f5f3e8";ctx.lineWidth=6;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(h.w-11,14);ctx.quadraticCurveTo(h.w+7,4,h.w+2,-6);ctx.stroke();
-      ctx.fillStyle="#111318";ctx.beginPath();ctx.arc(h.w-1,-3,3,0,Math.PI*2);ctx.arc(h.w+3,2,2.5,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#f5f3e8";ctx.beginPath();ctx.arc(20,18,16,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#111318";ctx.beginPath();ctx.ellipse(24,8,7,12,.45,0,Math.PI*2);ctx.fill();
-      [[39,16,5],[50,28,3],[56,12,4],[66,18,2.5],[70,30,5],[78,13,3],[33,31,3]].forEach(([x,y,r])=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();});
-      ctx.fillRect(38,h.h-18,7,18);ctx.fillRect(h.w-23,h.h-18,7,18);
-      ctx.fillStyle="#eee6da";ctx.beginPath();ctx.ellipse(7,25,15,9,-.08,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle="#b9a99e";ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(7,25,15,9,-.08,0,Math.PI*2);ctx.stroke();
-      ctx.fillStyle="#090a0b";ctx.beginPath();ctx.ellipse(-4,22,6,5,0,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle="#403735";ctx.beginPath();ctx.moveTo(1,29);ctx.quadraticCurveTo(9,34,17,28);ctx.stroke();
-      ctx.fillStyle="#74462d";ctx.beginPath();ctx.arc(15,16,2.6,0,Math.PI*2);ctx.fill();ctx.fillStyle="#17110d";ctx.beginPath();ctx.arc(15.5,16,1.2,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle="#c84d4d";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(29,11);ctx.lineTo(30,32);ctx.stroke();
+      drawDalmatianSprite(h.w,h.h);
     } else if (h.type === "frenchie") {
-      ctx.fillStyle="#25292e";roundedRect(23,12,h.w-29,h.h-13,11);ctx.fill();roundedRect(8,9,27,25,9);ctx.fill();
-      ctx.beginPath();ctx.moveTo(10,13);ctx.quadraticCurveTo(8,1,14,0);ctx.quadraticCurveTo(20,1,20,13);ctx.moveTo(23,13);ctx.quadraticCurveTo(23,1,29,1);ctx.quadraticCurveTo(35,3,32,15);ctx.fill();
-      ctx.fillStyle="#c49a76";ctx.beginPath();ctx.ellipse(10,25,7,5,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(13,16,4,2.5,0,0,Math.PI*2);ctx.ellipse(27,16,4,2.5,0,0,Math.PI*2);ctx.fill();
-      ctx.fillRect(30,h.h-13,7,13);ctx.fillRect(h.w-21,h.h-13,7,13);ctx.beginPath();ctx.moveTo(39,20);ctx.lineTo(48,35);ctx.lineTo(57,35);ctx.lineTo(50,20);ctx.fill();
-      ctx.fillStyle="#34363a";ctx.beginPath();ctx.ellipse(5,23,4,3.6,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#34363a";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(7,27);ctx.lineTo(10,29);ctx.quadraticCurveTo(13,30,16,27);ctx.stroke();
-      ctx.strokeStyle="#9c7457";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(10,19);ctx.lineTo(10,26);ctx.stroke();
-      ctx.fillStyle="#c9b06c";ctx.beginPath();ctx.arc(14,20,1.7,0,Math.PI*2);ctx.arc(26,20,1.7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#353a3e";ctx.beginPath();ctx.arc(h.w-5,17,4,0,Math.PI*2);ctx.fill();
+      drawFrenchieSprite(h.w,h.h);
     } else if (h.type === "hand") {
       ctx.fillStyle="#c99072";roundedRect(0,5,h.w,h.h-5,10);ctx.fill();
       for(let i=0;i<4;i++){roundedRect(25+i*9,0,8,16,4);ctx.fill();}
