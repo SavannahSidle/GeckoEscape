@@ -90,10 +90,10 @@
       completeText: "The house stretches before you. Somewhere in the dark, a refrigerator hums like destiny.",
       palette: ["#0c1117", "#1d2830", "#754f31", "#f0cc62"],
       start: [45, 445], exit: [876,88,50,82],
-      platforms: [[0,500,960,40],[28,442,235,20,"counter"],[425,390,205,20,"counter"],[615,327,285,20,"counter"],[380,270,120,18,"shelf"],[105,322,180,18,"sink"],[40,196,210,18,"sill"],[530,206,190,18,"sill"],[775,174,185,18,"fridgeTop"]],
-      angledPlatforms: [[350,330,235,215,18]],
+      platforms: [[0,500,960,40],[28,442,235,20,"counter"],[425,390,205,20,"counter"],[375,270,120,18,"spiceShelf"],[105,322,180,18,"sink"],[40,196,210,18,"sill"],[530,206,190,18,"sill"],[775,174,185,18,"fridgeTop"]],
+      angledPlatforms: [],
       vines: [],
-      insects: [[80,410],[420,355],[300,294],[510,294],[740,294],[120,161],[620,120],[875,142]],
+      insects: [[80,410],[420,355],[300,294],[510,294],[690,171],[120,161],[620,120],[875,142]],
       hazards: [
         {x:650,y:303,w:66,h:24,type:"cat",axis:"x",min:620,max:820,speed:105},
         {x:125,y:142,w:88,h:54,type:"dalmatian",axis:"x",min:60,max:165,speed:78}
@@ -775,17 +775,15 @@
       drawHabitatDetails(level);
       drawLeaves(48, 220, "#245f36");drawLeaves(665,180,"#1d4e2e");drawLeaves(720,400,"#245f36");
     } else if (level.decor === "kitchen") {
-      ctx.fillStyle="#20272b";ctx.fillRect(0,70,W,430);
-      for(let y=218;y<322;y+=36){for(let x=(y/36)%2?0:36;x<W;x+=72){ctx.fillStyle="rgba(240,232,205,.055)";ctx.fillRect(x,y,35,35);}}
+      ctx.fillStyle="#aebfbb";ctx.fillRect(0,70,W,430);
+      ctx.strokeStyle="rgba(70,88,86,.22)";ctx.lineWidth=1;
+      for(let y=70;y<344;y+=36){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+      for(let x=0;x<W;x+=72){ctx.beginPath();ctx.moveTo(x,70);ctx.lineTo(x,344);ctx.stroke();ctx.beginPath();ctx.moveTo(x+36,88);ctx.lineTo(x+36,344);ctx.stroke();}
       ctx.fillStyle="#171d20";ctx.fillRect(0,344,W,156);
       ctx.strokeStyle="rgba(240,204,98,.16)";ctx.lineWidth=3;
       for(let x=15;x<760;x+=150){ctx.strokeRect(x,360,130,130);ctx.beginPath();ctx.arc(x+112,422,3,0,Math.PI*2);ctx.stroke();}
       ctx.fillStyle="#11171a";ctx.fillRect(360,344,150,156);ctx.strokeStyle="#778087";ctx.strokeRect(375,374,120,105);
       ctx.fillStyle="#2c3337";for(let i=0;i<4;i++){ctx.beginPath();ctx.arc(385+i*34,337,10,0,Math.PI*2);ctx.fill();}
-      // Spice shelf above the stove.
-      ctx.fillStyle="#8d7358";roundedRect(372,248,126,8,3);ctx.fill();
-      const spiceColors=["#c4773d","#d0a84a","#8d4b38","#628352","#b6b0a3"];
-      spiceColors.forEach((color,index)=>{const x=380+index*23;ctx.fillStyle=color;roundedRect(x,225,15,23,3);ctx.fill();ctx.fillStyle="#ded8c8";ctx.fillRect(x+2,228,11,4);});
       // Short, unmistakable fridge beneath the exit shelf.
       ctx.fillStyle="#8d9699";roundedRect(775,174,185,326,8);ctx.fill();ctx.strokeStyle="#d4dadb";ctx.lineWidth=4;ctx.stroke();
       ctx.strokeStyle="#545c60";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(779,282);ctx.lineTo(956,282);ctx.stroke();
@@ -1067,10 +1065,12 @@
         ctx.strokeStyle="#9b8974";ctx.lineWidth=2;
         for(let doorX=p[0]+8;doorX<p[0]+p[2]-24;doorX+=62){ctx.strokeRect(doorX,p[1]+12,52,Math.max(4,p[3]-15));}
         ctx.fillStyle="rgba(255,255,255,.55)";ctx.fillRect(p[0]+6,p[1]+3,p[2]-12,2);
-      }else if(level.decor==="kitchen"&&p[4]==="shelf"){
+      }else if(level.decor==="kitchen"&&p[4]==="spiceShelf"){
         ctx.fillStyle="#9a7454";roundedRect(p[0],p[1],p[2],p[3],3);ctx.fill();
         ctx.fillStyle="#d8c5a4";ctx.fillRect(p[0]+4,p[1]+2,p[2]-8,4);
         ctx.fillStyle="#5b493b";ctx.beginPath();ctx.moveTo(p[0]+14,p[1]+p[3]);ctx.lineTo(p[0]+25,p[1]+p[3]+12);ctx.lineTo(p[0]+34,p[1]+p[3]);ctx.fill();ctx.beginPath();ctx.moveTo(p[0]+p[2]-34,p[1]+p[3]);ctx.lineTo(p[0]+p[2]-25,p[1]+p[3]+12);ctx.lineTo(p[0]+p[2]-14,p[1]+p[3]);ctx.fill();
+        const spiceColors=["#c4773d","#d0a84a","#8d4b38","#628352","#b6b0a3"];
+        spiceColors.forEach((color,index)=>{const jarX=p[0]+10+index*23;ctx.fillStyle=color;roundedRect(jarX,p[1]-23,15,23,3);ctx.fill();ctx.fillStyle="#ded8c8";ctx.fillRect(jarX+2,p[1]-20,11,4);});
       }else if(level.decor==="enclosure"&&p[1]<490){
         const y=p[1]+p[3]/2;
         ctx.strokeStyle="#51351f";ctx.lineWidth=p[3];ctx.lineCap="round";
