@@ -83,11 +83,11 @@
       decor: "enclosure"
     },
     {
-      label: "LEVEL 2 · MEDIUM",
+      label: "LEVEL 3 · HARD",
       title: "The Kitchen",
       intro: "Cross the long counter and open shelves. Avoid the cat and Dalmatian while gathering every last meal.",
       completeTitle: "You have breached containment.",
-      completeText: "The house stretches before you. Somewhere in the dark, a refrigerator hums like destiny.",
+      completeText: "The living room waits beyond the doorway. Somewhere in the dark, a refrigerator hums like destiny.",
       palette: ["#0c1117", "#1d2830", "#754f31", "#f0cc62"],
       start: [45, 445], exit: [876,88,50,82],
       platforms: [[0,500,960,40],[28,442,235,20,"counter"],[425,390,205,20,"counter"],[375,270,120,18,"spiceShelf"],[105,322,180,18,"sink"],[40,196,210,18,"sill"],[530,206,190,18,"sill"],[775,174,185,18,"fridgeTop"]],
@@ -101,11 +101,11 @@
       decor: "kitchen"
     },
     {
-      label: "LEVEL 3 · HARD",
+      label: "LEVEL 4 · LAWLESS",
       title: "The Living Room",
       intro: "Cross the sofa, shelves, and coffee table. The Roomba, French bulldog, cat, and ceiling spider have joined the hunt.",
       completeTitle: "Behind the refrigerator.",
-      completeText: "Warm. Dusty. Almost freedom. Then the filter hose gives way and the floor disappears beneath a wall of water.",
+      completeText: "Warm. Dusty. Free. You have escaped four separate containment failures and learned absolutely nothing.",
       palette: ["#111018", "#292239", "#795b44", "#ef8c73"],
       start: [38, 445], exit: [878,392,64,108],
       platforms: [[0,500,960,40],[26,434,165,20],[35,105,125,18],[40,175,120,18],[115,260,135,18],[230,372,150,18],[420,318,132,18],[520,160,110,18],[602,268,140,18],[790,212,150,18],[820,125,105,18],[690,392,105,18],[520,445,94,18]],
@@ -122,11 +122,11 @@
       decor: "house"
     },
     {
-      label: "LEVEL 4 · UNDERWATER",
+      label: "LEVEL 2 · UNDERWATER",
       title: "The Aquarium",
-      intro: "The final route is underwater. Reptiles need air bubbles. The newt has been waiting its entire moist little life for this.",
+      intro: "The escape route drops through an aquarium. Reptiles need air bubbles. The newt has been waiting its entire moist little life for this.",
       completeTitle: "Out through the filter.",
-      completeText: "Cold. Wet. Free. You have escaped four separate containment failures and learned absolutely nothing.",
+      completeText: "Cold, wet, and loose in the kitchen. The household has made several serious containment errors.",
       palette: ["#031729", "#075169", "#456b52", "#62e8dc"],
       start: [35,440], exit: [875,62,58,92],
       platforms: [[0,500,960,40],[70,430,170,18],[315,350,170,18],[555,430,130,18],[700,278,190,18],[410,200,150,18],[72,145,190,18]],
@@ -143,6 +143,9 @@
     }
   ];
 
+  // Story order: enclosure, aquarium, kitchen, living room.
+  levels.splice(1,0,levels.pop());
+
   const standardStoryLayouts=levels.slice(1).map(level=>({
     platforms:level.platforms.map(platform=>[...platform]),
     angledPlatforms:(level.angledPlatforms||[]).map(platform=>[...platform]),
@@ -151,26 +154,26 @@
     mice:(level.mice||[]).map(mouse=>mouse.slice(0,2))
   }));
 
-  const frogLevelExtras=[
-    {
+  const frogLevelExtras={
+    kitchen:{
       platforms:[[108,310,135,18],[690,225,125,18]],
       insects:[[174,277],[752,192]]
     },
-    {
+    house:{
       platforms:[[88,310,130,18],[350,230,135,18]],
       insects:[[152,277],[417,197]]
     },
-    {
+    underwater:{
       platforms:[[225,275,125,18],[760,365,125,18]],
       insects:[[287,242],[822,332]]
     }
-  ];
+  };
 
-  const boaStoryCollectibles=[
-    {rats:[[620,120]],mice:[[80,410],[300,294],[420,355],[510,294],[740,294],[120,161],[875,142]]},
-    {rats:[[95,72],[665,233],[850,177]],mice:[[105,400],[185,225],[290,337],[470,285],[705,358],[835,305]]},
-    {rats:[[310,115],[850,180]],mice:[[180,390],[120,270],[475,305],[520,465],[650,330],[810,235],[385,315],[735,245]]}
-  ];
+  const boaStoryCollectibles={
+    kitchen:{rats:[[620,120]],mice:[[80,410],[300,294],[420,355],[510,294],[740,294],[120,161],[875,142]]},
+    house:{rats:[[95,72],[665,233],[850,177]],mice:[[105,400],[185,225],[290,337],[470,285],[705,358],[835,305]]},
+    underwater:{rats:[[310,115],[850,180]],mice:[[180,390],[120,270],[475,305],[520,465],[650,330],[810,235],[385,315],[735,245]]}
+  };
 
   const habitatConfigs = {
     chameleon: {
@@ -229,11 +232,12 @@
       level.insects=layout.insects.map(insect=>[...insect]);
       level.mice=selectedCharacter==="crested"?[]:layout.mice.map(mouse=>[...mouse]);
       if(selectedCharacter==="frog"){
-        level.platforms.push(...frogLevelExtras[index].platforms.map(platform=>[...platform]));
-        level.insects.push(...frogLevelExtras[index].insects.map(insect=>[...insect]));
+        const extras=frogLevelExtras[level.decor];
+        level.platforms.push(...extras.platforms.map(platform=>[...platform]));
+        level.insects.push(...extras.insects.map(insect=>[...insect]));
       }
       if(selectedCharacter==="boa"){
-        const prey=boaStoryCollectibles[index];
+        const prey=boaStoryCollectibles[level.decor];
         level.insects=prey.rats.map(rat=>[...rat]);
         level.mice=prey.mice.map(mouse=>[...mouse]);
       }
@@ -548,7 +552,7 @@
     const down = keys.ArrowDown || keys.KeyS;
     const inHabitatWater = level.habitat === "newt" && player.x < 520 && player.y + player.h / 2 > 270;
     const swimming = Boolean(level.underwater || inHabitatWater);
-    const speed = swimming ? character.swimSpeed : levelIndex === 2 ? 236 : 220;
+    const speed = swimming ? character.swimSpeed : level.decor === "house" ? 236 : 220;
     if (["chameleon","newt","frog","boa"].includes(selectedCharacter)) updateHud();
 
     const acceleration = swimming ? 720 : 1450;
