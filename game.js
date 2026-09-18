@@ -1422,10 +1422,10 @@
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
     const dark=characters.boa.color;
     const moving=Math.min(1,Math.abs(player.vx)/110);
-    const slitherPhase=now*.026;
-    const tailWave=moving*Math.sin(slitherPhase)*10;
-    const midWave=moving*Math.sin(slitherPhase+1.7)*11;
-    const neckWave=moving*Math.sin(slitherPhase+3.25)*8;
+    const slitherPhase=now*.019;
+    const tailWave=moving*Math.sin(slitherPhase)*5;
+    const midWave=moving*Math.sin(slitherPhase+1.7)*6;
+    const neckWave=moving*Math.sin(slitherPhase+3.25)*3.5;
     ctx.strokeStyle=dark;ctx.lineWidth=15;ctx.lineCap="round";
     if(now<constrictPulseUntil){
       ctx.beginPath();ctx.ellipse(-22,4,32,14,-.08,0,Math.PI*2);ctx.stroke();
@@ -1440,7 +1440,7 @@
     const lunge=now<strikeActiveUntil?Math.sin(strikeProgress*Math.PI)*38:0;
     const headWave=now<constrictPulseUntil?0:neckWave*.35;
     ctx.strokeStyle=dark;ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(now<constrictPulseUntil?-1:14,-1+headWave);ctx.quadraticCurveTo(20+lunge*.45,-5+headWave,24+lunge,-2+headWave);ctx.stroke();
-    ctx.save();ctx.translate(lunge,headWave);ctx.rotate(moving*Math.sin(slitherPhase+3.25)*.055);
+    ctx.save();ctx.translate(lunge,headWave);ctx.rotate(moving*Math.sin(slitherPhase+3.25)*.025);
     ctx.fillStyle=dark;
     ctx.beginPath();ctx.moveTo(15,-11);ctx.quadraticCurveTo(34,-14,48,-8);ctx.lineTo(54,-1);ctx.lineTo(49,8);ctx.quadraticCurveTo(33,13,16,9);ctx.lineTo(9,3);ctx.lineTo(11,-6);ctx.closePath();ctx.fill();
     ctx.strokeStyle="#383b3e";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(19,8);ctx.quadraticCurveTo(35,12,49,6);ctx.stroke();
