@@ -1385,22 +1385,29 @@
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
     const blue=characters.frog.color;
     const airborne=!player.grounded;
+    const underwater=Boolean(levels[levelIndex]?.underwater);
     const rising=airborne?Math.max(0,Math.min(1,-player.vy/535)):0;
     const falling=airborne?Math.max(0,Math.min(1,player.vy/480)):0;
-    const stride=airborne?Math.max(.32,rising,falling*.65):Math.abs(player.vx)>15?.25:0;
-    const knee={x:-17-stride*7,y:12-stride*7};
-    const ankle={x:-29-stride*12,y:8+falling*4};
-    const hindToe={x:-40-stride*10,y:10+falling*5};
-    const elbow={x:17+stride*2,y:7+falling*4};
-    const wrist={x:27+stride*6,y:9+falling*6};
+    const swimmingKick=underwater&&(Math.abs(player.vx)+Math.abs(player.vy)>12)?(.5+.5*Math.sin(now*.014)):0;
+    const push=underwater?swimmingKick*.8:rising;
+    const landing=underwater?0:falling;
+    const lerp=(a,b,t)=>a+(b-a)*t;
+    // At take-off the hind legs extend, at the apex they tuck under the body,
+    // and during descent the feet reach forward to absorb the landing.
+    const tuck={kneeX:-18,kneeY:11,ankleX:-4,ankleY:15,toeX:-15,toeY:17,elbowX:15,elbowY:8,wristX:24,wristY:9};
+    const launch={kneeX:-22,kneeY:5,ankleX:-38,ankleY:7,toeX:-52,toeY:10,elbowX:18,elbowY:5,wristX:31,wristY:3};
+    const land={kneeX:-14,kneeY:12,ankleX:3,ankleY:15,toeX:16,toeY:18,elbowX:18,elbowY:10,wristX:31,wristY:15};
+    const pose={};
+    for(const key of Object.keys(tuck))pose[key]=landing>0?lerp(tuck[key],land[key],landing):lerp(tuck[key],launch[key],push);
+    if(!airborne&&!underwater){Object.assign(pose,{kneeX:-20,kneeY:13,ankleX:-5,ankleY:16,toeX:-19,toeY:18,elbowX:17,elbowY:9,wristX:27,wristY:11});}
+    const hindToeDirection=landing>.12?1:-1;
     const drawLeg=(color,offsetX,offsetY,near=true)=>{
       ctx.strokeStyle=color;ctx.lineCap="round";
-      ctx.lineWidth=near?6:4.5;ctx.beginPath();ctx.moveTo(-7+offsetX,5+offsetY);ctx.lineTo(knee.x+offsetX,knee.y+offsetY);ctx.lineTo(ankle.x+offsetX,ankle.y+offsetY);ctx.lineTo(hindToe.x+offsetX,hindToe.y+offsetY);ctx.stroke();
-      ctx.lineWidth=near?4:3;ctx.beginPath();ctx.moveTo(10+offsetX,3+offsetY);ctx.lineTo(elbow.x+offsetX,elbow.y+offsetY);ctx.lineTo(wrist.x+offsetX,wrist.y+offsetY);ctx.stroke();
-      ctx.lineWidth=1.8;ctx.beginPath();[-3,0,3].forEach(toe=>{ctx.moveTo(hindToe.x+offsetX,hindToe.y+offsetY);ctx.lineTo(hindToe.x-7+offsetX,hindToe.y+toe+offsetY);ctx.moveTo(wrist.x+offsetX,wrist.y+offsetY);ctx.lineTo(wrist.x+7+offsetX,wrist.y+toe*.65+offsetY);});ctx.stroke();
+      ctx.lineWidth=near?6:4.5;ctx.beginPath();ctx.moveTo(-7+offsetX,5+offsetY);ctx.lineTo(pose.kneeX+offsetX,pose.kneeY+offsetY);ctx.lineTo(pose.ankleX+offsetX,pose.ankleY+offsetY);ctx.lineTo(pose.toeX+offsetX,pose.toeY+offsetY);ctx.stroke();
+      ctx.lineWidth=near?4:3;ctx.beginPath();ctx.moveTo(10+offsetX,3+offsetY);ctx.lineTo(pose.elbowX+offsetX,pose.elbowY+offsetY);ctx.lineTo(pose.wristX+offsetX,pose.wristY+offsetY);ctx.stroke();
+      ctx.lineWidth=1.8;ctx.beginPath();[-3,0,3].forEach(toe=>{ctx.moveTo(pose.toeX+offsetX,pose.toeY+offsetY);ctx.lineTo(pose.toeX+hindToeDirection*8+offsetX,pose.toeY+toe+offsetY);ctx.moveTo(pose.wristX+offsetX,pose.wristY+offsetY);ctx.lineTo(pose.wristX+7+offsetX,pose.wristY+toe*.65+offsetY);});ctx.stroke();
     };
-    // Far limbs remain below the body; near limbs lead the hop with visible knee and ankle bends.
-    drawLeg("#15569a",3,2,false);
+    drawLeg("#15569a",3,1.5,false);
     drawLeg(blue,0,0,true);
     ctx.fillStyle=blue;ctx.beginPath();ctx.ellipse(0,3,18,12,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(12,-5,15,10,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#0a1830";[[-8,1,4],[2,7,3],[13,1,4],[20,-7,3],[-1,-5,3]].forEach(([x,y,r])=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();});
