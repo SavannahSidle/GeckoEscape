@@ -1,6 +1,6 @@
 # Gecko Escape
 
-A tiny four-level browser game from Alien Arboreal.
+A tiny five-level browser game from Alien Arboreal.
 
 ## Play
 
@@ -10,13 +10,14 @@ A tiny four-level browser game from Alien Arboreal.
 - Secondary ability: R, when available
 - Touch controls appear automatically on mobile devices
 
-Collect three insects per level, avoid hazards, and reach the exit. The game runs entirely in the browser with no dependencies.
+Collect every required prey item, avoid hazards, and reach the exit. The game runs entirely in the browser with no dependencies.
 
 ## Story mode
 
 1. The Enclosure
-2. The Reptile Room
-3. The House
-4. The Aquarium
+2. The Aquarium
+3. The Kitchen
+4. The Living Room
+5. The Highway
 
 Choose a chameleon, crested gecko, Chinese fire-bellied newt, Azureus dart frog, or black Colombian boa. Each has a different ability, because equal opportunity does not mean equal biology.

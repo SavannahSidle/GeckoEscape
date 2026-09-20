@@ -104,8 +104,8 @@
       label: "LEVEL 4 · LAWLESS",
       title: "The Living Room",
       intro: "Cross the sofa, shelves, and coffee table. The Roomba, French bulldog, cat, and ceiling spider have joined the hunt.",
-      completeTitle: "Behind the refrigerator.",
-      completeText: "Warm. Dusty. Free. You have escaped four separate containment failures and learned absolutely nothing.",
+      completeTitle: "The front door is open.",
+      completeText: "The house is behind you. Unfortunately, the road ahead appears to have been designed by natural selection.",
       palette: ["#111018", "#292239", "#795b44", "#ef8c73"],
       start: [38, 445], exit: [878,392,64,108],
       platforms: [[0,500,960,40],[26,434,165,20],[35,105,125,18],[40,175,120,18],[115,260,135,18],[230,372,150,18],[420,318,132,18],[520,160,110,18],[602,268,140,18],[790,212,150,18],[820,125,105,18],[690,392,105,18],[520,445,94,18]],
@@ -143,8 +143,28 @@
     }
   ];
 
-  // Story order: enclosure, aquarium, kitchen, living room.
+  // Story order begins with enclosure, aquarium, kitchen, and living room.
   levels.splice(1,0,levels.pop());
+
+  levels.push({
+    label:"LEVEL 5 · FINAL",
+    title:"The Highway",
+    intro:"The front door opens onto traffic. Cross the road, dodge the vehicles, collect every last meal, and reach the far sidewalk alive.",
+    completeTitle:"Actually free.",
+    completeText:"You crossed a highway, escaped five containment failures, and remain entirely unqualified for life in the wild.",
+    palette:["#78b8d4","#bfd9d5","#777d82","#ffe16b"],
+    start:[55,418],exit:[875,368,58,90],
+    platforms:[[0,500,960,40],[0,458,145,42,"sidewalk"],[410,462,120,38,"median"],[815,458,145,42,"sidewalk"],[220,385,105,18,"roadSign"],[635,335,115,18,"roadSign"]],
+    vines:[],
+    insects:[[85,420],[270,350],[360,462],[470,425],[585,462],[692,300],[780,446],[890,420]],
+    hazards:[
+      {x:155,y:458,w:82,h:42,type:"car",axis:"traffic",min:-110,max:970,speed:185,direction:1,color:"#d84e45"},
+      {x:410,y:448,w:118,h:52,type:"truck",axis:"traffic",min:-140,max:980,speed:138,direction:-1,color:"#e3b33f"},
+      {x:650,y:461,w:76,h:39,type:"car",axis:"traffic",min:-100,max:970,speed:230,direction:1,color:"#4b86c6"},
+      {x:825,y:456,w:88,h:44,type:"car",axis:"traffic",min:-110,max:980,speed:168,direction:-1,color:"#8b5ca8"}
+    ],
+    decor:"highway"
+  });
 
   const standardStoryLayouts=levels.slice(1).map(level=>({
     platforms:level.platforms.map(platform=>[...platform]),
@@ -166,13 +186,18 @@
     underwater:{
       platforms:[[225,275,125,18],[760,365,125,18]],
       insects:[[287,242],[822,332]]
+    },
+    highway:{
+      platforms:[[340,285,105,16,"roadSign"],[760,235,95,16,"roadSign"]],
+      insects:[[392,252],[807,202]]
     }
   };
 
   const boaStoryCollectibles={
     kitchen:{rats:[[620,120]],mice:[[80,410],[300,294],[420,355],[510,294],[740,294],[120,161],[875,142]]},
     house:{rats:[[95,72],[665,233],[850,177]],mice:[[105,400],[185,225],[290,337],[470,285],[705,358],[835,305]]},
-    underwater:{rats:[[310,115],[850,180]],mice:[[180,390],[120,270],[475,305],[520,465],[650,330],[810,235],[385,315],[735,245]]}
+    underwater:{rats:[[310,115],[850,180]],mice:[[180,390],[120,270],[475,305],[520,465],[650,330],[810,235],[385,315],[735,245]]},
+    highway:{rats:[[270,350],[692,300]],mice:[[85,420],[360,462],[470,425],[585,462],[780,446],[890,420]]}
   };
 
   const habitatConfigs = {
@@ -284,7 +309,7 @@
     state = "character-select";
     panelKicker.textContent = "CHOOSE YOUR ESCAPE ARTIST";
     panelTitle.textContent = "Five animals. Five bad decisions.";
-    panelText.textContent = "Each character has a different ability. Your choice lasts for all four levels.";
+    panelText.textContent = "Each character has a different ability. Your choice lasts for all five levels.";
     primaryButton.classList.add("hidden");
     secondaryButton.classList.add("hidden");
     characterSelect.classList.remove("hidden");
@@ -309,7 +334,7 @@
     player.w = characters[selectedCharacter].w;
     player.h = characters[selectedCharacter].h;
     level.insects.forEach(insect => insect[2] = false);
-    level.hazards.forEach((hazard, i) => { hazard.dir = i % 2 ? -1 : 1; hazard.dirX = i % 2 ? -1 : 1; hazard.dirY = i % 2 ? 1 : -1; hazard.jumpPhase=i*.7; hazard.stunnedUntil = 0; hazard.camouflageIgnoredUntil=0; hazard.defeated = false; });
+    level.hazards.forEach((hazard, i) => { hazard.dir = hazard.direction ?? (i % 2 ? -1 : 1); hazard.dirX = i % 2 ? -1 : 1; hazard.dirY = i % 2 ? 1 : -1; hazard.jumpPhase=i*.7; hazard.stunnedUntil = 0; hazard.camouflageIgnoredUntil=0; hazard.defeated = false; });
     lives = 3;
     collected = 0;
     tailReady = true;
@@ -552,7 +577,7 @@
     const down = keys.ArrowDown || keys.KeyS;
     const inHabitatWater = level.habitat === "newt" && player.x < 520 && player.y + player.h / 2 > 270;
     const swimming = Boolean(level.underwater || inHabitatWater);
-    const speed = swimming ? character.swimSpeed : level.decor === "house" ? 236 : 220;
+    const speed = swimming ? character.swimSpeed : level.decor === "highway" ? 245 : level.decor === "house" ? 236 : 220;
     if (["chameleon","newt","frog","boa"].includes(selectedCharacter)) updateHud();
 
     const acceleration = swimming ? 720 : 1450;
@@ -642,7 +667,11 @@
 
     for (const hazard of level.hazards) {
       if(hazard.defeated)continue;
-      if (hazard.axis === "x" && now >= (hazard.stunnedUntil || 0)) {
+      if(hazard.axis==="traffic"&&now>=(hazard.stunnedUntil||0)){
+        hazard.x+=hazard.speed*hazard.dir*dt;
+        if(hazard.dir>0&&hazard.x>hazard.max)hazard.x=hazard.min-hazard.w;
+        if(hazard.dir<0&&hazard.x+hazard.w<hazard.min)hazard.x=hazard.max;
+      }else if (hazard.axis === "x" && now >= (hazard.stunnedUntil || 0)) {
         hazard.x += hazard.speed * hazard.dir * dt;
         if (hazard.x < hazard.min || hazard.x > hazard.max) {
           hazard.x = Math.max(hazard.min, Math.min(hazard.max, hazard.x));
@@ -828,6 +857,18 @@
       ctx.strokeStyle="#426642";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(737,374);ctx.lineTo(737,302);ctx.stroke();
       for(const [lx,ly,a] of [[737,326,-.8],[737,341,.7],[737,356,-.7],[737,310,.6]])drawPlantLeaf(lx,ly,a,"#517b4b",27,11);
       ctx.strokeStyle="#9d8266";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(735,185);ctx.lineTo(735,390);ctx.stroke();ctx.fillStyle="#b78c62";ctx.beginPath();ctx.moveTo(694,188);ctx.lineTo(776,188);ctx.lineTo(756,128);ctx.lineTo(714,128);ctx.closePath();ctx.fill();
+    } else if (level.decor === "highway") {
+      const sky=ctx.createLinearGradient(0,70,0,350);sky.addColorStop(0,"#79bddb");sky.addColorStop(1,"#d5e5dc");ctx.fillStyle=sky;ctx.fillRect(0,70,W,290);
+      ctx.fillStyle="#728a70";ctx.beginPath();ctx.moveTo(0,350);for(let x=0;x<=W;x+=80)ctx.lineTo(x,315-Math.sin(x*.025)*20);ctx.lineTo(W,370);ctx.lineTo(0,370);ctx.fill();
+      ctx.fillStyle="#d7d0c3";ctx.fillRect(0,330,W,28);
+      ctx.fillStyle="#30343a";ctx.fillRect(0,358,W,142);
+      ctx.fillStyle="#f2d35f";ctx.fillRect(0,365,W,5);
+      ctx.fillStyle="rgba(242,239,220,.78)";
+      for(let x=25;x<W;x+=105){ctx.fillRect(x,417,58,6);ctx.fillRect(x+42,474,42,5);}
+      // The house and open front door mark the beginning of the final escape.
+      ctx.fillStyle="#6f6259";ctx.fillRect(0,205,145,253);ctx.fillStyle="#4a312a";ctx.fillRect(28,285,76,173);ctx.fillStyle="#f0c75e";ctx.beginPath();ctx.arc(91,370,4,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#d9d4c9";ctx.fillRect(0,448,145,10);ctx.fillRect(815,448,145,10);
+      ctx.fillStyle="#466d43";ctx.fillRect(815,430,145,18);
     } else if (level.decor === "underwater") {
       const water = ctx.createLinearGradient(0,55,0,H);
       water.addColorStop(0,"rgba(51,194,211,.18)");water.addColorStop(1,"rgba(0,35,58,.76)");
@@ -1075,6 +1116,12 @@
         ctx.fillStyle="#5b493b";ctx.beginPath();ctx.moveTo(p[0]+14,p[1]+p[3]);ctx.lineTo(p[0]+25,p[1]+p[3]+12);ctx.lineTo(p[0]+34,p[1]+p[3]);ctx.fill();ctx.beginPath();ctx.moveTo(p[0]+p[2]-34,p[1]+p[3]);ctx.lineTo(p[0]+p[2]-25,p[1]+p[3]+12);ctx.lineTo(p[0]+p[2]-14,p[1]+p[3]);ctx.fill();
         const spiceColors=["#c4773d","#d0a84a","#8d4b38","#628352","#b6b0a3"];
         spiceColors.forEach((color,index)=>{const jarX=p[0]+10+index*23;ctx.fillStyle=color;roundedRect(jarX,p[1]-23,15,23,3);ctx.fill();ctx.fillStyle="#ded8c8";ctx.fillRect(jarX+2,p[1]-20,11,4);});
+      }else if(level.decor==="highway"&&p[4]==="sidewalk"){
+        ctx.fillStyle="#c9c7c0";ctx.fillRect(p[0],p[1],p[2],p[3]);ctx.fillStyle="#ece8dc";ctx.fillRect(p[0],p[1],p[2],7);ctx.strokeStyle="#8f918d";ctx.lineWidth=1;for(let x=p[0]+35;x<p[0]+p[2];x+=42){ctx.beginPath();ctx.moveTo(x,p[1]+7);ctx.lineTo(x,p[1]+p[3]);ctx.stroke();}
+      }else if(level.decor==="highway"&&p[4]==="median"){
+        ctx.fillStyle="#b8b6ae";ctx.fillRect(p[0],p[1],p[2],p[3]);ctx.fillStyle="#e4c349";ctx.fillRect(p[0],p[1],p[2],7);ctx.fillStyle="#55724a";ctx.fillRect(p[0]+8,p[1]+7,p[2]-16,8);
+      }else if(level.decor==="highway"&&p[4]==="roadSign"){
+        ctx.fillStyle="#315c70";roundedRect(p[0],p[1],p[2],p[3],3);ctx.fill();ctx.fillStyle="#d5edf1";ctx.fillRect(p[0]+7,p[1]+4,p[2]-14,3);ctx.strokeStyle="#747b7e";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(p[0]+15,p[1]+p[3]);ctx.lineTo(p[0]+15,500);ctx.moveTo(p[0]+p[2]-15,p[1]+p[3]);ctx.lineTo(p[0]+p[2]-15,500);ctx.stroke();
       }else if(level.decor==="enclosure"&&p[1]<490){
         const y=p[1]+p[3]/2;
         ctx.strokeStyle="#51351f";ctx.lineWidth=p[3];ctx.lineCap="round";
@@ -1194,6 +1241,18 @@
       drawDalmatianSprite(h.w,h.h);
     } else if (h.type === "frenchie") {
       drawFrenchieSprite(h.w,h.h);
+    } else if(h.type==="car"){
+      ctx.save();if(h.dir<0){ctx.translate(h.w,0);ctx.scale(-1,1);}
+      ctx.fillStyle="#111317";ctx.beginPath();ctx.arc(18,h.h-4,8,0,Math.PI*2);ctx.arc(h.w-19,h.h-4,8,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=h.color||"#d84e45";roundedRect(3,14,h.w-6,h.h-18,8);ctx.fill();ctx.beginPath();ctx.moveTo(18,14);ctx.lineTo(31,3);ctx.lineTo(h.w-24,3);ctx.lineTo(h.w-10,14);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#b9dce4";ctx.beginPath();ctx.moveTo(32,6);ctx.lineTo(43,6);ctx.lineTo(43,14);ctx.lineTo(23,14);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(47,6);ctx.lineTo(h.w-26,6);ctx.lineTo(h.w-15,14);ctx.lineTo(47,14);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#fff1a1";ctx.fillRect(h.w-7,21,5,6);ctx.fillStyle="#bd342f";ctx.fillRect(3,21,4,6);ctx.fillStyle="#bfc2c4";ctx.beginPath();ctx.arc(18,h.h-4,3,0,Math.PI*2);ctx.arc(h.w-19,h.h-4,3,0,Math.PI*2);ctx.fill();ctx.restore();
+    } else if(h.type==="truck"){
+      ctx.save();if(h.dir<0){ctx.translate(h.w,0);ctx.scale(-1,1);}
+      ctx.fillStyle="#111317";ctx.beginPath();ctx.arc(22,h.h-5,9,0,Math.PI*2);ctx.arc(h.w-22,h.h-5,9,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=h.color||"#e3b33f";roundedRect(4,5,h.w-42,h.h-15,5);ctx.fill();roundedRect(h.w-40,17,36,h.h-27,6);ctx.fill();
+      ctx.fillStyle="#b9dce4";ctx.beginPath();ctx.moveTo(h.w-34,20);ctx.lineTo(h.w-11,20);ctx.lineTo(h.w-7,32);ctx.lineTo(h.w-34,32);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#fff1a1";ctx.fillRect(h.w-7,h.h-22,5,7);ctx.fillStyle="#bfc2c4";ctx.beginPath();ctx.arc(22,h.h-5,3.5,0,Math.PI*2);ctx.arc(h.w-22,h.h-5,3.5,0,Math.PI*2);ctx.fill();ctx.restore();
     } else if (h.type === "hand") {
       ctx.fillStyle="#c99072";roundedRect(0,5,h.w,h.h-5,10);ctx.fill();
       for(let i=0;i<4;i++){roundedRect(25+i*9,0,8,16,4);ctx.fill();}
