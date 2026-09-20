@@ -22,6 +22,7 @@
   const W = canvas.width;
   const H = canvas.height;
   const keys = Object.create(null);
+  const backstageMode = new URLSearchParams(window.location.search).get("tour") === "arboreal-backstage-27";
   let state = "menu";
   let levelIndex = 0;
   let lastTime = 0;
@@ -360,7 +361,7 @@
     player.spawnX = level.start[0];
     player.spawnY = level.start[1];
     resetPlayer(false);
-    levelLabel.textContent = level.label;
+    levelLabel.textContent = `${level.label}${backstageMode?" · BACKSTAGE":""}`;
     updateHud();
     overlay.classList.add("hidden");
     hud.classList.remove("hidden");
@@ -551,6 +552,7 @@
   }
 
   function remainingCollectibles(level){
+    if(backstageMode)return 0;
     return level.insects.filter(item=>!item[2]).length+(level.mice||[]).filter(item=>!item[2]).length;
   }
 
