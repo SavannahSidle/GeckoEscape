@@ -20,4 +20,4 @@ Collect every required prey item, avoid hazards, and reach the exit. The game ru
 4. The Living Room
 5. The Highway
 
-Choose a chameleon, crested gecko, Chinese fire-bellied newt, Azureus dart frog, or black Colombian boa. Each has a different ability, because equal opportunity does not mean equal biology.
+Choose a chameleon, crested gecko, Chinese fire-bellied newt, Azureus dart frog, black Colombian boa, raccoon, Virginia opossum, or Egyptian fruit bat. Each has a unique starting habitat and two abilities, because equal opportunity does not mean equal biology.

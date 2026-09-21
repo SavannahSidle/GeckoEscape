@@ -143,7 +143,7 @@ canvas {
 
 .character-select {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
   margin: 18px 0 0;
 }
@@ -176,6 +176,9 @@ canvas {
 .newt-icon { background: #15171a; color: #f05a31; border: 2px solid #f05a31; }
 .frog-icon { background: #246fbb; color: #071626; border: 2px solid #6dc5ff; }
 .boa-icon { background: #08090a; color: #aaaeb5; border: 2px solid #555b63; font-size: 1.6rem; }
+.raccoon-icon { background: #73777a; color: #1d2022; border: 2px solid #bfc3c4; }
+.opossum-icon { background: #b8b2aa; color: #5c4a49; border: 2px solid #e2adad; font-size: 1.5rem; }
+.bat-icon { background: #26243a; color: #d5b0ff; border: 2px solid #806956; font-size: 1.6rem; }
 
 .hud {
   position: absolute;

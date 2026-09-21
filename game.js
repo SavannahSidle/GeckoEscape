@@ -50,6 +50,17 @@
   let frogHopCooldownUntil = 0;
   let frogAutoHopping = false;
   let waterJumpUntil = 0;
+  let rummageActiveUntil = 0;
+  let rummageCooldownUntil = 0;
+  let trashShieldUntil = 0;
+  let trashShieldCooldownUntil = 0;
+  let hissActiveUntil = 0;
+  let hissCooldownUntil = 0;
+  let playDeadUntil = 0;
+  let playDeadCooldownUntil = 0;
+  let flapCooldownUntil = 0;
+  let echoPulseUntil = 0;
+  let echoCooldownUntil = 0;
   let miceCollected = 0;
   let selectedCharacter = "crested";
   let soundOn = true;
@@ -60,7 +71,10 @@
     crested: { name: "CRESTED GECKO", ability: "SHORT TONGUE", secondary: "DROP TAIL", collectible: "ROACHES", color: "#d29458", climbSpeed: 195, swimSpeed: 160, w: 42, h: 25 },
     newt: { name: "FIRE-BELLY NEWT", ability: "REGENERATE", secondary: "TOXIN", collectible: "WORMS", color: "#252a28", climbSpeed: 130, swimSpeed: 235, w: 46, h: 23 },
     frog: { name: "AZUREUS DART FROG", ability: "TONGUE", secondary: "POWER LEAP", collectible: "FRUIT FLIES", color: "#2679cb", climbSpeed: 120, swimSpeed: 155, w: 38, h: 27 },
-    boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", secondary: "STRIKE", collectible: "RATS", color: "#030405", climbSpeed: 155, swimSpeed: 190, w: 94, h: 36 }
+    boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", secondary: "STRIKE", collectible: "RATS", color: "#030405", climbSpeed: 155, swimSpeed: 190, w: 94, h: 36 },
+    raccoon: { name: "RACCOON", ability: "RUMMAGE", secondary: "TRASH SHIELD", collectible: "TRASH TREASURES", color: "#73777a", climbSpeed: 150, swimSpeed: 145, w: 58, h: 34 },
+    opossum: { name: "VIRGINIA OPOSSUM", ability: "HISS", secondary: "PLAY DEAD", collectible: "FORAGE", color: "#b8b2aa", climbSpeed: 165, swimSpeed: 135, w: 58, h: 31 },
+    bat: { name: "EGYPTIAN FRUIT BAT", ability: "FLAP", secondary: "ECHO PULSE", collectible: "FRUIT", color: "#806956", climbSpeed: 190, swimSpeed: 145, w: 54, h: 30 }
   };
 
   const player = {
@@ -243,6 +257,30 @@
       platforms:[[0,500,960,40],[35,454,245,26],[78,338,170,22],[315,410,210,25],[560,360,220,25],[760,292,170,24],[600,212,175,22],[390,165,180,22],[705,105,180,22]],
       vines:[[285,325,22,130],[800,215,22,110]],diagonalVines:[],insects:[[480,130]],mice:[[158,304],[365,373],[640,322],[835,255]],
       hazards:[{x:455,y:430,w:92,h:70,type:"grab",axis:"x",min:350,max:630,speed:70}]
+    },
+    raccoon: {
+      title:"The Dumpster Den",habitat:"raccoon",palette:["#101418","#283037","#765b3f","#f2c14e"],
+      intro:"The dumpster lid has fallen shut. Rummage through the good stuff, climb the trash corral, and escape before collection day.",
+      start:[62,438],exit:[870,390,55,110],
+      platforms:[[0,500,960,40,"alley"],[35,463,190,24,"trash"],[85,350,155,22,"cardboard"],[280,414,175,24,"dumpster"],[500,342,170,22,"dumpster"],[700,270,190,22,"fence"],[790,160,145,22,"dumpster"]],
+      vines:[[716,272,18,178]],insects:[[145,318],[350,380],[575,308],[775,236],[850,126]],
+      hazards:[{x:420,y:430,w:92,h:70,type:"grab",axis:"x",min:330,max:610,speed:82}]
+    },
+    opossum: {
+      title:"The Wildlife Rehab Pen",habitat:"opossum",palette:["#101914","#293b2d","#6f5134","#c7dfa2"],
+      intro:"The rehabilitation pen is secure, enriched, and tragically unable to account for one determined opossum.",
+      start:[72,430],exit:[870,400,52,100],
+      platforms:[[0,500,960,40,"leafLitter"],[40,455,180,22,"log"],[65,332,145,22,"nestbox"],[260,410,180,22,"log"],[480,340,170,22,"log"],[675,265,185,22,"meshShelf"],[790,155,145,22,"nestbox"]],
+      vines:[[220,310,18,150],[710,205,18,140]],insects:[[135,300],[330,377],[555,307],[750,232],[852,122]],
+      hazards:[{x:430,y:430,w:92,h:70,type:"grab",axis:"x",min:340,max:625,speed:78}]
+    },
+    bat: {
+      title:"The Nocturnal Flight Habitat",habitat:"bat",palette:["#070817","#1d213c","#5d493e","#d5b0ff"],
+      intro:"The keeper door is open beneath the artificial cave. Flap between fruit stations and leave the colony after dark.",
+      start:[65,430],exit:[870,390,54,110],
+      platforms:[[0,500,960,40,"caveFloor"],[40,455,175,20,"rock"],[100,340,140,18,"fruitTray"],[285,405,165,18,"roost"],[500,330,165,18,"fruitTray"],[685,255,185,18,"roost"],[785,150,150,18,"fruitTray"]],
+      vines:[[435,250,15,160],[735,145,15,115]],ceilingVines:[[110,72,730,14,"batRope"]],insects:[[160,305],[360,370],[575,295],[760,220],[850,115]],
+      hazards:[{x:430,y:430,w:92,h:70,type:"grab",axis:"x",min:340,max:625,speed:84}]
     }
   };
 
@@ -312,8 +350,8 @@
   function showCharacterSelect() {
     state = "character-select";
     panelKicker.textContent = "CHOOSE YOUR ESCAPE ARTIST";
-    panelTitle.textContent = "Five animals. Five bad decisions.";
-    panelText.textContent = "Each character has a different ability. Your choice lasts for all five levels.";
+    panelTitle.textContent = "Eight animals. Eight bad decisions.";
+    panelText.textContent = "Each character has a different enclosure and two abilities. Your choice lasts for all five levels.";
     primaryButton.classList.add("hidden");
     secondaryButton.classList.add("hidden");
     levelSelect.classList.add("hidden");
@@ -378,6 +416,17 @@
     frogHopCooldownUntil = 0;
     frogAutoHopping = false;
     waterJumpUntil = 0;
+    rummageActiveUntil = 0;
+    rummageCooldownUntil = 0;
+    trashShieldUntil = 0;
+    trashShieldCooldownUntil = 0;
+    hissActiveUntil = 0;
+    hissCooldownUntil = 0;
+    playDeadUntil = 0;
+    playDeadCooldownUntil = 0;
+    flapCooldownUntil = 0;
+    echoPulseUntil = 0;
+    echoCooldownUntil = 0;
     miceCollected = 0;
     (level.mice||[]).forEach(mouse=>mouse[2]=false);
     tongueActiveUntil = 0;
@@ -435,6 +484,12 @@
       abilityLabel.textContent=`${constrictState} · ${strikeState}`;
     } else if (selectedCharacter === "chameleon") {
       abilityLabel.textContent = `TONGUE · ${performance.now() >= camouflageCooldownUntil ? "CAMOUFLAGE READY" : "CAMOUFLAGE RECHARGING"}`;
+    } else if (selectedCharacter === "raccoon") {
+      abilityLabel.textContent = `${performance.now() >= rummageCooldownUntil ? "RUMMAGE READY" : "RUMMAGE RECHARGING"} · ${performance.now() >= trashShieldCooldownUntil ? "SHIELD READY" : "SHIELD RECHARGING"}`;
+    } else if (selectedCharacter === "opossum") {
+      abilityLabel.textContent = `${performance.now() >= hissCooldownUntil ? "HISS READY" : "HISS RECHARGING"} · ${performance.now() >= playDeadCooldownUntil ? "PLAY DEAD READY" : "PLAY DEAD RECHARGING"}`;
+    } else if (selectedCharacter === "bat") {
+      abilityLabel.textContent = `${performance.now() >= flapCooldownUntil ? "FLAP READY" : "FLAP RECHARGING"} · ${performance.now() >= echoCooldownUntil ? "ECHO READY" : "ECHO RECHARGING"}`;
     } else {
       abilityLabel.textContent = "TONGUE READY";
     }
@@ -559,10 +614,61 @@
     updateHud();tone(190,.09,"sawtooth");
   }
 
+  function useRummage(){
+    const now=performance.now();
+    if(state!=="playing"||selectedCharacter!=="raccoon"||now<rummageCooldownUntil)return;
+    rummageActiveUntil=now+320;rummageCooldownUntil=now+650;updateHud();tone(330,.07,"square");
+  }
+
+  function useTrashShield(){
+    const now=performance.now();
+    if(state!=="playing"||selectedCharacter!=="raccoon"||now<trashShieldCooldownUntil)return;
+    trashShieldUntil=now+2400;trashShieldCooldownUntil=now+5200;invulnerableUntil=Math.max(invulnerableUntil,trashShieldUntil);updateHud();tone(140,.16,"triangle");
+  }
+
+  function useHiss(){
+    const now=performance.now();
+    if(state!=="playing"||selectedCharacter!=="opossum"||now<hissCooldownUntil)return;
+    hissActiveUntil=now+420;hissCooldownUntil=now+1800;
+    const px=player.x+player.w/2,py=player.y+player.h/2;
+    const livingTypes=new Set(["cat","dalmatian","frenchie","fish","spider","grab","hand"]);
+    for(const hazard of levels[levelIndex].hazards){
+      if(!livingTypes.has(hazard.type)||hazard.defeated)continue;
+      if(Math.hypot(px-hazard.x-hazard.w/2,py-hazard.y-hazard.h/2)<155)hazard.stunnedUntil=now+1700;
+    }
+    updateHud();tone(760,.2,"sawtooth");
+  }
+
+  function usePlayDead(){
+    const now=performance.now();
+    if(state!=="playing"||selectedCharacter!=="opossum"||now<playDeadCooldownUntil)return;
+    playDeadUntil=now+2800;playDeadCooldownUntil=now+6100;invulnerableUntil=Math.max(invulnerableUntil,playDeadUntil);player.vx=0;updateHud();tone(75,.25,"sine");
+  }
+
+  function useFlap(){
+    const now=performance.now();
+    if(state!=="playing"||selectedCharacter!=="bat"||now<flapCooldownUntil)return;
+    flapCooldownUntil=now+300;player.ceilingClimbing=false;player.climbing=false;player.vy=Math.min(player.vy,-385);player.vx+=player.facing*45;player.grounded=false;updateHud();tone(430,.05,"triangle");
+  }
+
+  function useEchoPulse(){
+    const now=performance.now();
+    if(state!=="playing"||selectedCharacter!=="bat"||now<echoCooldownUntil)return;
+    echoPulseUntil=now+3000;echoCooldownUntil=now+5600;updateHud();tone(980,.12,"sine");setTimeout(()=>tone(1220,.09,"sine"),90);
+  }
+
+  function rummageHitbox(now){
+    if(selectedCharacter!=="raccoon"||now>=rummageActiveUntil)return null;
+    return {x:player.facing>0?player.x+player.w-8:player.x-58,y:player.y-12,w:66,h:player.h+28};
+  }
+
   function useAbility() {
     if (["chameleon","crested","frog"].includes(selectedCharacter)) useTongue();
     else if (selectedCharacter === "newt") useRegenerate();
-    else useConstrict();
+    else if (selectedCharacter === "boa") useConstrict();
+    else if (selectedCharacter === "raccoon") useRummage();
+    else if (selectedCharacter === "opossum") useHiss();
+    else if (selectedCharacter === "bat") useFlap();
   }
 
   function useSecondaryAbility(){
@@ -571,6 +677,9 @@
     else if(selectedCharacter==="crested")dropTail();
     else if(selectedCharacter==="newt")useToxin();
     else if(selectedCharacter==="boa")useStrike();
+    else if(selectedCharacter==="raccoon")useTrashShield();
+    else if(selectedCharacter==="opossum")usePlayDead();
+    else if(selectedCharacter==="bat")useEchoPulse();
   }
 
   function intersects(a, b) {
@@ -606,12 +715,14 @@
     const inHabitatWater = level.habitat === "newt" && player.x < 520 && player.y + player.h / 2 > 270;
     const swimming = Boolean(level.underwater || inHabitatWater);
     const speed = swimming ? character.swimSpeed : level.decor === "highway" ? 245 : level.decor === "house" ? 236 : 220;
-    if (["chameleon","newt","frog","boa"].includes(selectedCharacter)) updateHud();
+    if (["chameleon","newt","frog","boa","raccoon","opossum","bat"].includes(selectedCharacter)) updateHud();
 
     const acceleration = swimming ? 720 : 1450;
-    if (left) { player.vx -= acceleration * dt; player.facing = -1; }
-    if (right) { player.vx += acceleration * dt; player.facing = 1; }
+    const playingDead=selectedCharacter==="opossum"&&now<playDeadUntil;
+    if (!playingDead&&left) { player.vx -= acceleration * dt; player.facing = -1; }
+    if (!playingDead&&right) { player.vx += acceleration * dt; player.facing = 1; }
     if (!left && !right) player.vx *= Math.pow(swimming ? .025 : .0007, dt);
+    if(playingDead)player.vx=0;
     player.vx = Math.max(-speed, Math.min(speed, player.vx));
 
     if (swimming) {
@@ -642,7 +753,7 @@
       const onVine = level.vines.some(v => intersects(player, {x:v[0], y:v[1], w:v[2], h:v[3]})) || Boolean(diagonalVine);
       const ceilingVine = (level.ceilingVines||[]).find(v => intersects(player,{x:v[0],y:v[1]-4,w:v[2],h:v[3]+22}));
       const onWall = player.x <= 5 || player.x + player.w >= W - 5;
-      const canHang=["chameleon","crested"].includes(selectedCharacter);
+      const canHang=["chameleon","crested","bat"].includes(selectedCharacter);
       player.ceilingClimbing=Boolean(canHang&&ceilingVine&&!down&&(player.ceilingClimbing||up||player.vy<0));
       player.climbing = player.ceilingClimbing || ((onVine || onWall) && (up || down));
       if(player.ceilingClimbing){
@@ -695,27 +806,28 @@
       return;
     }
 
+    const hazardDt=selectedCharacter==="bat"&&now<echoPulseUntil?dt*.38:dt;
     for (const hazard of level.hazards) {
       if(hazard.defeated)continue;
       if(hazard.axis==="traffic"&&now>=(hazard.stunnedUntil||0)){
-        hazard.x+=hazard.speed*hazard.dir*dt;
+        hazard.x+=hazard.speed*hazard.dir*hazardDt;
         if(hazard.dir>0&&hazard.x>hazard.max)hazard.x=hazard.min-hazard.w;
         if(hazard.dir<0&&hazard.x+hazard.w<hazard.min)hazard.x=hazard.max;
       }else if (hazard.axis === "x" && now >= (hazard.stunnedUntil || 0)) {
-        hazard.x += hazard.speed * hazard.dir * dt;
+        hazard.x += hazard.speed * hazard.dir * hazardDt;
         if (hazard.x < hazard.min || hazard.x > hazard.max) {
           hazard.x = Math.max(hazard.min, Math.min(hazard.max, hazard.x));
           hazard.dir *= -1;
         }
       }else if(hazard.axis==="jump"&&now>=(hazard.stunnedUntil||0)){
-        hazard.x+=hazard.speed*hazard.dir*dt;
+        hazard.x+=hazard.speed*hazard.dir*hazardDt;
         if(hazard.x<hazard.min||hazard.x>hazard.max){hazard.x=Math.max(hazard.min,Math.min(hazard.max,hazard.x));hazard.dir*=-1;}
-        hazard.jumpPhase+=dt*2.7;hazard.y=hazard.baseY-Math.abs(Math.sin(hazard.jumpPhase))*hazard.jumpHeight;
+        hazard.jumpPhase+=hazardDt*2.7;hazard.y=hazard.baseY-Math.abs(Math.sin(hazard.jumpPhase))*hazard.jumpHeight;
       }else if(hazard.axis==="y"&&now>=(hazard.stunnedUntil||0)){
-        hazard.y+=hazard.speed*hazard.dirY*dt;
+        hazard.y+=hazard.speed*hazard.dirY*hazardDt;
         if(hazard.y<hazard.minY||hazard.y>hazard.maxY){hazard.y=Math.max(hazard.minY,Math.min(hazard.maxY,hazard.y));hazard.dirY*=-1;}
       }else if(hazard.axis==="diagonal"&&now>=(hazard.stunnedUntil||0)){
-        hazard.x+=hazard.speedX*hazard.dirX*dt;hazard.y+=hazard.speedY*hazard.dirY*dt;
+        hazard.x+=hazard.speedX*hazard.dirX*hazardDt;hazard.y+=hazard.speedY*hazard.dirY*hazardDt;
         if(hazard.x<hazard.minX||hazard.x>hazard.maxX){hazard.x=Math.max(hazard.minX,Math.min(hazard.maxX,hazard.x));hazard.dirX*=-1;}
         if(hazard.y<hazard.minY||hazard.y>hazard.maxY){hazard.y=Math.max(hazard.minY,Math.min(hazard.maxY,hazard.y));hazard.dirY*=-1;}
       }
@@ -741,7 +853,8 @@
       if (!insect[2]) {
         const bug = selectedCharacter==="boa"?{x:insect[0]-20,y:insect[1]-14,w:40,h:28}:{x:insect[0]-10,y:insect[1]-10,w:20,h:20};
         const tongue = tongueHitbox(now);
-        if (intersects(player, bug) || (tongue && intersects(tongue, bug))) {
+        const rummage = rummageHitbox(now);
+        if (intersects(player, bug) || (tongue && intersects(tongue, bug)) || (rummage&&intersects(rummage,bug))) {
           insect[2] = true;
           collected += 1;
           updateHud();
@@ -762,6 +875,7 @@
 
   function jump() {
     if (state !== "playing") return;
+    if(selectedCharacter==="opossum"&&performance.now()<playDeadUntil)return;
     if(player.ceilingClimbing){player.ceilingClimbing=false;player.climbing=false;player.y+=8;player.vy=135;tone(185,.05,"triangle");return;}
     const level=levels[levelIndex];
     const inHabitatWater=level.habitat==="newt"&&player.x<520&&player.y+player.h/2>270;
@@ -832,13 +946,15 @@
       ctx.fillRect(18, 45, 924, 455);
       ctx.strokeStyle = "rgba(210,255,230,.15)";
       ctx.lineWidth = 5; ctx.strokeRect(18, 45, 924, 455);
-      drawEnclosureTrees();
-      ctx.save();ctx.globalAlpha=.42;
-      drawLeaves(-18,120,"#1b4b2b");drawLeaves(185,155,"#285c34");drawLeaves(390,105,"#214d2d");
-      drawLeaves(545,265,"#285735");drawLeaves(790,125,"#1d492b");drawLeaves(820,335,"#285d37");
-      ctx.restore();
+      if(!["raccoon","opossum","bat"].includes(level.habitat)){
+        drawEnclosureTrees();
+        ctx.save();ctx.globalAlpha=.42;
+        drawLeaves(-18,120,"#1b4b2b");drawLeaves(185,155,"#285c34");drawLeaves(390,105,"#214d2d");
+        drawLeaves(545,265,"#285735");drawLeaves(790,125,"#1d492b");drawLeaves(820,335,"#285d37");
+        ctx.restore();
+      }
       drawHabitatDetails(level);
-      drawLeaves(48, 220, "#245f36");drawLeaves(665,180,"#1d4e2e");drawLeaves(720,400,"#245f36");
+      if(!["raccoon","opossum","bat"].includes(level.habitat)){drawLeaves(48, 220, "#245f36");drawLeaves(665,180,"#1d4e2e");drawLeaves(720,400,"#245f36");}
     } else if (level.decor === "kitchen") {
       ctx.fillStyle="#aebfbb";ctx.fillRect(0,70,W,430);
       ctx.strokeStyle="rgba(70,88,86,.22)";ctx.lineWidth=1;
@@ -1032,6 +1148,31 @@
       ctx.fillStyle="#29231b";roundedRect(695,390,175,106,22);ctx.fill();roundedRect(92,390,168,106,22);ctx.fill();
       ctx.fillStyle="#090a08";ctx.beginPath();ctx.arc(780,456,42,Math.PI,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(176,456,39,Math.PI,Math.PI*2);ctx.fill();
       ctx.strokeStyle="#4d3421";ctx.lineWidth=28;ctx.beginPath();ctx.moveTo(90,438);ctx.quadraticCurveTo(290,365,470,430);ctx.stroke();
+    }else if(level.habitat==="raccoon"){
+      // A commercial dumpster inside a fenced alley trash corral: a found enclosure, not a pet cage.
+      ctx.fillStyle="#20262b";ctx.fillRect(20,80,920,416);
+      ctx.strokeStyle="#687077";ctx.lineWidth=2;for(let x=28;x<940;x+=42){ctx.beginPath();ctx.moveTo(x,82);ctx.lineTo(x,496);ctx.stroke();}
+      ctx.fillStyle="#303a3e";roundedRect(260,286,420,210,12);ctx.fill();ctx.strokeStyle="#718086";ctx.lineWidth=5;ctx.stroke();
+      ctx.fillStyle="#161c1f";ctx.fillRect(275,303,390,36);ctx.fillStyle="#566166";ctx.fillRect(292,317,356,8);
+      ctx.fillStyle="#17191b";for(const [x,y,r] of [[90,450,45],[190,470,35],[735,458,42]]){ctx.beginPath();ctx.arc(x,y,r,Math.PI,Math.PI*2);ctx.fill();}
+      ctx.fillStyle="#94704b";ctx.fillRect(36,400,140,60);ctx.strokeStyle="#5e432b";ctx.strokeRect(36,400,140,60);
+      ctx.fillStyle="#e8d27a";ctx.font="900 18px system-ui";ctx.textAlign="center";ctx.fillText("NO PARKING",805,100);
+    }else if(level.habitat==="opossum"){
+      // Mesh rehabilitation pen with nest boxes, natural logs, leaf litter, and a water pan.
+      ctx.fillStyle="#263329";ctx.fillRect(20,50,920,446);
+      ctx.strokeStyle="rgba(190,205,188,.28)";ctx.lineWidth=1;
+      for(let x=-300;x<1200;x+=26){ctx.beginPath();ctx.moveTo(x,50);ctx.lineTo(x+450,500);ctx.stroke();ctx.beginPath();ctx.moveTo(x,500);ctx.lineTo(x+450,50);ctx.stroke();}
+      ctx.fillStyle="#493520";roundedRect(54,255,180,130,8);ctx.fill();ctx.fillStyle="#131713";ctx.beginPath();ctx.arc(145,350,38,Math.PI,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#6a7c72";ctx.beginPath();ctx.ellipse(550,474,88,20,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="rgba(121,190,199,.58)";ctx.beginPath();ctx.ellipse(550,470,75,12,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#60452c";for(let x=22;x<940;x+=28){ctx.beginPath();ctx.ellipse(x,486-(x%4)*3,22,7,(x%3-.8)*.3,0,Math.PI*2);ctx.fill();}
+      ctx.fillStyle="#465c3c";for(const x of [280,750,865]){ctx.beginPath();ctx.ellipse(x,450,35,65,0,0,Math.PI*2);ctx.fill();}
+    }else if(level.habitat==="bat"){
+      // Humid, dim flight habitat with artificial cave walls and upside-down roosts.
+      ctx.fillStyle="#111326";ctx.fillRect(20,50,920,446);
+      ctx.fillStyle="#25243a";ctx.beginPath();ctx.moveTo(20,50);for(let x=20;x<=940;x+=80)ctx.lineTo(x,70+(x%160?35:0));ctx.lineTo(940,50);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#343044";for(const [x,y,r] of [[80,430,85],[255,470,100],[520,460,95],[760,450,120],[920,440,80]]){ctx.beginPath();ctx.arc(x,y,r,Math.PI,Math.PI*2);ctx.fill();}
+      ctx.fillStyle="#171827";for(const [x,y] of [[170,105],[340,130],[610,96],[790,118]]){ctx.beginPath();ctx.moveTo(x-22,y);ctx.quadraticCurveTo(x,y+28,x+22,y);ctx.lineTo(x+12,y+45);ctx.lineTo(x-12,y+45);ctx.closePath();ctx.fill();}
+      ctx.fillStyle="rgba(111,140,172,.18)";ctx.beginPath();ctx.ellipse(675,455,115,24,0,0,Math.PI*2);ctx.fill();
     }
     ctx.restore();
   }
@@ -1095,6 +1236,10 @@
   function drawCeilingVine(v) {
     const [x,y,w,h,kind]=v;const cy=y+h/2;
     ctx.save();ctx.lineCap="round";
+    if(kind==="batRope"){
+      ctx.strokeStyle="#8a7967";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(x,cy);ctx.bezierCurveTo(x+w*.3,cy+18,x+w*.7,cy-12,x+w,cy+5);ctx.stroke();
+      ctx.strokeStyle="#b1a18e";ctx.lineWidth=1.5;ctx.stroke();ctx.restore();return;
+    }
     if(kind==="curved"){
       ctx.strokeStyle="#356b3c";ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(x,cy);
       const sections=8,step=w/sections;
@@ -1123,7 +1268,21 @@
 
   function drawPlatforms(level) {
     for (const p of level.platforms) {
-      if(level.decor==="kitchen"&&p[4]==="fridgeTop"){
+      if(level.habitat==="raccoon"&&p[4]!=="alley"){
+        if(p[4]==="trash")ctx.fillStyle="#25292b";
+        else if(p[4]==="cardboard")ctx.fillStyle="#9a724a";
+        else if(p[4]==="fence")ctx.fillStyle="#667078";
+        else ctx.fillStyle="#3c484c";
+        roundedRect(p[0],p[1],p[2],p[3],5);ctx.fill();ctx.strokeStyle="#8c9698";ctx.lineWidth=2;ctx.stroke();
+        if(p[4]==="dumpster"){ctx.fillStyle="#172024";ctx.fillRect(p[0]+8,p[1]+5,p[2]-16,5);}
+      }else if(level.habitat==="opossum"&&p[4]!=="leafLitter"){
+        if(p[4]==="nestbox"){ctx.fillStyle="#67472c";roundedRect(p[0],p[1],p[2],p[3],4);ctx.fill();ctx.fillStyle="#252018";ctx.beginPath();ctx.arc(p[0]+p[2]*.7,p[1]+5,12,0,Math.PI*2);ctx.fill();}
+        else if(p[4]==="meshShelf"){ctx.fillStyle="#77817a";ctx.fillRect(p[0],p[1],p[2],p[3]);ctx.strokeStyle="#b3bbb5";for(let x=p[0]+8;x<p[0]+p[2];x+=16){ctx.beginPath();ctx.moveTo(x,p[1]);ctx.lineTo(x,p[1]+p[3]);ctx.stroke();}}
+        else{ctx.strokeStyle="#543b27";ctx.lineWidth=p[3];ctx.lineCap="round";ctx.beginPath();ctx.moveTo(p[0]+5,p[1]+p[3]/2);ctx.quadraticCurveTo(p[0]+p[2]/2,p[1]-3,p[0]+p[2]-5,p[1]+p[3]/2);ctx.stroke();}
+      }else if(level.habitat==="bat"&&p[4]!=="caveFloor"){
+        if(p[4]==="fruitTray"){ctx.fillStyle="#715746";roundedRect(p[0],p[1],p[2],p[3],5);ctx.fill();ctx.fillStyle="#c68f4e";for(let x=p[0]+16;x<p[0]+p[2]-8;x+=25){ctx.beginPath();ctx.arc(x,p[1]+3,7,Math.PI,Math.PI*2);ctx.fill();}}
+        else{ctx.fillStyle="#3a3544";roundedRect(p[0],p[1],p[2],p[3],8);ctx.fill();ctx.strokeStyle="#655e70";ctx.lineWidth=2;ctx.stroke();}
+      }else if(level.decor==="kitchen"&&p[4]==="fridgeTop"){
         // The refrigerator artwork itself is the collision surface.
         continue;
       }else if(level.decor==="kitchen"&&p[4]==="sill"){
@@ -1202,6 +1361,7 @@
       if (bug[2]) return;
       const bob = Math.sin(time * .004 + i * 2) * 4;
       ctx.save(); ctx.translate(bug[0], bug[1] + bob);
+      if(selectedCharacter==="bat"&&time<echoPulseUntil){ctx.strokeStyle="rgba(190,225,255,.82)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,18+Math.sin(time*.018+i)*4,0,Math.PI*2);ctx.stroke();}
       if(selectedCharacter==="boa"){
         // Large, rough feeder rat, deliberately distinct from the little house mice.
         ctx.strokeStyle="#8b6b61";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-18,8);ctx.bezierCurveTo(-38,17,-45,-4,-58,5);ctx.stroke();
@@ -1212,6 +1372,22 @@
         ctx.fillStyle="#ece1cf";ctx.beginPath();ctx.moveTo(38,7);ctx.lineTo(43,14);ctx.lineTo(46,7);ctx.fill();
         ctx.strokeStyle="#d8d0c8";ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(37,2);ctx.lineTo(57,-4);ctx.moveTo(37,4);ctx.lineTo(58,6);ctx.moveTo(37,6);ctx.lineTo(54,14);ctx.stroke();
         ctx.strokeStyle="#302c2b";ctx.lineWidth=2;for(let fx=-17;fx<15;fx+=8){ctx.beginPath();ctx.moveTo(fx,-7);ctx.lineTo(fx-4,-12);ctx.stroke();}
+      }else if(selectedCharacter==="raccoon"){
+        const kind=i%5;
+        if(kind===0){ctx.fillStyle="#d83445";roundedRect(-12,-7,24,14,3);ctx.fill();ctx.fillStyle="#fff3c4";ctx.fillRect(-8,-2,16,4);ctx.fillStyle="#63252c";ctx.font="bold 7px system-ui";ctx.textAlign="center";ctx.fillText("BAR",0,2);}
+        else if(kind===1){ctx.fillStyle="#e6b932";ctx.beginPath();ctx.moveTo(-12,-9);ctx.lineTo(13,-6);ctx.lineTo(10,10);ctx.lineTo(-10,8);ctx.closePath();ctx.fill();ctx.fillStyle="#a33b2f";ctx.font="bold 7px system-ui";ctx.textAlign="center";ctx.fillText("CHIPS",0,2);}
+        else if(kind===2){ctx.fillStyle="#61351f";roundedRect(-13,-7,26,14,2);ctx.fill();ctx.fillStyle="#b98555";for(let x=-8;x<10;x+=6){ctx.beginPath();ctx.arc(x,-2,2,0,Math.PI*2);ctx.fill();}}
+        else if(kind===3){ctx.fillStyle="#d56732";ctx.beginPath();ctx.moveTo(-14,8);ctx.lineTo(12,-10);ctx.lineTo(14,10);ctx.closePath();ctx.fill();ctx.fillStyle="#f3d366";ctx.beginPath();ctx.arc(3,1,3,0,Math.PI*2);ctx.fill();}
+        else{ctx.strokeStyle="#b6bcc0";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,1,9,13,0,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(0,-9,5,0,Math.PI);ctx.stroke();ctx.fillStyle="#79a4bd";ctx.fillRect(-7,-5,14,12);}
+      }else if(selectedCharacter==="opossum"){
+        if(i%3===0){ctx.fillStyle="#713956";for(const [x,y] of [[-6,2],[1,-3],[7,3],[0,7]]){ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();}ctx.strokeStyle="#5b7a40";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-7);ctx.lineTo(4,-14);ctx.stroke();}
+        else{ctx.fillStyle="#bd8a62";ctx.beginPath();ctx.ellipse(0,2,12,7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#684a38";ctx.beginPath();ctx.arc(8,0,4,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#8a6044";ctx.lineWidth=2;for(let x=-8;x<8;x+=5){ctx.beginPath();ctx.moveTo(x,7);ctx.lineTo(x+2,11);ctx.stroke();}}
+      }else if(selectedCharacter==="bat"){
+        const fruitColors=["#e7a22e","#f2d23f","#88416a","#eb6f43","#d84f52"];
+        ctx.fillStyle=fruitColors[i%fruitColors.length];
+        if(i%5===1){ctx.strokeStyle=ctx.fillStyle;ctx.lineWidth=7;ctx.beginPath();ctx.arc(0,0,11,-1.2,1.5);ctx.stroke();}
+        else if(i%5===2){for(const [x,y] of [[-5,-4],[3,-5],[-7,3],[1,3],[7,5],[0,10]]){ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();}}
+        else{ctx.beginPath();ctx.arc(0,2,11,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#4e7e42";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-9);ctx.lineTo(5,-15);ctx.stroke();}
       }else if(selectedCharacter==="newt"){
         ctx.strokeStyle="#b97968";ctx.lineWidth=7;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-14,6);ctx.bezierCurveTo(-7,-8,4,12,15,-4);ctx.stroke();
         ctx.strokeStyle="#e0a08b";ctx.lineWidth=1.2;for(let x=-9;x<12;x+=6){ctx.beginPath();ctx.moveTo(x,-1);ctx.lineTo(x+2,5);ctx.stroke();}
@@ -1542,6 +1718,51 @@
     ctx.restore();ctx.globalAlpha=1;
   }
 
+  function drawRaccoon(now){
+    const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;if(flash)ctx.globalAlpha=.4;
+    ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
+    const step=Math.sin(now*.018)*Math.min(1,Math.abs(player.vx)/90)*4;
+    ctx.strokeStyle="#777b7d";ctx.lineWidth=12;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-22,1);ctx.bezierCurveTo(-40,-5,-52,4,-58,-5);ctx.stroke();
+    ctx.strokeStyle="#25272a";ctx.lineWidth=4;for(let x=-54;x<-25;x+=10){ctx.beginPath();ctx.moveTo(x,-8);ctx.lineTo(x+2,4);ctx.stroke();}
+    ctx.strokeStyle="#4f5356";ctx.lineWidth=7;for(const [x,o] of [[-13,step],[10,-step]]){ctx.beginPath();ctx.moveTo(x,8);ctx.lineTo(x+o*.35,17);ctx.lineTo(x+7,17);ctx.stroke();}
+    ctx.fillStyle="#73777a";ctx.beginPath();ctx.ellipse(-2,1,27,15,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(24,-3,17,14,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#36393c";ctx.beginPath();ctx.arc(17,-13,7,0,Math.PI*2);ctx.arc(30,-13,7,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#232528";ctx.beginPath();ctx.moveTo(10,-10);ctx.quadraticCurveTo(25,-17,39,-7);ctx.lineTo(37,2);ctx.quadraticCurveTo(24,7,11,0);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#d4d0c5";ctx.beginPath();ctx.ellipse(20,-5,5,3,0,0,Math.PI*2);ctx.ellipse(30,-5,5,3,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#0d0e0f";ctx.beginPath();ctx.arc(21,-5,2,0,Math.PI*2);ctx.arc(31,-5,2,0,Math.PI*2);ctx.arc(41,0,3,0,Math.PI*2);ctx.fill();
+    if(now<rummageActiveUntil){const reach=Math.sin(Math.min(1,(now-(rummageActiveUntil-320))/320)*Math.PI)*28;ctx.strokeStyle="#565a5d";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(14,7);ctx.lineTo(25+reach,13);ctx.stroke();ctx.fillStyle="#222528";ctx.beginPath();ctx.ellipse(31+reach,13,8,4,0,0,Math.PI*2);ctx.fill();}
+    if(now<trashShieldUntil){ctx.save();ctx.translate(1,-7);ctx.rotate(-.12);ctx.fillStyle="#667178";ctx.beginPath();ctx.ellipse(0,0,38,19,0,Math.PI,Math.PI*2);ctx.lineTo(38,4);ctx.lineTo(-38,4);ctx.closePath();ctx.fill();ctx.strokeStyle="#adb4b6";ctx.lineWidth=3;ctx.stroke();ctx.fillStyle="#3d464b";roundedRect(-11,-20,22,6,3);ctx.fill();ctx.restore();}
+    ctx.restore();ctx.globalAlpha=1;
+  }
+
+  function drawOpossum(now){
+    const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;if(flash)ctx.globalAlpha=.4;
+    ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
+    if(now<playDeadUntil){ctx.rotate(.18);ctx.translate(0,7);}
+    ctx.strokeStyle="#d6a6a7";ctx.lineWidth=5;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-23,2);ctx.bezierCurveTo(-45,1,-54,13,-63,8);ctx.stroke();
+    ctx.fillStyle="#8e8b87";ctx.beginPath();ctx.ellipse(-4,0,28,14,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#d1ccc3";ctx.beginPath();ctx.moveTo(11,-10);ctx.quadraticCurveTo(29,-13,45,-2);ctx.lineTo(30,8);ctx.lineTo(11,8);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#242426";ctx.beginPath();ctx.arc(14,-12,7,0,Math.PI*2);ctx.arc(27,-11,6,0,Math.PI*2);ctx.fill();ctx.fillStyle="#edb0ae";ctx.beginPath();ctx.ellipse(45,-1,5,4,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#121315";ctx.beginPath();ctx.arc(30,-5,2.4,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#777470";ctx.lineWidth=5;const step=Math.sin(now*.016)*Math.min(1,Math.abs(player.vx)/100)*4;for(const [x,o] of [[-14,step],[8,-step]]){ctx.beginPath();ctx.moveTo(x,8);ctx.lineTo(x+o*.4,17);ctx.lineTo(x+8,17);ctx.stroke();}
+    if(now<hissActiveUntil){ctx.fillStyle="#f4e8d3";ctx.beginPath();ctx.moveTo(37,3);ctx.lineTo(50,5);ctx.lineTo(39,9);ctx.closePath();ctx.fill();ctx.fillStyle="#e25967";ctx.beginPath();ctx.moveTo(42,6);ctx.lineTo(50,6);ctx.lineTo(44,9);ctx.fill();const radius=55+Math.sin(now*.04)*8;ctx.strokeStyle="rgba(238,232,202,.65)";ctx.lineWidth=3;ctx.beginPath();ctx.arc(38,2,radius,-.55,.55);ctx.stroke();}
+    if(now<playDeadUntil){ctx.fillStyle="#eee";ctx.font="bold 10px system-ui";ctx.textAlign="center";ctx.fillText("PLAYING DEAD",0,-24);}
+    ctx.restore();ctx.globalAlpha=1;
+  }
+
+  function drawBat(now){
+    const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;if(flash)ctx.globalAlpha=.4;
+    ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
+    const flap=Math.sin(now*.025)*(player.grounded ? .25 : 1);const wingY=8+flap*12;
+    ctx.fillStyle="#51443c";ctx.beginPath();ctx.moveTo(-6,-3);ctx.quadraticCurveTo(-29,-24,-43,-11);ctx.quadraticCurveTo(-31,0,-40,wingY);ctx.quadraticCurveTo(-22,4,-8,9);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(5,-3);ctx.quadraticCurveTo(29,-24,43,-11);ctx.quadraticCurveTo(31,0,40,wingY);ctx.quadraticCurveTo(22,4,8,9);ctx.closePath();ctx.fill();
+    ctx.strokeStyle="#8e7968";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-5,0);ctx.lineTo(-38,-10);ctx.moveTo(5,0);ctx.lineTo(38,-10);ctx.stroke();
+    ctx.fillStyle="#806956";ctx.beginPath();ctx.ellipse(0,1,13,17,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(12,-9,12,9,-.15,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.moveTo(4,-15);ctx.lineTo(5,-28);ctx.lineTo(11,-17);ctx.moveTo(15,-17);ctx.lineTo(21,-27);ctx.lineTo(22,-13);ctx.fill();
+    ctx.fillStyle="#d0b28d";ctx.beginPath();ctx.ellipse(21,-8,8,5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#171313";ctx.beginPath();ctx.arc(26,-8,2,0,Math.PI*2);ctx.arc(16,-12,1.7,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#715e50";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-5,14);ctx.lineTo(-8,21);ctx.moveTo(5,14);ctx.lineTo(8,21);ctx.stroke();
+    if(now<echoPulseUntil){const age=(3000-(echoPulseUntil-now))%650;for(let i=0;i<3;i++){const r=((age+i*215)%650)/650*115;ctx.strokeStyle=`rgba(196,220,255,${.7-r/165})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(20,-8,r,-.7,.7);ctx.stroke();}}
+    ctx.restore();ctx.globalAlpha=1;
+  }
+
   function drawPlayer(now) {
     ctx.save();
     if(player.ceilingClimbing){ctx.translate(0,player.y*2+player.h);ctx.scale(1,-1);}
@@ -1549,6 +1770,9 @@
     else if (selectedCharacter === "newt") drawNewt(now);
     else if (selectedCharacter === "frog") drawFrog(now);
     else if (selectedCharacter === "boa") drawBoa(now);
+    else if (selectedCharacter === "raccoon") drawRaccoon(now);
+    else if (selectedCharacter === "opossum") drawOpossum(now);
+    else if (selectedCharacter === "bat") drawBat(now);
     else drawCrestedGecko(now);
     ctx.restore();
   }
