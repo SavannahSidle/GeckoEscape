@@ -8,6 +8,7 @@
   const panelTitle = document.querySelector("#panelTitle");
   const panelText = document.querySelector("#panelText");
   const characterSelect = document.querySelector("#characterSelect");
+  const levelSelect = document.querySelector("#levelSelect");
   const primaryButton = document.querySelector("#primaryButton");
   const secondaryButton = document.querySelector("#secondaryButton");
   const hud = document.querySelector("#hud");
@@ -294,6 +295,7 @@
     primaryButton.onclick = action;
     primaryButton.classList.remove("hidden");
     characterSelect.classList.add("hidden");
+    levelSelect.classList.add("hidden");
     secondaryButton.classList.toggle("hidden", !allowSelect);
     if(allowSelect){secondaryButton.textContent="LEVEL SELECT";secondaryButton.onclick=showMenu;}
     overlay.classList.remove("hidden");
@@ -313,8 +315,25 @@
     panelText.textContent = "Each character has a different ability. Your choice lasts for all five levels.";
     primaryButton.classList.add("hidden");
     secondaryButton.classList.add("hidden");
+    levelSelect.classList.add("hidden");
     characterSelect.classList.remove("hidden");
     characterSelect.querySelector("button")?.focus();
+  }
+
+  function showLevelSelect(){
+    state="level-select";
+    panelKicker.textContent="BACKSTAGE MODE";
+    panelTitle.textContent="Choose a level.";
+    panelText.textContent=`Testing as ${characters[selectedCharacter].name}. Every exit is unlocked.`;
+    primaryButton.classList.add("hidden");
+    characterSelect.classList.add("hidden");
+    levelSelect.classList.remove("hidden");
+    secondaryButton.textContent="BACK TO CHARACTERS";
+    secondaryButton.onclick=showCharacterSelect;
+    secondaryButton.classList.remove("hidden");
+    overlay.classList.remove("hidden");
+    hud.classList.add("hidden");
+    levelSelect.querySelector("button")?.focus();
   }
 
   function showIntro(index) {
@@ -322,7 +341,11 @@
     const level = levels[index];
     state = "intro";
     showPanel(level.label, level.title, level.intro, index === 0 ? "START LEVEL" : "CONTINUE", () => startLevel(index));
-    if(index===0){
+    if(backstageMode){
+      secondaryButton.textContent="LEVEL SELECT";
+      secondaryButton.onclick=showLevelSelect;
+      secondaryButton.classList.remove("hidden");
+    }else if(index===0){
       secondaryButton.textContent="BACK TO CHARACTERS";
       secondaryButton.onclick=showCharacterSelect;
       secondaryButton.classList.remove("hidden");
@@ -1575,8 +1598,11 @@
       selectedCharacter = button.dataset.character;
       applyCharacterHabitat();
       abilityButton.textContent = characters[selectedCharacter].ability;
-      showIntro(0);
+      if(backstageMode)showLevelSelect();else showIntro(0);
     });
+  });
+  levelSelect.querySelectorAll("[data-level]").forEach(button=>{
+    button.addEventListener("click",()=>showIntro(Number(button.dataset.level)));
   });
   soundButton.addEventListener("click", () => {
     soundOn = !soundOn;
