@@ -49,6 +49,7 @@
   let regenerateCooldownUntil = 0;
   let frogHopCooldownUntil = 0;
   let frogAutoHopping = false;
+  let waterJumpUntil = 0;
   let miceCollected = 0;
   let selectedCharacter = "crested";
   let soundOn = true;
@@ -376,6 +377,7 @@
     regenerateCooldownUntil = 0;
     frogHopCooldownUntil = 0;
     frogAutoHopping = false;
+    waterJumpUntil = 0;
     miceCollected = 0;
     (level.mice||[]).forEach(mouse=>mouse[2]=false);
     tongueActiveUntil = 0;
@@ -407,6 +409,7 @@
     player.grounded = false;
     player.ceilingClimbing = false;
     frogAutoHopping = false;
+    waterJumpUntil = 0;
     air = 100;
     invulnerableUntil = performance.now() + 1100;
     updateHud();
@@ -614,10 +617,12 @@
     if (swimming) {
       player.climbing = false;
       player.ceilingClimbing = false;
-      if (up) player.vy -= 680 * dt;
+      const waterKicking=now<waterJumpUntil;
+      if (up&&!waterKicking) player.vy -= 680 * dt;
       if (down) player.vy += 680 * dt;
-      if (!up && !down) player.vy *= Math.pow(.018, dt);
-      player.vy = Math.max(-speed, Math.min(speed, player.vy));
+      if (!up && !down) player.vy *= Math.pow(waterKicking?.22:.018, dt);
+      const verticalLimit=waterKicking?450:speed;
+      player.vy = Math.max(-verticalLimit, Math.min(verticalLimit, player.vy));
 
       if (level.underwater && selectedCharacter !== "newt") {
         air -= dt * 7.5;
@@ -761,14 +766,16 @@
     const level=levels[levelIndex];
     const inHabitatWater=level.habitat==="newt"&&player.x<520&&player.y+player.h/2>270;
     if(inHabitatWater){
-      player.y=270-player.h-2;
-      player.vy=-360;
+      const nearSurface=player.y+player.h/2<330;
+      player.vy=nearSurface?-420:-305;
+      waterJumpUntil=performance.now()+(nearSurface?340:260);
       player.grounded=false;
-      tone(245,.07,"triangle");
+      tone(nearSurface?275:220,.07,"triangle");
       return;
     }
     if (level.underwater) {
-      player.vy = -characters[selectedCharacter].swimSpeed;
+      player.vy = -Math.max(250,characters[selectedCharacter].swimSpeed*1.2);
+      waterJumpUntil=performance.now()+240;
       tone(210, .05, "sine");
       return;
     }
