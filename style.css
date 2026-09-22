@@ -179,6 +179,9 @@ canvas {
 .raccoon-icon { background: #73777a; color: #1d2022; border: 2px solid #bfc3c4; }
 .opossum-icon { background: #b8b2aa; color: #5c4a49; border: 2px solid #e2adad; font-size: 1.5rem; }
 .bat-icon { background: #26243a; color: #d5b0ff; border: 2px solid #806956; font-size: 1.6rem; }
+.goat-icon { background: #d9d0bb; color: #493b2d; border: 2px solid #8d806e; font-size: 1.5rem; }
+.highland-icon { background: #a95029; color: #f2ddbd; border: 2px solid #d17a43; font-size: 1.5rem; }
+.devilfox-icon { background: #45143b; color: #ff82bd; border: 2px solid #b74766; font-size: 1.5rem; }
 
 .hud {
   position: absolute;

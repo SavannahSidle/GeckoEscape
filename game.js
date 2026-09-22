@@ -62,6 +62,17 @@
   let echoPulseUntil = 0;
   let echoCooldownUntil = 0;
   let batFlightUntil = 0;
+  let goatAttackUntil = 0;
+  let goatAttackCooldownUntil = 0;
+  let goatScrambleCooldownUntil = 0;
+  let cowAttackUntil = 0;
+  let cowAttackCooldownUntil = 0;
+  let cowChargeUntil = 0;
+  let cowChargeCooldownUntil = 0;
+  let foxPounceUntil = 0;
+  let foxPounceCooldownUntil = 0;
+  let foxBlinkUntil = 0;
+  let foxBlinkCooldownUntil = 0;
   let miceCollected = 0;
   let selectedCharacter = "crested";
   let soundOn = true;
@@ -75,7 +86,10 @@
     boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", secondary: "STRIKE", collectible: "RATS", color: "#030405", climbSpeed: 155, swimSpeed: 190, w: 94, h: 36 },
     raccoon: { name: "RACCOON", ability: "BITE", secondary: "TRASH SHIELD", collectible: "TRASH TREASURES", color: "#73777a", climbSpeed: 150, swimSpeed: 145, w: 58, h: 34 },
     opossum: { name: "VIRGINIA OPOSSUM", ability: "HISS", secondary: "PLAY DEAD", collectible: "FORAGE", color: "#b8b2aa", climbSpeed: 165, swimSpeed: 135, w: 58, h: 31 },
-    bat: { name: "EGYPTIAN FRUIT BAT", ability: "FLAP", secondary: "ECHO PULSE", collectible: "FRUIT", color: "#806956", climbSpeed: 190, swimSpeed: 145, w: 54, h: 30 }
+    bat: { name: "EGYPTIAN FRUIT BAT", ability: "FLY", secondary: "ECHO PULSE", collectible: "FRUIT", color: "#806956", climbSpeed: 190, swimSpeed: 145, w: 54, h: 30 },
+    goat: { name: "GOAT", ability: "HEADBUTT", secondary: "MOUNTAIN SCRAMBLE", collectible: "FORAGE", color: "#d9d0bb", climbSpeed: 165, swimSpeed: 130, w: 62, h: 38 },
+    highland: { name: "HIGHLAND COW", ability: "HORN TOSS", secondary: "HIGHLAND CHARGE", collectible: "MEADOW BITES", color: "#b85f2e", climbSpeed: 105, swimSpeed: 115, w: 82, h: 48 },
+    devilfox: { name: "DEVIL FOX", ability: "POUNCE", secondary: "MISCHIEF BLINK", collectible: "SOUL BERRIES", color: "#b74766", climbSpeed: 180, swimSpeed: 155, w: 60, h: 36 }
   };
 
   const player = {
@@ -282,6 +296,30 @@
       platforms:[[0,500,960,40,"caveFloor"],[40,455,175,20,"rock"],[100,340,140,18,"fruitTray"],[285,405,165,18,"roost"],[500,330,165,18,"fruitTray"],[685,255,185,18,"roost"],[785,150,150,18,"fruitTray"]],
       vines:[[435,250,15,160],[735,145,15,115]],ceilingVines:[[110,72,730,14,"batRope"]],insects:[[160,305],[360,370],[575,295],[760,220],[850,115]],
       hazards:[{x:430,y:430,w:92,h:70,type:"grab",axis:"x",min:340,max:625,speed:84}]
+    },
+    goat: {
+      title:"The Goat Barn",habitat:"goat",palette:["#93b7c4","#d8c993","#7a5632","#fff0a8"],
+      intro:"The latch was advertised as goat-proof. This was an act of extraordinary optimism.",
+      start:[55,425],exit:[870,390,55,110],
+      platforms:[[0,500,960,40,"barnFloor"],[34,454,190,24,"hayBale"],[72,340,145,22,"spool"],[260,410,175,22,"ramp"],[470,335,170,22,"hayBale"],[665,260,180,22,"fenceRail"],[790,155,145,22,"loft"]],
+      angledPlatforms:[[240,430,390,350,20]],vines:[],insects:[[140,307],[330,365],[545,300],[745,225],[850,120]],
+      hazards:[{x:420,y:430,w:92,h:70,type:"grab",axis:"x",min:330,max:610,speed:82}]
+    },
+    highland: {
+      title:"The Highland Pasture",habitat:"highland",palette:["#8ab2c2","#66784e","#75543c","#f2d38c"],
+      intro:"The field gate is open beyond the stone byre. Collect the best grass and depart with immense hair and no remorse.",
+      start:[42,420],exit:[870,390,58,110],
+      platforms:[[0,500,960,40,"mudPasture"],[28,452,205,26,"stoneWall"],[70,335,155,24,"hayBale"],[275,410,185,24,"stoneWall"],[490,335,180,24,"hayBale"],[685,260,185,24,"stoneWall"],[790,155,150,24,"byreRoof"]],
+      vines:[],insects:[[145,300],[350,372],[565,298],[760,222],[855,117]],
+      hazards:[{x:420,y:430,w:92,h:70,type:"grab",axis:"x",min:330,max:610,speed:72}]
+    },
+    devilfox: {
+      title:"The Infernal Menagerie",habitat:"devilfox",palette:["#170b28","#45143b","#74405e","#ff82bd"],
+      intro:"The containment sigil is flickering. Collect the soul berries, cause a tasteful amount of chaos, and leave before anyone finds the matches.",
+      start:[62,425],exit:[870,390,55,110],
+      platforms:[[0,500,960,40,"velvetFloor"],[35,454,185,22,"obsidian"],[82,340,145,20,"mushroom"],[270,405,175,22,"root"],[485,330,175,22,"crystal"],[685,255,180,22,"root"],[790,150,145,22,"obsidian"]],
+      vines:[[445,250,18,160],[735,140,18,118]],ceilingVines:[[150,78,650,16,"infernalChain"]],insects:[[145,305],[345,370],[560,295],[760,220],[850,115]],
+      hazards:[{x:430,y:430,w:92,h:70,type:"grab",axis:"x",min:340,max:625,speed:88}]
     }
   };
 
@@ -289,6 +327,7 @@
     const habitat = habitatConfigs[selectedCharacter];
     levels[0].ceilingVines=[];
     levels[0].diagonalVines=[];
+    levels[0].angledPlatforms=[];
     levels[0].mice=[];
     Object.assign(levels[0], JSON.parse(JSON.stringify(habitat)), {label:"LEVEL 1 · EASY",decor:"enclosure",completeTitle:"The room is larger than expected.",completeText:"Freedom contains shelves, suspicious noises, and absolutely no climate control."});
     standardStoryLayouts.forEach((layout,index)=>{
@@ -303,7 +342,15 @@
         level.platforms.push(...extras.platforms.map(platform=>[...platform]));
         level.insects.push(...extras.insects.map(insect=>[...insect]));
       }
-      if(selectedCharacter==="boa"){
+      if(selectedCharacter==="goat"){
+        if(i%3===0){ctx.fillStyle="#e68a38";ctx.beginPath();ctx.moveTo(-4,-12);ctx.lineTo(7,10);ctx.lineTo(-8,8);ctx.closePath();ctx.fill();ctx.strokeStyle="#4f8244";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-2,-10);ctx.lineTo(-10,-18);ctx.moveTo(-1,-10);ctx.lineTo(5,-19);ctx.stroke();}
+        else{ctx.strokeStyle="#d7b65e";ctx.lineWidth=3;for(let s=-10;s<=10;s+=5){ctx.beginPath();ctx.moveTo(s,10);ctx.lineTo(s+(i%2?8:-8),-10);ctx.stroke();}ctx.strokeStyle="#80632b";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-13,5);ctx.lineTo(14,5);ctx.stroke();}
+      }else if(selectedCharacter==="highland"){
+        if(i%3===1){ctx.fillStyle="#c94a39";ctx.beginPath();ctx.arc(0,1,11,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#4d713d";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-10);ctx.lineTo(5,-16);ctx.stroke();}
+        else{ctx.strokeStyle="#5f8d43";ctx.lineWidth=3;for(let g=-10;g<=10;g+=5){ctx.beginPath();ctx.moveTo(g,10);ctx.quadraticCurveTo(g-5,-1,g+(i%2?4:-4),-12);ctx.stroke();}}
+      }else if(selectedCharacter==="devilfox"){
+        ctx.shadowColor="#ff61b2";ctx.shadowBlur=12;ctx.fillStyle=i%2?"#ff72b8":"#9b5cff";for(const [x,y] of [[-6,1],[1,-4],[7,2],[0,7]]){ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();}ctx.shadowBlur=0;ctx.strokeStyle="#51bd84";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-8);ctx.quadraticCurveTo(5,-15,10,-16);ctx.stroke();
+      }else if(selectedCharacter==="boa"){
         const prey=boaStoryCollectibles[level.decor];
         level.insects=prey.rats.map(rat=>[...rat]);
         level.mice=prey.mice.map(mouse=>[...mouse]);
@@ -351,7 +398,7 @@
   function showCharacterSelect() {
     state = "character-select";
     panelKicker.textContent = "CHOOSE YOUR ESCAPE ARTIST";
-    panelTitle.textContent = "Eight animals. Eight bad decisions.";
+    panelTitle.textContent = "Eleven animals. Catastrophic judgment.";
     panelText.textContent = "Each character has a different enclosure and two abilities. Your choice lasts for all five levels.";
     primaryButton.classList.add("hidden");
     secondaryButton.classList.add("hidden");
@@ -429,6 +476,17 @@
     echoPulseUntil = 0;
     echoCooldownUntil = 0;
     batFlightUntil = 0;
+    goatAttackUntil = 0;
+    goatAttackCooldownUntil = 0;
+    goatScrambleCooldownUntil = 0;
+    cowAttackUntil = 0;
+    cowAttackCooldownUntil = 0;
+    cowChargeUntil = 0;
+    cowChargeCooldownUntil = 0;
+    foxPounceUntil = 0;
+    foxPounceCooldownUntil = 0;
+    foxBlinkUntil = 0;
+    foxBlinkCooldownUntil = 0;
     miceCollected = 0;
     (level.mice||[]).forEach(mouse=>mouse[2]=false);
     tongueActiveUntil = 0;
@@ -492,6 +550,12 @@
       abilityLabel.textContent = `${performance.now() >= hissCooldownUntil ? "HISS READY" : "HISS RECHARGING"} · ${performance.now() >= playDeadCooldownUntil ? "PLAY DEAD READY" : "PLAY DEAD RECHARGING"}`;
     } else if (selectedCharacter === "bat") {
       abilityLabel.textContent = `${performance.now() >= flapCooldownUntil ? "FLAP READY" : "FLAP RECHARGING"} · ${performance.now() >= echoCooldownUntil ? "ECHO READY" : "ECHO RECHARGING"}`;
+    } else if (selectedCharacter === "goat") {
+      abilityLabel.textContent = `${performance.now() >= goatAttackCooldownUntil ? "HEADBUTT READY" : "HEADBUTT RECHARGING"} · ${performance.now() >= goatScrambleCooldownUntil ? "SCRAMBLE READY" : "SCRAMBLE RECHARGING"}`;
+    } else if (selectedCharacter === "highland") {
+      abilityLabel.textContent = `${performance.now() >= cowAttackCooldownUntil ? "HORN TOSS READY" : "HORN TOSS RECHARGING"} · ${performance.now() >= cowChargeCooldownUntil ? "CHARGE READY" : "CHARGE RECHARGING"}`;
+    } else if (selectedCharacter === "devilfox") {
+      abilityLabel.textContent = `${performance.now() >= foxPounceCooldownUntil ? "POUNCE READY" : "POUNCE RECHARGING"} · ${performance.now() >= foxBlinkCooldownUntil ? "BLINK READY" : "BLINK RECHARGING"}`;
     } else {
       abilityLabel.textContent = "TONGUE READY";
     }
@@ -658,13 +722,61 @@
   function useFlap(){
     const now=performance.now();
     if(state!=="playing"||selectedCharacter!=="bat"||now<flapCooldownUntil)return;
-    flapCooldownUntil=now+220;batFlightUntil=now+1050;player.ceilingClimbing=false;player.climbing=false;player.vy=Math.min(player.vy,-210);player.vx+=player.facing*35;player.grounded=false;updateHud();tone(430,.05,"triangle");
+    flapCooldownUntil=now+260;batFlightUntil=now+1800;player.ceilingClimbing=false;player.climbing=false;player.vy=Math.min(player.vy,-85);player.vx*=.7;player.grounded=false;updateHud();tone(430,.05,"triangle");
   }
 
   function useEchoPulse(){
     const now=performance.now();
     if(state!=="playing"||selectedCharacter!=="bat"||now<echoCooldownUntil)return;
     echoPulseUntil=now+3000;echoCooldownUntil=now+5600;updateHud();tone(980,.12,"sine");setTimeout(()=>tone(1220,.09,"sine"),90);
+  }
+
+  function strikeNearby(activeUntilKey, cooldownKey, duration, cooldown, reach, toneFrequency){
+    const now=performance.now();
+    const attackBox={x:player.facing>0?player.x+player.w-8:player.x-reach+8,y:player.y-8,w:reach,h:player.h+16};
+    const livingTypes=new Set(["cat","dalmatian","frenchie","fish","spider"]);
+    for(const hazard of levels[levelIndex].hazards){
+      if(hazard.defeated||!intersects(attackBox,hazard))continue;
+      if(hazard.type==="grab"||hazard.type==="hand"){hazard.stunnedUntil=now+1100;hazard.dir*=-1;}
+      else if(livingTypes.has(hazard.type))hazard.defeated=true;
+    }
+    if(activeUntilKey==="goat")goatAttackUntil=now+duration;
+    if(activeUntilKey==="cow")cowAttackUntil=now+duration;
+    if(activeUntilKey==="fox")foxPounceUntil=now+duration;
+    if(cooldownKey==="goat")goatAttackCooldownUntil=now+cooldown;
+    if(cooldownKey==="cow")cowAttackCooldownUntil=now+cooldown;
+    if(cooldownKey==="fox")foxPounceCooldownUntil=now+cooldown;
+    updateHud();tone(toneFrequency,.1,"square");
+  }
+
+  function useHeadbutt(){
+    const now=performance.now();if(state!=="playing"||selectedCharacter!=="goat"||now<goatAttackCooldownUntil)return;
+    strikeNearby("goat","goat",300,760,74,175);
+  }
+
+  function useMountainScramble(){
+    const now=performance.now();if(state!=="playing"||selectedCharacter!=="goat"||now<goatScrambleCooldownUntil)return;
+    goatScrambleCooldownUntil=now+1450;player.ceilingClimbing=false;player.climbing=false;player.vy=-555;player.vx=player.facing*275;player.grounded=false;invulnerableUntil=Math.max(invulnerableUntil,now+500);updateHud();tone(315,.09,"triangle");
+  }
+
+  function useHornToss(){
+    const now=performance.now();if(state!=="playing"||selectedCharacter!=="highland"||now<cowAttackCooldownUntil)return;
+    strikeNearby("cow","cow",360,900,88,120);player.vy=Math.min(player.vy,-90);
+  }
+
+  function useHighlandCharge(){
+    const now=performance.now();if(state!=="playing"||selectedCharacter!=="highland"||now<cowChargeCooldownUntil)return;
+    cowChargeUntil=now+850;cowChargeCooldownUntil=now+3600;player.vx=player.facing*480;invulnerableUntil=Math.max(invulnerableUntil,cowChargeUntil);updateHud();tone(78,.22,"sawtooth");
+  }
+
+  function useFoxPounce(){
+    const now=performance.now();if(state!=="playing"||selectedCharacter!=="devilfox"||now<foxPounceCooldownUntil)return;
+    strikeNearby("fox","fox",520,980,92,260);player.vx=player.facing*330;player.vy=-330;player.grounded=false;
+  }
+
+  function useMischiefBlink(){
+    const now=performance.now();if(state!=="playing"||selectedCharacter!=="devilfox"||now<foxBlinkCooldownUntil)return;
+    foxBlinkUntil=now+500;foxBlinkCooldownUntil=now+2300;invulnerableUntil=Math.max(invulnerableUntil,now+650);player.x=Math.max(0,Math.min(W-player.w,player.x+player.facing*145));player.vx=player.facing*90;updateHud();tone(690,.13,"sine");
   }
 
   function biteHitbox(now){
@@ -679,6 +791,9 @@
     else if (selectedCharacter === "raccoon") useBite();
     else if (selectedCharacter === "opossum") useHiss();
     else if (selectedCharacter === "bat") useFlap();
+    else if (selectedCharacter === "goat") useHeadbutt();
+    else if (selectedCharacter === "highland") useHornToss();
+    else if (selectedCharacter === "devilfox") useFoxPounce();
   }
 
   function useSecondaryAbility(){
@@ -690,6 +805,9 @@
     else if(selectedCharacter==="raccoon")useTrashShield();
     else if(selectedCharacter==="opossum")usePlayDead();
     else if(selectedCharacter==="bat")useEchoPulse();
+    else if(selectedCharacter==="goat")useMountainScramble();
+    else if(selectedCharacter==="highland")useHighlandCharge();
+    else if(selectedCharacter==="devilfox")useMischiefBlink();
   }
 
   function intersects(a, b) {
@@ -724,8 +842,8 @@
     const down = keys.ArrowDown || keys.KeyS;
     const inHabitatWater = level.habitat === "newt" && player.x < 520 && player.y + player.h / 2 > 270;
     const swimming = Boolean(level.underwater || inHabitatWater);
-    const speed = swimming ? character.swimSpeed : level.decor === "highway" ? 245 : level.decor === "house" ? 236 : 220;
-    if (["chameleon","newt","frog","boa","raccoon","opossum","bat"].includes(selectedCharacter)) updateHud();
+    const speed = swimming ? character.swimSpeed : selectedCharacter==="bat"&&now<batFlightUntil ? 175 : level.decor === "highway" ? 245 : level.decor === "house" ? 236 : 220;
+    if (["chameleon","newt","frog","boa","raccoon","opossum","bat","goat","highland","devilfox"].includes(selectedCharacter)) updateHud();
 
     const acceleration = swimming ? 720 : 1450;
     const playingDead=selectedCharacter==="opossum"&&now<playDeadUntil;
@@ -779,9 +897,11 @@
       } else {
         const flying=selectedCharacter==="bat"&&now<batFlightUntil;
         if(flying){
-          // One press gives a sustained powered climb; steer horizontally while the wings do actual work.
-          player.vy-=780*dt;
-          player.vy=Math.max(-285,Math.min(120,player.vy));
+          // Powered flight: up and down steer, neutral input gently hovers.
+          if(up)player.vy-=460*dt;
+          else if(down)player.vy+=460*dt;
+          else{player.vy+=38*dt;player.vy*=Math.pow(.08,dt);}
+          player.vy=Math.max(-175,Math.min(175,player.vy));
         }else{
           player.vy += 820 * dt;
           player.vy = Math.min(player.vy, 570);
@@ -796,6 +916,7 @@
     player.x += player.vx * dt;
     player.x = Math.max(0, Math.min(W - player.w, player.x));
     player.y += player.vy * dt;
+    if(player.y<52){player.y=52;player.vy=Math.max(0,player.vy);}
     if (level.underwater) player.y = Math.max(48, Math.min(H - player.h, player.y));
     player.grounded = false;
 
@@ -863,6 +984,14 @@
           resetPlayer();
           return;
         }
+      }
+      if(intersects(player,hazard)&&selectedCharacter==="highland"&&now<cowChargeUntil){
+        if(["cat","dalmatian","frenchie","fish","spider"].includes(hazard.type))hazard.defeated=true;
+        else if(hazard.type==="grab"||hazard.type==="hand")hazard.stunnedUntil=now+1200;
+      }
+      if(intersects(player,hazard)&&selectedCharacter==="devilfox"&&now<foxPounceUntil){
+        if(["cat","dalmatian","frenchie","fish","spider"].includes(hazard.type))hazard.defeated=true;
+        else if(hazard.type==="grab"||hazard.type==="hand")hazard.stunnedUntil=now+900;
       }
     }
 
@@ -963,7 +1092,7 @@
       ctx.fillRect(18, 45, 924, 455);
       ctx.strokeStyle = "rgba(210,255,230,.15)";
       ctx.lineWidth = 5; ctx.strokeRect(18, 45, 924, 455);
-      if(!["raccoon","opossum","bat"].includes(level.habitat)){
+      if(!["raccoon","opossum","bat","goat","highland","devilfox"].includes(level.habitat)){
         drawEnclosureTrees();
         ctx.save();ctx.globalAlpha=.42;
         drawLeaves(-18,120,"#1b4b2b");drawLeaves(185,155,"#285c34");drawLeaves(390,105,"#214d2d");
@@ -971,7 +1100,7 @@
         ctx.restore();
       }
       drawHabitatDetails(level);
-      if(!["raccoon","opossum","bat"].includes(level.habitat)){drawLeaves(48, 220, "#245f36");drawLeaves(665,180,"#1d4e2e");drawLeaves(720,400,"#245f36");}
+      if(!["raccoon","opossum","bat","goat","highland","devilfox"].includes(level.habitat)){drawLeaves(48, 220, "#245f36");drawLeaves(665,180,"#1d4e2e");drawLeaves(720,400,"#245f36");}
     } else if (level.decor === "kitchen") {
       ctx.fillStyle="#aebfbb";ctx.fillRect(0,70,W,430);
       ctx.strokeStyle="rgba(70,88,86,.22)";ctx.lineWidth=1;
@@ -1204,6 +1333,29 @@
       ctx.fillStyle="#7d2028";ctx.beginPath();ctx.arc(80,95,12,0,Math.PI*2);ctx.fill();ctx.fillStyle="rgba(177,37,50,.14)";ctx.beginPath();ctx.arc(80,95,85,0,Math.PI*2);ctx.fill();
       ctx.fillStyle="#12111c";for(const [x,y] of [[240,115],[475,95],[675,130],[865,100]]){ctx.save();ctx.translate(x,y);ctx.beginPath();ctx.moveTo(0,0);ctx.quadraticCurveTo(-18,10,-28,2);ctx.quadraticCurveTo(-13,23,0,28);ctx.quadraticCurveTo(13,23,28,2);ctx.quadraticCurveTo(18,10,0,0);ctx.fill();ctx.restore();}
       ctx.fillStyle="#c8a770";for(const [x,y] of [[125,320],[530,308],[820,128]]){ctx.beginPath();ctx.arc(x,y,8,0,Math.PI*2);ctx.fill();ctx.fillStyle="#74435c";ctx.beginPath();ctx.arc(x+13,y+2,7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#c8a770";}
+    }else if(level.habitat==="goat"){
+      const sky=ctx.createLinearGradient(0,50,0,500);sky.addColorStop(0,"#9fc8d7");sky.addColorStop(1,"#d8d39e");ctx.fillStyle=sky;ctx.fillRect(20,50,920,446);
+      ctx.fillStyle="#b68a58";ctx.fillRect(20,285,920,211);ctx.strokeStyle="#775334";ctx.lineWidth=8;for(let x=25;x<940;x+=130){ctx.beginPath();ctx.moveTo(x,285);ctx.lineTo(x,496);ctx.stroke();}
+      ctx.fillStyle="#6b4429";ctx.fillRect(610,90,310,260);ctx.fillStyle="#3b281c";ctx.beginPath();ctx.moveTo(580,105);ctx.lineTo(765,35);ctx.lineTo(940,105);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#17130f";roundedRect(700,170,125,180,6);ctx.fill();ctx.fillStyle="#e0c06e";for(let x=35;x<580;x+=38){ctx.beginPath();ctx.moveTo(x,490);ctx.lineTo(x+10,455-(x%3)*7);ctx.lineTo(x+18,490);ctx.fill();}
+      ctx.fillStyle="#8d765c";ctx.beginPath();ctx.arc(155,395,62,0,Math.PI*2);ctx.fill();ctx.fillStyle="#27231e";ctx.beginPath();ctx.arc(155,395,20,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#f3e3ae";ctx.font="900 14px system-ui";ctx.textAlign="center";ctx.fillText("GOAT-PROOF LATCH",765,145);
+    }else if(level.habitat==="highland"){
+      const moor=ctx.createLinearGradient(0,50,0,500);moor.addColorStop(0,"#88aeba");moor.addColorStop(.5,"#9aa17b");moor.addColorStop(1,"#4f5d3c");ctx.fillStyle=moor;ctx.fillRect(20,50,920,446);
+      ctx.fillStyle="#66734a";ctx.beginPath();ctx.moveTo(20,250);ctx.quadraticCurveTo(190,130,360,255);ctx.quadraticCurveTo(560,100,760,240);ctx.quadraticCurveTo(860,170,940,230);ctx.lineTo(940,500);ctx.lineTo(20,500);ctx.fill();
+      ctx.fillStyle="#57402f";ctx.fillRect(20,452,920,44);ctx.fillStyle="#272b2c";for(let x=25;x<940;x+=42){ctx.beginPath();ctx.ellipse(x,470+(x%4)*5,29,10,.1,0,Math.PI*2);ctx.fill();}
+      ctx.fillStyle="#6e6d67";for(let x=35;x<620;x+=48){ctx.beginPath();ctx.ellipse(x,390+(x%3)*7,30,18,.1,0,Math.PI*2);ctx.fill();}
+      ctx.fillStyle="#6b4a31";roundedRect(670,115,245,245,8);ctx.fill();ctx.fillStyle="#3d2c22";ctx.beginPath();ctx.moveTo(640,125);ctx.lineTo(790,55);ctx.lineTo(935,125);ctx.closePath();ctx.fill();ctx.fillStyle="#16130f";roundedRect(750,205,92,155,5);ctx.fill();
+      ctx.fillStyle="#7a8582";roundedRect(500,445,150,32,10);ctx.fill();ctx.fillStyle="rgba(104,174,191,.65)";ctx.beginPath();ctx.ellipse(575,450,64,9,0,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="rgba(224,235,235,.45)";ctx.lineWidth=2;for(let i=0;i<55;i++){const x=(i*83)%940+10,y=55+(i*47)%260;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-6,y+10);ctx.stroke();}
+    }else if(level.habitat==="devilfox"){
+      const inferno=ctx.createRadialGradient(480,280,20,480,280,500);inferno.addColorStop(0,"#5b174b");inferno.addColorStop(.55,"#24102f");inferno.addColorStop(1,"#090510");ctx.fillStyle=inferno;ctx.fillRect(20,50,920,446);
+      ctx.fillStyle="#0b0611";ctx.beginPath();ctx.arc(760,135,70,0,Math.PI*2);ctx.fill();ctx.fillStyle="#f0c4e7";ctx.beginPath();ctx.arc(742,125,54,0,Math.PI*2);ctx.fill();ctx.fillStyle="#24102f";ctx.beginPath();ctx.arc(764,110,52,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="#32143a";ctx.lineWidth=22;ctx.lineCap="round";for(const [x,b] of [[90,35],[300,-30],[585,28],[880,-38]]){ctx.beginPath();ctx.moveTo(x,500);ctx.bezierCurveTo(x+b,390,x-b,250,x+b*.4,90);ctx.stroke();}
+      ctx.fillStyle="#35103a";for(const [x,y,r] of [[75,465,70],[240,490,90],[520,475,100],[790,480,115],[930,460,70]]){ctx.beginPath();ctx.arc(x,y,r,Math.PI,Math.PI*2);ctx.fill();}
+      ctx.strokeStyle="#9a426f";ctx.lineWidth=5;ctx.beginPath();ctx.arc(470,464,92,0,Math.PI*2);ctx.moveTo(470,372);ctx.lineTo(470,556);ctx.moveTo(378,464);ctx.lineTo(562,464);ctx.stroke();
+      ctx.fillStyle="#e65d9e";for(const [x,y] of [[135,420],[320,445],[610,425],[845,410]]){for(let i=0;i<5;i++){ctx.save();ctx.translate(x,y);ctx.rotate(i*Math.PI*2/5);ctx.beginPath();ctx.ellipse(0,-14,5,15,0,0,Math.PI*2);ctx.fill();ctx.restore();}ctx.fillStyle="#ffd1e8";ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();ctx.fillStyle="#e65d9e";}
+      ctx.fillStyle="rgba(255,103,177,.55)";for(let i=0;i<24;i++){const x=35+(i*137)%890,y=80+(i*73)%360;ctx.beginPath();ctx.arc(x,y,1.5+(i%3),0,Math.PI*2);ctx.fill();}
     }
     ctx.restore();
   }
@@ -1235,6 +1387,11 @@
     if(level.habitat==="bat"){
       ctx.strokeStyle="#9a8772";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(cx,y);ctx.bezierCurveTo(cx-8,y+h*.3,cx+9,y+h*.7,cx,y+h);ctx.stroke();
       ctx.strokeStyle="#5e5045";ctx.lineWidth=1.5;for(let knot=y+18;knot<y+h;knot+=22){ctx.beginPath();ctx.arc(cx,knot,6,0,Math.PI*2);ctx.stroke();}
+      ctx.restore();return;
+    }
+    if(level.habitat==="devilfox"){
+      ctx.strokeStyle="#421546";ctx.lineWidth=12;ctx.beginPath();ctx.moveTo(cx,y+h);ctx.bezierCurveTo(cx-20,y+h*.7,cx+18,y+h*.35,cx,y);ctx.stroke();
+      ctx.strokeStyle="#cf4d8a";ctx.lineWidth=2.5;ctx.stroke();for(let s=y+18;s<y+h;s+=28){ctx.fillStyle="#8d315f";ctx.beginPath();ctx.moveTo(cx,s);ctx.lineTo(cx-14,s-8);ctx.lineTo(cx-5,s+7);ctx.fill();}
       ctx.restore();return;
     }
     ctx.strokeStyle=underwater?"#376e4c":"#573a25";
@@ -1286,6 +1443,9 @@
       ctx.strokeStyle="#8a7967";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(x,cy);ctx.bezierCurveTo(x+w*.3,cy+18,x+w*.7,cy-12,x+w,cy+5);ctx.stroke();
       ctx.strokeStyle="#b1a18e";ctx.lineWidth=1.5;ctx.stroke();ctx.restore();return;
     }
+    if(kind==="infernalChain"){
+      ctx.strokeStyle="#9d4d7d";ctx.lineWidth=4;for(let px=x;px<x+w;px+=15){ctx.beginPath();ctx.ellipse(px,cy+(px%30?3:-3),9,5,px%30?.3:-.3,0,Math.PI*2);ctx.stroke();}ctx.restore();return;
+    }
     if(kind==="curved"){
       ctx.strokeStyle="#356b3c";ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(x,cy);
       const sections=8,step=w/sections;
@@ -1314,7 +1474,18 @@
 
   function drawPlatforms(level) {
     for (const p of level.platforms) {
-      if(level.habitat==="raccoon"&&p[4]!=="alley"){
+      if(level.habitat==="goat"&&p[4]!=="barnFloor"){
+        if(p[4]==="hayBale"){ctx.fillStyle="#d5aa4c";roundedRect(p[0],p[1],p[2],p[3],5);ctx.fill();ctx.strokeStyle="#8d6b2d";ctx.lineWidth=2;for(let x=p[0]+12;x<p[0]+p[2];x+=18){ctx.beginPath();ctx.moveTo(x,p[1]+2);ctx.lineTo(x-6,p[1]+p[3]-2);ctx.stroke();}}
+        else if(p[4]==="spool"){ctx.fillStyle="#80684d";roundedRect(p[0],p[1],p[2],p[3],8);ctx.fill();ctx.strokeStyle="#4a3828";ctx.lineWidth=4;ctx.beginPath();ctx.arc(p[0]+p[2]/2,p[1]+p[3]/2,Math.min(30,p[3]),0,Math.PI*2);ctx.stroke();}
+        else{ctx.fillStyle=p[4]==="loft"?"#5a3925":"#8a613b";roundedRect(p[0],p[1],p[2],p[3],4);ctx.fill();ctx.fillStyle="#b98b58";ctx.fillRect(p[0]+6,p[1]+3,p[2]-12,4);}
+      }else if(level.habitat==="highland"&&p[4]!=="mudPasture"){
+        if(p[4]==="hayBale"){ctx.fillStyle="#c69c45";roundedRect(p[0],p[1],p[2],p[3],6);ctx.fill();ctx.strokeStyle="#80632b";ctx.lineWidth=2;for(let x=p[0]+12;x<p[0]+p[2];x+=21){ctx.beginPath();ctx.moveTo(x,p[1]+3);ctx.lineTo(x-5,p[1]+p[3]-3);ctx.stroke();}}
+        else{ctx.fillStyle="#70706b";roundedRect(p[0],p[1],p[2],p[3],7);ctx.fill();ctx.strokeStyle="#464744";ctx.lineWidth=3;for(let x=p[0]+18;x<p[0]+p[2];x+=36){ctx.beginPath();ctx.arc(x,p[1]+p[3]/2,15,0,Math.PI*2);ctx.stroke();}}
+      }else if(level.habitat==="devilfox"&&p[4]!=="velvetFloor"){
+        if(p[4]==="mushroom"){ctx.fillStyle="#dd4c93";ctx.beginPath();ctx.ellipse(p[0]+p[2]/2,p[1]+5,p[2]/2,p[3],0,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle="#eee0e8";ctx.fillRect(p[0]+p[2]/2-10,p[1]+5,20,p[3]);}
+        else if(p[4]==="crystal"){ctx.fillStyle="#b957d3";ctx.beginPath();ctx.moveTo(p[0],p[1]+p[3]);ctx.lineTo(p[0]+18,p[1]-13);ctx.lineTo(p[0]+34,p[1]+p[3]);ctx.lineTo(p[0]+p[2]/2,p[1]-20);ctx.lineTo(p[0]+p[2]-22,p[1]+p[3]);ctx.lineTo(p[0]+p[2],p[1]-10);ctx.lineTo(p[0]+p[2],p[1]+p[3]);ctx.closePath();ctx.fill();}
+        else{ctx.fillStyle=p[4]==="obsidian"?"#17101f":"#46183f";roundedRect(p[0],p[1],p[2],p[3],8);ctx.fill();ctx.strokeStyle="#bc4b84";ctx.lineWidth=2;ctx.stroke();}
+      }else if(level.habitat==="raccoon"&&p[4]!=="alley"){
         if(p[4]==="trash")ctx.fillStyle="#25292b";
         else if(p[4]==="cardboard")ctx.fillStyle="#9a724a";
         else if(p[4]==="fence")ctx.fillStyle="#667078";
@@ -1741,9 +1912,13 @@
     const neckWave=moving*Math.sin(slitherPhase+3.25)*3.5;
     ctx.strokeStyle=dark;ctx.lineWidth=15;ctx.lineCap="round";
     if(now<constrictPulseUntil){
-      ctx.beginPath();ctx.ellipse(-22,4,32,14,-.08,0,Math.PI*2);ctx.stroke();
-      ctx.lineWidth=11;ctx.beginPath();ctx.ellipse(-17,1,22,9,.1,0,Math.PI*2);ctx.stroke();
-      ctx.strokeStyle="#414448";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(-21,4,29,12,-.08,0,Math.PI*2);ctx.stroke();
+      // One continuous tightening spiral keeps the body and neck visibly attached.
+      ctx.lineWidth=14;ctx.beginPath();ctx.moveTo(-58,9);
+      ctx.bezierCurveTo(-53,-16,-17,-23,12,-10);
+      ctx.bezierCurveTo(38,2,23,25,-9,21);
+      ctx.bezierCurveTo(-38,17,-39,-4,-16,-10);
+      ctx.bezierCurveTo(4,-15,22,-2,14,9);ctx.stroke();
+      ctx.strokeStyle="#414448";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-55,5);ctx.bezierCurveTo(-35,-18,-5,-16,13,-7);ctx.bezierCurveTo(31,2,18,19,-7,17);ctx.stroke();
     }else{
       ctx.beginPath();ctx.moveTo(-64,5+tailWave*.55);
       ctx.bezierCurveTo(-53,-17+tailWave,-40,19-midWave,-25,3+midWave*.35);
@@ -1752,7 +1927,7 @@
     const strikeProgress=now<strikeActiveUntil?Math.max(0,1-(strikeActiveUntil-now)/300):0;
     const lunge=now<strikeActiveUntil?Math.sin(strikeProgress*Math.PI)*38:0;
     const headWave=now<constrictPulseUntil?0:neckWave*.35;
-    ctx.strokeStyle=dark;ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(now<constrictPulseUntil?-1:14,-1+headWave);ctx.quadraticCurveTo(20+lunge*.45,-5+headWave,24+lunge,-2+headWave);ctx.stroke();
+    ctx.strokeStyle=dark;ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(now<constrictPulseUntil?12:14,(now<constrictPulseUntil?7:-1)+headWave);ctx.quadraticCurveTo(20+lunge*.45,-5+headWave,24+lunge,-2+headWave);ctx.stroke();
     ctx.save();ctx.translate(lunge,headWave);ctx.rotate(moving*Math.sin(slitherPhase+3.25)*.025);
     ctx.fillStyle=dark;
     ctx.beginPath();ctx.moveTo(15,-11);ctx.quadraticCurveTo(34,-14,48,-8);ctx.lineTo(54,-1);ctx.lineTo(49,8);ctx.quadraticCurveTo(33,13,16,9);ctx.lineTo(9,3);ctx.lineTo(11,-6);ctx.closePath();ctx.fill();
@@ -1767,13 +1942,14 @@
   function drawRaccoon(now){
     const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;if(flash)ctx.globalAlpha=.4;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
-    const moving=Math.min(1,Math.abs(player.vx)/95);const step=Math.sin(now*.018)*moving*4;
-    const tailSwing=Math.sin(now*.012)*moving*9;
-    // Thick, fluffy, ringed tail with a loose counter-swing while walking.
-    ctx.strokeStyle="#777b7d";ctx.lineWidth=19;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-21,1);ctx.bezierCurveTo(-35,-9-tailSwing*.25,-48,-3+tailSwing,-63,-12+tailSwing*.35);ctx.stroke();
-    ctx.strokeStyle="#2c2f31";ctx.lineWidth=7;for(const [x,y] of [[-31,-4],[-42,-5],[-53,-9]]){ctx.beginPath();ctx.moveTo(x,y-6+tailSwing*.18);ctx.lineTo(x-1,y+7+tailSwing*.18);ctx.stroke();}
-    ctx.strokeStyle="rgba(210,214,211,.42)";ctx.lineWidth=2;for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(-27-i*7,-8+tailSwing*.12);ctx.lineTo(-32-i*7,-13+tailSwing*.2);ctx.stroke();}
-    ctx.strokeStyle="#4f5356";ctx.lineWidth=7;for(const [x,o] of [[-13,step],[10,-step]]){ctx.beginPath();ctx.moveTo(x,8);ctx.lineTo(x+o*.35,17);ctx.lineTo(x+7,17);ctx.stroke();}
+    const moving=Math.min(1,Math.abs(player.vx)/95);const step=Math.sin(now*.018)*moving*5;const airborne=!player.grounded;
+    const tailSwing=(Math.sin(now*.012)*moving*7)+(airborne?Math.max(-8,Math.min(9,-player.vy*.025)):0);
+    // Plush and tapered instead of a uniform pipe-cleaner tail.
+    ctx.strokeStyle="#777b7d";ctx.lineWidth=16;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-20,1);ctx.bezierCurveTo(-32,-10-tailSwing*.25,-46,-7+tailSwing,-61,-15+tailSwing*.42);ctx.stroke();
+    ctx.strokeStyle="#8d9090";ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(-23,-2);ctx.bezierCurveTo(-36,-11-tailSwing*.2,-48,-8+tailSwing,-62,-15+tailSwing*.42);ctx.stroke();
+    ctx.strokeStyle="#2c2f31";ctx.lineWidth=5;for(const [x,y] of [[-31,-5],[-42,-7],[-53,-11]]){ctx.beginPath();ctx.moveTo(x,y-5+tailSwing*.18);ctx.lineTo(x-1,y+6+tailSwing*.18);ctx.stroke();}
+    const raccoonLeg=(hip,phase,front)=>{const tuck=airborne?Math.max(-7,Math.min(8,player.vy*.018)):0;const kneeX=hip+(airborne?(front?8:-10):phase);const kneeY=airborne?8-tuck*.25:13;const pawX=kneeX+(airborne?(front?10:-8):7);const pawY=airborne?12+tuck*.35:18;ctx.strokeStyle="#4f5356";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(hip,7);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();ctx.fillStyle="#25282a";ctx.beginPath();ctx.ellipse(pawX+3,pawY,7,3,0,0,Math.PI*2);ctx.fill();};
+    raccoonLeg(-13,step,false);raccoonLeg(10,-step,true);
     ctx.fillStyle="#73777a";ctx.beginPath();ctx.ellipse(-2,1,27,16,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#8b8e8e";ctx.beginPath();ctx.ellipse(-5,-7,20,8,0,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle="#73777a";ctx.beginPath();ctx.ellipse(24,-3,17,14,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#36393c";ctx.beginPath();ctx.arc(17,-13,7,0,Math.PI*2);ctx.arc(30,-13,7,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#232528";ctx.beginPath();ctx.moveTo(10,-10);ctx.quadraticCurveTo(25,-17,39,-7);ctx.lineTo(37,2);ctx.quadraticCurveTo(24,7,11,0);ctx.closePath();ctx.fill();
@@ -1794,7 +1970,9 @@
     ctx.fillStyle="#d1ccc3";ctx.beginPath();ctx.moveTo(11,-10);ctx.quadraticCurveTo(29,-13,45,-2);ctx.lineTo(30,8);ctx.lineTo(11,8);ctx.closePath();ctx.fill();
     ctx.fillStyle="#242426";ctx.beginPath();ctx.arc(14,-12,7,0,Math.PI*2);ctx.arc(27,-11,6,0,Math.PI*2);ctx.fill();ctx.fillStyle="#edb0ae";ctx.beginPath();ctx.ellipse(45,-1,5,4,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#121315";ctx.beginPath();ctx.arc(30,-5,2.4,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#777470";ctx.lineWidth=5;const step=Math.sin(now*.016)*Math.min(1,Math.abs(player.vx)/100)*4;for(const [x,o] of [[-14,step],[8,-step]]){ctx.beginPath();ctx.moveTo(x,8);ctx.lineTo(x+o*.4,17);ctx.lineTo(x+8,17);ctx.stroke();}
+    const airborne=!player.grounded&&!playingDead;const step=Math.sin(now*.016)*Math.min(1,Math.abs(player.vx)/100)*5;
+    const opossumLeg=(hip,phase,front)=>{const rise=Math.max(-1,Math.min(1,-player.vy/430));const kneeX=hip+(airborne?(front?8+rise*6:-10-rise*6):phase);const kneeY=airborne?8:13;const footX=kneeX+(airborne?(front?12:-10):8);const footY=airborne?12+Math.abs(rise)*3:18;ctx.strokeStyle="#777470";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(hip,7);ctx.lineTo(kneeX,kneeY);ctx.lineTo(footX,footY);ctx.stroke();ctx.strokeStyle="#d0a4a5";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(footX,footY);ctx.lineTo(footX+8,footY);ctx.moveTo(footX+1,footY);ctx.lineTo(footX+7,footY+3);ctx.stroke();};
+    opossumLeg(-14,step,false);opossumLeg(8,-step,true);
     if(now<hissActiveUntil){ctx.fillStyle="#f4e8d3";ctx.beginPath();ctx.moveTo(37,3);ctx.lineTo(50,5);ctx.lineTo(39,9);ctx.closePath();ctx.fill();ctx.fillStyle="#e25967";ctx.beginPath();ctx.moveTo(42,6);ctx.lineTo(50,6);ctx.lineTo(44,9);ctx.fill();const radius=55+Math.sin(now*.04)*8;ctx.strokeStyle="rgba(238,232,202,.65)";ctx.lineWidth=3;ctx.beginPath();ctx.arc(38,2,radius,-.55,.55);ctx.stroke();}
     if(playingDead){ctx.save();ctx.rotate(Math.PI);ctx.fillStyle="#eee";ctx.font="bold 10px system-ui";ctx.textAlign="center";ctx.fillText("PLAYING DEAD",0,34);ctx.restore();}
     ctx.restore();ctx.globalAlpha=1;
@@ -1814,6 +1992,54 @@
     ctx.restore();ctx.globalAlpha=1;
   }
 
+  function drawGoat(now){
+    const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;if(flash)ctx.globalAlpha=.4;
+    ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
+    const airborne=!player.grounded,walk=Math.sin(now*.017)*Math.min(1,Math.abs(player.vx)/100)*6,ram=now<goatAttackUntil?Math.sin((goatAttackUntil-now)/300*Math.PI)*10:0;
+    ctx.strokeStyle="#a79e89";ctx.lineWidth=4;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-25,-3);ctx.quadraticCurveTo(-36,-15,-39,-5);ctx.stroke();
+    const leg=(hip,phase,front)=>{const kneeX=hip+(airborne?(front?9:-9):phase),kneeY=airborne?9:15,hoofX=kneeX+(airborne?(front?8:-7):4),hoofY=airborne?14:23;ctx.strokeStyle="#c6bda8";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(hip,8);ctx.lineTo(kneeX,kneeY);ctx.lineTo(hoofX,hoofY);ctx.stroke();ctx.strokeStyle="#37322d";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(hoofX-2,hoofY);ctx.lineTo(hoofX+5,hoofY);ctx.stroke();};
+    leg(-13,walk,false);leg(12,-walk,true);
+    ctx.fillStyle="#d9d0bb";ctx.beginPath();ctx.ellipse(-3,0,28,15,0,0,Math.PI*2);ctx.fill();
+    ctx.save();ctx.translate(ram,0);ctx.fillStyle="#e3d9c5";ctx.beginPath();ctx.moveTo(14,-10);ctx.quadraticCurveTo(35,-14,45,-1);ctx.lineTo(37,11);ctx.lineTo(15,8);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#8d806e";ctx.beginPath();ctx.moveTo(21,-10);ctx.quadraticCurveTo(12,-30,28,-32);ctx.quadraticCurveTo(20,-23,32,-12);ctx.fill();ctx.beginPath();ctx.moveTo(34,-10);ctx.quadraticCurveTo(32,-29,46,-27);ctx.quadraticCurveTo(36,-21,43,-8);ctx.fill();
+    ctx.fillStyle="#d9d0bb";ctx.beginPath();ctx.moveTo(18,-8);ctx.lineTo(8,-21);ctx.lineTo(27,-13);ctx.moveTo(36,-9);ctx.lineTo(48,-20);ctx.lineTo(44,-6);ctx.fill();
+    ctx.fillStyle="#171817";ctx.beginPath();ctx.ellipse(35,-5,2,3,0,0,Math.PI*2);ctx.arc(46,2,2,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#9c8e79";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(28,8);ctx.lineTo(24,22);ctx.lineTo(34,13);ctx.stroke();ctx.restore();
+    ctx.restore();ctx.globalAlpha=1;
+  }
+
+  function drawHighland(now){
+    const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;if(flash)ctx.globalAlpha=.4;
+    ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
+    const charging=now<cowChargeUntil,airborne=!player.grounded,walk=Math.sin(now*.014)*Math.min(1,Math.abs(player.vx)/90)*6,toss=now<cowAttackUntil?-7:0;
+    const leg=(hip,phase)=>{const kneeX=hip+(airborne?phase*1.4:phase),kneeY=airborne?12:18,hoofY=airborne?19:28;ctx.strokeStyle="#743b22";ctx.lineWidth=10;ctx.beginPath();ctx.moveTo(hip,10);ctx.lineTo(kneeX,kneeY);ctx.lineTo(kneeX+3,hoofY);ctx.stroke();ctx.strokeStyle="#25201d";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(kneeX-2,hoofY);ctx.lineTo(kneeX+8,hoofY);ctx.stroke();};
+    leg(-20,walk);leg(19,-walk);
+    ctx.fillStyle="#a95029";ctx.beginPath();ctx.ellipse(-5,0,39,21,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#d17a43";ctx.lineWidth=5;for(let x=-36;x<28;x+=8){ctx.beginPath();ctx.moveTo(x,-12+(x%3));ctx.quadraticCurveTo(x+5,2,x+1,20);ctx.stroke();}
+    ctx.save();ctx.translate(charging?8:toss,0);ctx.fillStyle="#b85f2e";ctx.beginPath();ctx.ellipse(32,-3,23,20,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#eee0be";ctx.lineWidth=6;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(20,-15);ctx.quadraticCurveTo(5,-28,-8,-20);ctx.moveTo(41,-16);ctx.quadraticCurveTo(58,-29,68,-18);ctx.stroke();
+    ctx.strokeStyle="#d77b42";ctx.lineWidth=5;for(let x=15;x<50;x+=6){ctx.beginPath();ctx.moveTo(x,-18);ctx.quadraticCurveTo(x-4,-1,x-2,15);ctx.stroke();}
+    ctx.fillStyle="#17130f";ctx.beginPath();ctx.arc(38,-5,2.5,0,Math.PI*2);ctx.arc(53,4,2.5,0,Math.PI*2);ctx.fill();ctx.restore();
+    if(charging){ctx.strokeStyle="rgba(224,188,126,.55)";ctx.lineWidth=3;for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(-55-i*12,-10+i*9);ctx.lineTo(-82-i*12,-10+i*9);ctx.stroke();}}
+    ctx.restore();ctx.globalAlpha=1;
+  }
+
+  function drawDevilFox(now){
+    const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;if(flash)ctx.globalAlpha=.4;
+    ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
+    const airborne=!player.grounded,pouncing=now<foxPounceUntil,walk=Math.sin(now*.022)*Math.min(1,Math.abs(player.vx)/100)*6,tailWave=Math.sin(now*.008)*8+(airborne?-player.vy*.02:0);
+    if(now<foxBlinkUntil){ctx.globalAlpha=.24;for(let g=1;g<=3;g++){ctx.save();ctx.translate(-g*18,Math.sin(g)*5);ctx.fillStyle="#dc68b3";ctx.beginPath();ctx.ellipse(0,0,28,13,0,0,Math.PI*2);ctx.fill();ctx.restore();}ctx.globalAlpha=1;}
+    const foxLeg=(hip,phase,front)=>{const kneeX=hip+(airborne?(front?12:-12):phase),kneeY=airborne?(pouncing?1:8):12,footX=kneeX+(airborne?(front?14:-10):8),footY=airborne?(pouncing?5:14):19;ctx.strokeStyle="#8f284f";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(hip,7);ctx.lineTo(kneeX,kneeY);ctx.lineTo(footX,footY);ctx.stroke();ctx.fillStyle="#2a1027";ctx.beginPath();ctx.ellipse(footX+3,footY,7,3,0,0,Math.PI*2);ctx.fill();};
+    ctx.strokeStyle="#b74766";ctx.lineWidth=18;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-20,0);ctx.bezierCurveTo(-39,-13,-53,-2,-64,-19+tailWave*.35);ctx.stroke();ctx.strokeStyle="#f39abb";ctx.lineWidth=10;ctx.beginPath();ctx.moveTo(-30,-4);ctx.bezierCurveTo(-45,-12,-54,-5,-64,-19+tailWave*.35);ctx.stroke();ctx.fillStyle="#fff0f5";ctx.beginPath();ctx.arc(-65,-19+tailWave*.35,6,0,Math.PI*2);ctx.fill();
+    foxLeg(-11,walk,false);foxLeg(10,-walk,true);
+    ctx.fillStyle="#b74766";ctx.beginPath();ctx.ellipse(-2,0,28,14,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#d95b82";ctx.beginPath();ctx.ellipse(24,-4,19,15,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#651d48";ctx.beginPath();ctx.moveTo(14,-14);ctx.lineTo(14,-34);ctx.lineTo(28,-17);ctx.moveTo(30,-17);ctx.lineTo(43,-34);ctx.lineTo(43,-10);ctx.fill();
+    ctx.fillStyle="#2a1027";ctx.beginPath();ctx.moveTo(20,-16);ctx.quadraticCurveTo(18,-31,27,-32);ctx.lineTo(30,-16);ctx.moveTo(33,-17);ctx.quadraticCurveTo(38,-32,46,-28);ctx.lineTo(42,-12);ctx.fill();
+    ctx.fillStyle="#f3d8e5";ctx.beginPath();ctx.ellipse(35,0,12,8,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#171018";ctx.beginPath();ctx.arc(26,-7,2.8,0,Math.PI*2);ctx.arc(44,0,2.5,0,Math.PI*2);ctx.fill();ctx.fillStyle="#ffd468";ctx.beginPath();ctx.arc(27,-8,1,0,Math.PI*2);ctx.fill();
+    if(pouncing){ctx.strokeStyle="rgba(255,111,183,.7)";ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,44,-1.1,1.1);ctx.stroke();}
+    ctx.restore();ctx.globalAlpha=1;
+  }
+
   function drawPlayer(now) {
     ctx.save();
     if(player.ceilingClimbing){ctx.translate(0,player.y*2+player.h);ctx.scale(1,-1);}
@@ -1824,6 +2050,9 @@
     else if (selectedCharacter === "raccoon") drawRaccoon(now);
     else if (selectedCharacter === "opossum") drawOpossum(now);
     else if (selectedCharacter === "bat") drawBat(now);
+    else if (selectedCharacter === "goat") drawGoat(now);
+    else if (selectedCharacter === "highland") drawHighland(now);
+    else if (selectedCharacter === "devilfox") drawDevilFox(now);
     else drawCrestedGecko(now);
     ctx.restore();
   }
