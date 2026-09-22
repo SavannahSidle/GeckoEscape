@@ -342,15 +342,7 @@
         level.platforms.push(...extras.platforms.map(platform=>[...platform]));
         level.insects.push(...extras.insects.map(insect=>[...insect]));
       }
-      if(selectedCharacter==="goat"){
-        if(i%3===0){ctx.fillStyle="#e68a38";ctx.beginPath();ctx.moveTo(-4,-12);ctx.lineTo(7,10);ctx.lineTo(-8,8);ctx.closePath();ctx.fill();ctx.strokeStyle="#4f8244";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-2,-10);ctx.lineTo(-10,-18);ctx.moveTo(-1,-10);ctx.lineTo(5,-19);ctx.stroke();}
-        else{ctx.strokeStyle="#d7b65e";ctx.lineWidth=3;for(let s=-10;s<=10;s+=5){ctx.beginPath();ctx.moveTo(s,10);ctx.lineTo(s+(i%2?8:-8),-10);ctx.stroke();}ctx.strokeStyle="#80632b";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-13,5);ctx.lineTo(14,5);ctx.stroke();}
-      }else if(selectedCharacter==="highland"){
-        if(i%3===1){ctx.fillStyle="#c94a39";ctx.beginPath();ctx.arc(0,1,11,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#4d713d";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-10);ctx.lineTo(5,-16);ctx.stroke();}
-        else{ctx.strokeStyle="#5f8d43";ctx.lineWidth=3;for(let g=-10;g<=10;g+=5){ctx.beginPath();ctx.moveTo(g,10);ctx.quadraticCurveTo(g-5,-1,g+(i%2?4:-4),-12);ctx.stroke();}}
-      }else if(selectedCharacter==="devilfox"){
-        ctx.shadowColor="#ff61b2";ctx.shadowBlur=12;ctx.fillStyle=i%2?"#ff72b8":"#9b5cff";for(const [x,y] of [[-6,1],[1,-4],[7,2],[0,7]]){ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();}ctx.shadowBlur=0;ctx.strokeStyle="#51bd84";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-8);ctx.quadraticCurveTo(5,-15,10,-16);ctx.stroke();
-      }else if(selectedCharacter==="boa"){
+      if(selectedCharacter==="boa"){
         const prey=boaStoryCollectibles[level.decor];
         level.insects=prey.rats.map(rat=>[...rat]);
         level.mice=prey.mice.map(mouse=>[...mouse]);
