@@ -72,6 +72,10 @@
   let batFlightUntil = 0;
   let batGlideUntil = 0;
   let batStartHanging = false;
+  let batHangX = 0;
+  let batHangY = 0;
+  let batReleaseUntil = 0;
+  let batVisualFacing = 1;
   let opossumRecoveryUntil = 0;
   let characterPickup = null;
   let goatAttackUntil = 0;
@@ -98,7 +102,7 @@
     boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", secondary: "STRIKE", collectible: "RATS", color: "#030405", climbSpeed: 155, swimSpeed: 190, w: 94, h: 36 },
     raccoon: { name: "TORONTO TRASH TANK (RACCOON)", ability: "BITE", secondary: "TRASH SHIELD", collectible: "TRASH TREASURES", color: "#73777a", climbSpeed: 178, swimSpeed: 145, w: 58, h: 38 },
     opossum: { name: "VIRGINIA OPOSSUM", ability: "HISS", secondary: "PLAY DEAD", collectible: "FORAGE", color: "#b8b2aa", climbSpeed: 182, swimSpeed: 135, w: 58, h: 31 },
-    bat: { name: "EGYPTIAN FRUIT BAT", ability: "FLY", secondary: "ECHO PULSE", collectible: "FRUIT", color: "#806956", climbSpeed: 190, swimSpeed: 145, w: 54, h: 30 },
+    bat: { name: "EGYPTIAN FRUIT BAT", ability: "HANG", secondary: "ECHO PULSE", collectible: "FRUIT", color: "#806956", climbSpeed: 190, swimSpeed: 145, w: 54, h: 30 },
     goat: { name: "GOAT", ability: "HEADBUTT", secondary: "MOUNTAIN SCRAMBLE", collectible: "FORAGE", color: "#d9d0bb", climbSpeed: 165, swimSpeed: 130, w: 62, h: 38 },
     highland: { name: "HIGHLAND COW", ability: "HORN TOSS", secondary: "HIGHLAND CHARGE", collectible: "MEADOW BITES", color: "#b85f2e", climbSpeed: 105, swimSpeed: 115, w: 82, h: 48 },
     devilfox: { name: "FOX", ability: "POUNCE", secondary: "MISCHIEF BLINK", collectible: "SOUL BERRIES", color: "#b74766", climbSpeed: 180, swimSpeed: 155, w: 60, h: 36 }
@@ -339,8 +343,8 @@
       title:"The Wildlife Rehab Pen",habitat:"opossum",palette:["#101914","#293b2d","#6f5134","#c7dfa2"],
       intro:"The rehabilitation pen is secure, enriched, and tragically unable to account for one determined opossum.",
       start:[72,430],exit:[870,400,52,100],
-      platforms:[[0,500,960,40,"leafLitter"],[40,455,180,22,"log"],[65,332,145,22,"nestbox"],[225,420,125,22,"tire"],[260,305,145,22,"carrier"],[385,392,135,22,"log"],[430,245,125,22,"log"],[540,340,145,22,"log"],[585,185,125,22,"meshShelf"],[700,300,125,22,"meshShelf"],[835,330,95,22,"nestbox"]],
-      vines:[[210,305,18,155],[408,240,18,150],[690,190,18,150]],swing:[780,62,150,58,92],insects:[[92,425],[135,300],[285,386],[332,272],[455,358],[490,212],[610,307],[648,152],[750,267],[852,178],[625,455],[885,295]],
+      platforms:[[0,500,960,40,"leafLitter"],[40,455,180,22,"log"],[65,332,145,22,"nestbox"],[160,270,95,20,"meshShelf"],[225,420,125,22,"tire"],[260,305,145,22,"carrier"],[385,392,135,22,"log"],[430,245,125,22,"log"],[540,340,145,22,"log"],[585,185,125,22,"meshShelf"],[700,300,125,22,"meshShelf"],[835,330,95,22,"nestbox"]],
+      vines:[[408,240,18,150],[690,190,18,150]],swings:[[780,62,150,58,92],[260,55,150,55,84]],insects:[[92,425],[135,300],[285,386],[332,272],[455,358],[490,212],[610,307],[648,152],[750,267],[852,178],[625,455],[885,295],[300,112]],
       completeTitle:"Rehabilitation status: aggressively self-discharged.",completeText:"The upper pen, tire swing, and fruit stash have been conquered. The opossum waddles into the night with absolutely no paperwork.",
       hazards:[{x:430,y:430,w:92,h:70,type:"grab",axis:"x",min:340,max:625,speed:78}]
     },
@@ -348,8 +352,8 @@
       title:"The Nocturnal Flight Habitat",habitat:"bat",palette:["#070817","#1d213c","#5d493e","#d5b0ff"],
       intro:"The keeper door is open beneath the artificial cave. Flap between fruit stations and leave the colony after dark.",
       start:[245,108],exit:[870,390,54,110],
-      platforms:[[0,500,960,40,"caveFloor"],[40,455,175,20,"rock"],[100,340,140,18,"fruitTray"],[285,405,165,18,"roost"],[500,330,165,18,"fruitTray"],[685,255,185,18,"roost"],[785,150,150,18,"fruitTray"]],
-      vines:[[435,250,15,160],[735,145,15,115]],ceilingVines:[[110,72,730,14,"batRope"]],insects:[[95,420],[160,305],[360,370],[575,295],[760,220],[850,115],[475,105]],
+      platforms:[[0,500,960,40,"caveFloor"],[40,455,175,20,"rock"],[100,340,140,18,"fruitTray"],[285,405,165,18,"roost"],[500,330,165,18,"fruitTray"],[685,255,185,18,"roost"],[785,150,150,18,"fruitTray"],[570,100,130,16,"caveWall"],[570,100,16,96,"caveWall"],[684,100,16,25,"caveWall"],[684,165,16,31,"caveWall"],[570,180,130,16,"caveWall"]],
+      vines:[[435,250,15,160],[735,145,15,115]],ceilingVines:[[110,72,730,14,"batRope"]],insects:[[95,420],[160,305],[360,370],[575,295],[760,220],[850,115],[475,105],[625,140]],
       hazards:[{x:430,y:430,w:92,h:70,type:"grab",axis:"x",min:340,max:625,speed:84}],
       completeTitle:"The night air belongs to you.",completeText:"You dropped from the roost, crossed the cave on wingbeats, and vanished beyond the moonlit door.",
     },
@@ -579,6 +583,7 @@
     if (lives <= 0) {
       state = "dead";
       if(selectedCharacter==="raccoon")showPanel("ESCAPE FAILED", "Captured by Toronto Animal Services.", "The Trash Tank has been loaded into the municipal shame van. The dog catcher appears exhausted.", "ESCAPE CUSTODY", () => startLevel(levelIndex), true);
+      else if(selectedCharacter==="opossum")showPanel("ESCAPE FAILED", "Returned to wildlife rehab.", "Recovery continues. The night shift has reinforced the enrichment pen.", "TRY AGAIN", () => startLevel(levelIndex), true);
       else showPanel("ESCAPE FAILED", "Returned to your enclosure.", "Humiliating. The human has also added another clip to the door.", "TRY AGAIN", () => startLevel(levelIndex), true);
       return;
     }
@@ -588,6 +593,7 @@
     player.vy = 0;
     player.grounded = false;
     batStartHanging=selectedCharacter==="bat"&&levels[levelIndex]?.habitat==="bat";
+    batHangX=player.spawnX;batHangY=player.spawnY;batReleaseUntil=0;batVisualFacing=player.facing;
     player.ceilingClimbing = batStartHanging;
     player.onSwing=false;
     frogAutoHopping = false;
@@ -626,8 +632,7 @@
       const recovery=performance.now()>playDeadUntil&&performance.now()<opossumRecoveryUntil?" · PANIC SPRINT":"";
       abilityLabel.textContent = `${performance.now() >= hissCooldownUntil ? "HISS READY" : "HISS RECHARGING"} · ${performance.now() >= playDeadCooldownUntil ? "PLAY DEAD READY" : "PLAY DEAD RECHARGING"}${recovery}`;
     } else if (selectedCharacter === "bat") {
-      const flight=performance.now()<batFlightUntil?"FLYING":performance.now()<batGlideUntil?"GLIDING":performance.now()>=flapCooldownUntil?"FLY READY":"FLY RECHARGING";
-      abilityLabel.textContent = `${flight} · ${performance.now() >= echoCooldownUntil ? "ECHO READY" : "ECHO RECHARGING"}`;
+      abilityLabel.textContent = `${player.ceilingClimbing?"HANGING":"HANG READY"} · ${performance.now() >= echoCooldownUntil ? "ECHO READY" : "ECHO RECHARGING"}`;
     } else if (selectedCharacter === "goat") {
       abilityLabel.textContent = `${performance.now() >= goatAttackCooldownUntil ? "HEADBUTT READY" : "HEADBUTT RECHARGING"} · ${performance.now() >= goatScrambleCooldownUntil ? "SCRAMBLE READY" : "SCRAMBLE RECHARGING"}`;
     } else if (selectedCharacter === "highland") {
@@ -809,8 +814,11 @@
 
   function useFlap(){
     const now=performance.now();
-    if(state!=="playing"||selectedCharacter!=="bat"||now<flapCooldownUntil)return;
-    batStartHanging=false;flapCooldownUntil=now+240;batFlightUntil=Math.max(batFlightUntil,now)+1850;batGlideUntil=batFlightUntil+1350;player.ceilingClimbing=false;player.climbing=false;player.vy=Math.min(player.vy,-105);player.vx*=.82;player.grounded=false;updateHud();tone(430,.05,"triangle");
+    if(state!=="playing"||selectedCharacter!=="bat"||batStartHanging||now<flapCooldownUntil)return;
+    const roost=(levels[levelIndex].ceilingVines||[]).find(v=>player.x+player.w>v[0]&&player.x<v[0]+v[2]&&player.y<v[1]+120);
+    if(!roost)return;
+    batHangX=Math.max(roost[0],Math.min(player.x,roost[0]+roost[2]-player.w));batHangY=roost[1]+roost[3]-2;
+    batStartHanging=true;player.ceilingClimbing=true;player.climbing=false;player.vx=0;player.vy=0;flapCooldownUntil=now+240;updateHud();tone(430,.05,"triangle");
   }
 
   function useEchoPulse(){
@@ -928,18 +936,18 @@
     const right = keys.ArrowRight || keys.KeyD || keys.touchRight;
     const up = keys.ArrowUp || keys.KeyW || keys.touchJump;
     const down = keys.ArrowDown || keys.KeyS;
-    if(batStartHanging){player.x=player.spawnX;player.y=player.spawnY;player.vx=0;player.vy=0;player.ceilingClimbing=true;return;}
+    if(batStartHanging){player.x=batHangX;player.y=batHangY;player.vx=0;player.vy=0;player.ceilingClimbing=true;return;}
     const raccoonMovement=selectedCharacter==="raccoon"||selectedCharacter==="devilfox";
     if(raccoonMovement&&player.grounded)raccoonCoyoteUntil=now+125;
     if(selectedCharacter==="raccoon"&&now>=raccoonComboUntil&&raccoonCombo){raccoonCombo=0;updateHud();}
     const inHabitatWater = level.habitat === "newt" && player.x < 520 && player.y + player.h / 2 > 270;
     const swimming = Boolean(level.underwater || inHabitatWater);
-    let speed = swimming ? character.swimSpeed : selectedCharacter==="bat"&&now<batFlightUntil ? 210 : level.decor === "parachute" ? 265 : level.decor === "highway" ? 245 : level.decor === "house" ? 236 : 220;
+    let speed = swimming ? character.swimSpeed : selectedCharacter==="bat" ? 210 : level.decor === "parachute" ? 265 : level.decor === "highway" ? 245 : level.decor === "house" ? 236 : 220;
     if(selectedCharacter==="opossum"&&now>playDeadUntil&&now<opossumRecoveryUntil)speed+=72;
     if(selectedCharacter==="raccoon"&&!swimming&&(left||right))speed+=18+(raccoonCombo>=3&&now<raccoonComboUntil?32:0);
     if (["chameleon","newt","frog","boa","raccoon","opossum","bat","goat","highland","devilfox"].includes(selectedCharacter)) updateHud();
 
-    const acceleration = swimming ? 720 : selectedCharacter==="bat"&&now<batFlightUntil ? 980 : level.decor==="parachute" ? 1180 : selectedCharacter==="frog" ? 1120 : 1450;
+    const acceleration = swimming ? 720 : selectedCharacter==="bat" ? 980 : level.decor==="parachute" ? 1180 : selectedCharacter==="frog" ? 1120 : 1450;
     const playingDead=selectedCharacter==="opossum"&&now<playDeadUntil;
     if (!playingDead&&left) { player.vx -= acceleration * dt; if(selectedCharacter!=="bat"||player.vx<10)player.facing = -1; }
     if (!playingDead&&right) { player.vx += acceleration * dt; if(selectedCharacter!=="bat"||player.vx>-10)player.facing = 1; }
@@ -980,7 +988,7 @@
         player.vx=0;
         player.vy = up ? -character.climbSpeed : down ? character.climbSpeed : 0;
       } else {
-        const flying=selectedCharacter==="bat"&&now<batFlightUntil;
+        const flying=selectedCharacter==="bat";
         if(flying){
           // Powered flight: up and down steer, neutral input gently hovers.
           if(up)player.vy-=520*dt;
@@ -1006,12 +1014,21 @@
       }
     }
 
+    const oldX = player.x;
     const oldY = player.y;
-    if(player.onSwing&&level.swing){const current=tireSwingPosition(level,now),previous=tireSwingPosition(level,now-dt*1000);player.x+=current.x-previous.x;}
+    const activeSwings=level.swings||[];
+    if(player.onSwing&&activeSwings[player.onSwing-1]){const current=tireSwingPosition(activeSwings[player.onSwing-1],now),previous=tireSwingPosition(activeSwings[player.onSwing-1],now-dt*1000);player.x+=current.x-previous.x;}
     player.onSwing=false;
     player.x += player.vx * dt;
     player.x = Math.max(0, Math.min(W - player.w, player.x));
     player.y += player.vy * dt;
+    for(const p of level.platforms){
+      if(p[4]!=="caveWall"||!intersects(player,{x:p[0],y:p[1],w:p[2],h:p[3]}))continue;
+      if(oldX+player.w<=p[0]){player.x=p[0]-player.w;player.vx=0;}
+      else if(oldX>=p[0]+p[2]){player.x=p[0]+p[2];player.vx=0;}
+      else if(oldY+player.h<=p[1]){player.y=p[1]-player.h;player.vy=0;}
+      else{player.y=p[1]+p[3];player.vy=Math.max(0,player.vy);}
+    }
     if(player.y<52){player.y=52;player.vy=Math.max(0,player.vy);}
     if (level.underwater) player.y = Math.max(48, Math.min(H - player.h, player.y));
     const landingSpeed=player.vy;
@@ -1028,7 +1045,7 @@
         if(selectedCharacter==="frog")frogAutoHopping=false;
       }
     }
-    if(level.swing&&!level.underwater&&player.vy>=0){const swing=tireSwingPosition(level,now);if(oldY+player.h<=swing.y+5&&intersects(player,swing)){player.y=swing.y-player.h;player.vy=0;player.grounded=true;player.onSwing=true;}}
+    if(!level.underwater&&player.vy>=0)activeSwings.forEach((config,index)=>{const swing=tireSwingPosition(config,now);if(oldY+player.h<=swing.y+5&&intersects(player,swing)){player.y=swing.y-player.h;player.vy=0;player.grounded=true;player.onSwing=index+1;}});
     for(const p of level.angledPlatforms||[]){
       if(level.underwater||swimming||player.vy<0)continue;
       const minX=Math.min(p[0],p[2]),maxX=Math.max(p[0],p[2]);
@@ -1128,7 +1145,7 @@
     if (state !== "playing") return;
     const now=performance.now();
     if(selectedCharacter==="opossum"&&performance.now()<playDeadUntil)return;
-    if(batStartHanging){batStartHanging=false;player.ceilingClimbing=false;player.y+=8;player.vy=120;tone(185,.05,"triangle");return;}
+    if(batStartHanging){batStartHanging=false;player.ceilingClimbing=false;batReleaseUntil=now+260;player.y+=8;player.vy=65;tone(185,.05,"triangle");return;}
     if(player.ceilingClimbing){player.ceilingClimbing=false;player.climbing=false;player.y+=8;player.vy=135;tone(185,.05,"triangle");return;}
     const level=levels[levelIndex];
     if(selectedCharacter==="raccoon"&&level.decor==="parachute"&&!player.grounded){
@@ -1183,9 +1200,9 @@
     return y1+(y2-y1)*t;
   }
 
-  function tireSwingPosition(level,now){
-    const [anchorX,anchorY,length,amplitude,width]=level.swing;
-    const angle=Math.sin(now*.00115)*.42;
+  function tireSwingPosition(config,now){
+    const [anchorX,anchorY,length,amplitude,width]=config;
+    const angle=Math.sin(now*.00175)*.42;
     const centerX=anchorX+Math.sin(angle)*amplitude;
     const centerY=anchorY+Math.cos(angle)*length;
     return {x:centerX-width/2,y:centerY-22,w:width,h:18,anchorX,anchorY,centerX,centerY};
@@ -1766,6 +1783,8 @@
         for(let bx=p[0]+14;bx<p[0]+p[2]-10;bx+=18){const by=y-5-Math.sin(bx*.09)*3;ctx.beginPath();ctx.moveTo(bx-9,by+3);ctx.quadraticCurveTo(bx-5,by-5,bx,by+1);ctx.quadraticCurveTo(bx+5,by-7,bx+10,by+3);ctx.closePath();ctx.fill();}
         ctx.strokeStyle="#624125";ctx.lineWidth=5;
         ctx.beginPath();ctx.moveTo(p[0]+p[2]*.3,y-5);ctx.lineTo(p[0]+p[2]*.2,y-22);ctx.moveTo(p[0]+p[2]*.72,y);ctx.lineTo(p[0]+p[2]*.82,y-17);ctx.stroke();
+      }else if(level.habitat==="bat"&&p[4]==="caveWall"){
+        ctx.fillStyle="#393545";roundedRect(p[0],p[1],p[2],p[3],4);ctx.fill();ctx.strokeStyle="#8e839b";ctx.lineWidth=2;ctx.stroke();
       }else{
         ctx.fillStyle = p[1] >= 490 ? "#111914" : level.palette[2];
         roundedRect(p[0], p[1], p[2], p[3], 7); ctx.fill();
@@ -1784,7 +1803,7 @@
     }
     for (const v of level.diagonalVines||[]) drawDiagonalVine(v);
     for (const v of level.ceilingVines||[]) drawCeilingVine(v);
-    if(level.swing){const swing=tireSwingPosition(level,performance.now());ctx.strokeStyle="#6b5945";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(swing.anchorX,swing.anchorY);ctx.lineTo(swing.centerX,swing.centerY);ctx.stroke();ctx.strokeStyle="#232625";ctx.lineWidth=16;ctx.beginPath();ctx.ellipse(swing.centerX,swing.centerY,level.swing[4]/2,22,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle="#7c837c";ctx.lineWidth=2;ctx.stroke();}
+    for(const config of (level.swings||[])){const swing=tireSwingPosition(config,performance.now());ctx.strokeStyle="#6b5945";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(swing.anchorX,swing.anchorY);ctx.lineTo(swing.centerX,swing.centerY);ctx.stroke();ctx.strokeStyle="#232625";ctx.lineWidth=16;ctx.beginPath();ctx.ellipse(swing.centerX,swing.centerY,config[4]/2,22,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle="#7c837c";ctx.lineWidth=2;ctx.stroke();}
   }
 
   function drawExit(level) {
@@ -2286,9 +2305,11 @@
 
   function drawBat(now){
     const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;if(flash)ctx.globalAlpha=.4;
-    ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
-    const powered=now<batFlightUntil,hanging=player.ceilingClimbing;if(hanging){ctx.rotate(Math.PI);ctx.translate(0,-8);}
-    const flap=Math.sin(now*(powered ? .04 : .025))*(player.grounded||hanging ? .25 : 1);const wingY=8+flap*(powered?19:12);
+    ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);
+    batVisualFacing+=(player.facing-batVisualFacing)*.14;ctx.scale(batVisualFacing,1);
+    const hanging=player.ceilingClimbing,release=Math.max(0,(batReleaseUntil-now)/260);
+    if(hanging){ctx.rotate(Math.PI);ctx.translate(0,-8);}else{if(release)ctx.rotate(Math.PI*release);ctx.rotate(Math.max(-.28,Math.min(.28,player.vy*.0014+(player.vx-player.facing*80)*.00015)));ctx.translate(0,Math.sin(now*.012)*1.5);}
+    const flap=Math.sin(now*.055)*(hanging?.18:1);const wingY=8+flap*20;
     ctx.fillStyle="#51443c";ctx.beginPath();ctx.moveTo(-6,-3);ctx.quadraticCurveTo(-29,-24,-43,-11);ctx.quadraticCurveTo(-31,0,-40,wingY);ctx.quadraticCurveTo(-27,2,-23,13);ctx.quadraticCurveTo(-16,6,-8,9);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(5,-3);ctx.quadraticCurveTo(29,-24,43,-11);ctx.quadraticCurveTo(31,0,40,wingY);ctx.quadraticCurveTo(27,2,23,13);ctx.quadraticCurveTo(16,6,8,9);ctx.closePath();ctx.fill();
     ctx.strokeStyle="#9f8874";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-5,0);ctx.lineTo(-38,-10);ctx.moveTo(-5,1);ctx.lineTo(-30,wingY-3);ctx.moveTo(-4,3);ctx.lineTo(-19,11);ctx.moveTo(5,0);ctx.lineTo(38,-10);ctx.moveTo(5,1);ctx.lineTo(30,wingY-3);ctx.moveTo(4,3);ctx.lineTo(19,11);ctx.stroke();
     ctx.fillStyle="#806956";ctx.beginPath();ctx.ellipse(0,1,13,17,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(12,-9,12,9,-.15,0,Math.PI*2);ctx.fill();
@@ -2359,7 +2380,7 @@
 
   function drawPlayer(now) {
     ctx.save();
-    if(player.ceilingClimbing){ctx.translate(0,player.y*2+player.h);ctx.scale(1,-1);}
+    if(player.ceilingClimbing&&selectedCharacter!=="bat"){ctx.translate(0,player.y*2+player.h);ctx.scale(1,-1);}
     if (selectedCharacter === "chameleon") drawChameleon(now);
     else if (selectedCharacter === "newt") drawNewt(now);
     else if (selectedCharacter === "frog") drawFrog(now);
