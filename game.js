@@ -62,6 +62,10 @@
   let raccoonComboUntil = 0;
   let raccoonLastTreasureAt = 0;
   let parachuteBoostCooldownUntil = 0;
+  let raccoonLaunchUntil = 0;
+  let boatTilt = 0;
+  let boatStability = 100;
+  let boatDistance = 0;
   let hissActiveUntil = 0;
   let hissCooldownUntil = 0;
   let playDeadUntil = 0;
@@ -109,7 +113,7 @@
   };
 
   const singleLevelCharacters=new Set(["opossum","bat","goat","highland","devilfox"]);
-  const storyLevelCount=()=>selectedCharacter==="raccoon"?4:singleLevelCharacters.has(selectedCharacter)?1:levels.length;
+  const storyLevelCount=()=>selectedCharacter==="raccoon"?6:singleLevelCharacters.has(selectedCharacter)?1:levels.length;
 
   const player = {
     x: 0, y: 0, w: 38, h: 24,
@@ -233,7 +237,7 @@
       intro:"The Toronto Trash Tank has selected the tallest available bad idea. Climb the maintenance ledges, raid every snack, and reach the observation deck.",
       completeTitle:"Toronto has made a tactical error.",completeText:"The Trash Tank has reached the top. The restaurant contains rich people food and insufficient security.",
       palette:["#5a99c2","#d4e4e8","#59636b","#ef4c45"],start:[38,438],exit:[862,72,58,94],
-      platforms:[[0,500,960,40,"street"],[28,458,165,22,"concrete"],[210,402,135,18,"towerLedge"],[365,350,130,18,"towerLedge"],[520,292,130,18,"towerLedge"],[675,235,130,18,"towerLedge"],[800,166,135,20,"observation"],[585,110,125,18,"antenna"],[385,178,105,18,"service"],[165,258,120,18,"service"],[215,466,76,14,"utilityBox"],[315,432,72,14,"scaffold"],[460,390,82,14,"scaffold"],[590,334,72,14,"vent"],[720,278,68,14,"service"],[842,218,72,14,"service"],[545,240,66,14,"sign"],[300,296,72,14,"service"],[92,330,74,14,"awning"],[505,148,62,14,"antenna"]],
+      platforms:[[0,500,960,40,"street"],[28,458,165,22,"concrete"],[210,402,135,18,"towerLedge"],[365,350,130,18,"towerLedge"],[520,292,130,18,"towerLedge"],[675,235,130,18,"towerLedge"],[800,166,135,20,"observation"],[585,110,125,18,"antenna"],[430,188,100,18,"towerPod"],[165,258,120,18,"service"],[215,466,76,14,"utilityBox"],[315,432,72,14,"scaffold"],[460,390,82,14,"scaffold"],[590,334,72,14,"vent"],[720,278,68,14,"service"],[842,218,72,14,"service"],[545,240,66,14,"sign"],[300,296,72,14,"service"],[92,330,74,14,"awning"],[505,148,62,14,"antenna"]],
       vines:[[184,300,18,158],[345,348,18,102],[650,230,18,125],[785,160,18,120]],
       insects:[[90,425],[268,368],[430,316],[585,258],[742,201],[860,132],[635,77],[435,144],[220,224]],
       hazards:[{x:300,y:285,w:62,h:30,type:"bird",axis:"x",min:230,max:600,speed:115},{x:620,y:145,w:52,h:30,type:"bird",axis:"diagonal",minX:510,maxX:810,minY:120,maxY:280,speedX:62,speedY:45}],
@@ -260,6 +264,23 @@
       vines:[],insects:[[110,92],[265,160],[445,232],[615,168],[755,292],[525,367],[315,342],[865,430]],
       hazards:[{x:260,y:105,w:62,h:30,type:"bird",axis:"diagonal",minX:80,maxX:880,minY:60,maxY:430,speedX:88,speedY:62,chases:true},{x:590,y:260,w:52,h:30,type:"drone",axis:"diagonal",minX:520,maxX:840,minY:170,maxY:370,speedX:70,speedY:48}],
       decor:"parachute",habitat:"raccoon",parachute:true
+    },
+    {
+      label:"LEVEL 5 · CHEESE EMERGENCY",title:"The Great Cheese Getaway",
+      intro:"The cheese haul has become legally significant. Cross the waterfront, reach Jane, and get the evidence onto her boat.",
+      completeTitle:"Jane has enabled the crime.",completeText:"Raccoon, human, and an unreasonable quantity of cheese are aboard. Nobody asks sensible questions.",
+      palette:["#273747","#a7c5cf","#665747","#f0c94d"],start:[38,438],exit:[870,380,60,120],
+      platforms:[[0,500,960,40,"dock"],[55,445,150,22,"crate"],[230,390,145,22,"crate"],[405,330,145,22,"vanRoof"],[585,390,135,22,"crate"],[740,300,125,22,"pierRoof"],[835,455,125,45,"pier"]],
+      vines:[[205,330,18,160],[720,270,18,180]],insects:[[115,410],[295,355],[475,295],[650,355],[800,265],[865,420]],
+      hazards:[{x:250,y:448,w:65,h:52,type:"frenchie",axis:"x",min:205,max:430,speed:110},{x:500,y:430,w:70,h:70,type:"grab",axis:"x",min:460,max:690,speed:145},{x:700,y:235,w:58,h:30,type:"bird",axis:"diagonal",minX:620,maxX:870,minY:190,maxY:370,speedX:90,speedY:65,chases:true}],
+      decor:"cheeseGetaway",habitat:"raccoon"
+    },
+    {
+      label:"LEVEL 6 · MARITIME FELONY",title:"Boat Escape",
+      intro:"Jane has a boat. The raccoon has the cheese. Toronto has waves and several unanswered questions. Steer, stay upright, and flee.",
+      completeTitle:"International waters were not required.",completeText:"Jane and the Trash Tank escape with every cheese wheel intact. Toronto begins the paperwork.",
+      palette:["#4b89a8","#b9dce5","#28556a","#f0c94d"],start:[170,340],exit:[9999,0,1,1],
+      platforms:[],vines:[],insects:[],hazards:[],decor:"boatEscape",habitat:"raccoon"
     }
   ];
 
@@ -539,6 +560,10 @@
     raccoonComboUntil = 0;
     raccoonLastTreasureAt = 0;
     parachuteBoostCooldownUntil = 0;
+    raccoonLaunchUntil = 0;
+    boatTilt = 0;
+    boatStability = 100;
+    boatDistance = 0;
     hissActiveUntil = 0;
     hissCooldownUntil = 0;
     playDeadUntil = 0;
@@ -593,6 +618,7 @@
     player.vx = 0;
     player.vy = 0;
     player.grounded = false;
+    if(levels[levelIndex]?.decor==="boatEscape"){boatTilt=0;boatStability=100;boatDistance=0;}
     batStartHanging=selectedCharacter==="bat"&&levels[levelIndex]?.habitat==="bat";
     batHangX=player.spawnX;batHangY=player.spawnY;batReleaseUntil=0;batVisualFacing=player.facing;
     player.ceilingClimbing = batStartHanging;
@@ -625,6 +651,8 @@
       abilityLabel.textContent=`${constrictState} · ${strikeState}`;
     } else if (selectedCharacter === "chameleon") {
       abilityLabel.textContent = `TONGUE · ${performance.now() >= camouflageCooldownUntil ? "CAMOUFLAGE READY" : "CAMOUFLAGE RECHARGING"}`;
+    } else if (selectedCharacter === "raccoon"&&levels[levelIndex].decor==="boatEscape") {
+      abilityLabel.textContent=`BOAT STABILITY ${Math.ceil(boatStability)}% · ESCAPE ${Math.floor(boatDistance)}%`;
     } else if (selectedCharacter === "raccoon") {
       const parachuteState=levels[levelIndex].decor==="parachute"?` · ${performance.now()>=parachuteBoostCooldownUntil?"AIR BRAKE READY":"AIR BRAKE RECHARGING"}`:"";
       const comboState=performance.now()<raccoonComboUntil&&raccoonCombo>1?` · TRASH COMBO ×${raccoonCombo}`:"";
@@ -937,6 +965,19 @@
     const right = keys.ArrowRight || keys.KeyD || keys.touchRight;
     const up = keys.ArrowUp || keys.KeyW || keys.Space || keys.touchJump;
     const down = keys.ArrowDown || keys.KeyS;
+    if(level.decor==="boatEscape"){
+      const wave=Math.sin(now*.0034)+Math.sin(now*.0067+1.8)*.55;
+      const waveStrength=1+boatDistance/120,targetY=342+wave*34*waveStrength;
+      if(left)player.vx-=620*dt;if(right)player.vx+=620*dt;if(up)player.vy-=300*dt;if(down)player.vy+=300*dt;
+      player.vx*=Math.pow(.11,dt);player.vy+=(targetY-player.y)*3.1*dt;player.vy*=Math.pow(.2,dt);
+      player.x=Math.max(95,Math.min(760,player.x+player.vx*dt));player.y=Math.max(245,Math.min(420,player.y+player.vy*dt));
+      const targetTilt=Math.max(-.65,Math.min(.65,player.vy*.0045+wave*.2*waveStrength));boatTilt+=(targetTilt-boatTilt)*Math.min(1,dt*5.5);
+      boatStability=Math.min(100,boatStability+8*dt-Math.max(0,Math.abs(boatTilt)-.38)*48*dt);
+      boatDistance+=dt*(up?19:14);
+      if(boatStability<=0){tone(72,.3,"sawtooth");resetPlayer(false);return;}
+      if(boatDistance>=100){boatDistance=100;completeLevel();return;}
+      updateHud();return;
+    }
     if(batStartHanging){player.x=batHangX;player.y=batHangY;player.vx=0;player.vy=0;player.ceilingClimbing=true;return;}
     const raccoonMovement=selectedCharacter==="raccoon"||selectedCharacter==="devilfox";
     if(raccoonMovement&&player.grounded)raccoonCoyoteUntil=now+125;
@@ -948,11 +989,12 @@
     if(selectedCharacter==="raccoon"&&!swimming&&(left||right))speed+=18+(raccoonCombo>=3&&now<raccoonComboUntil?32:0);
     if (["chameleon","newt","frog","boa","raccoon","opossum","bat","goat","highland","devilfox"].includes(selectedCharacter)) updateHud();
 
-    const acceleration = swimming ? 720 : selectedCharacter==="raccoon" ? 1220 : selectedCharacter==="bat" ? 980 : level.decor==="parachute" ? 1180 : selectedCharacter==="frog" ? 1120 : 1450;
+    const acceleration = swimming ? 720 : selectedCharacter==="raccoon" ? 1080 : selectedCharacter==="bat" ? 980 : level.decor==="parachute" ? 1180 : selectedCharacter==="frog" ? 1120 : 1450;
+    const movementAcceleration=selectedCharacter==="raccoon"&&!player.grounded?acceleration*.72:acceleration;
     const playingDead=selectedCharacter==="opossum"&&now<playDeadUntil;
-    if (!playingDead&&left) { player.vx -= acceleration * dt; if(selectedCharacter!=="bat"||player.vx<10)player.facing = -1; }
-    if (!playingDead&&right) { player.vx += acceleration * dt; if(selectedCharacter!=="bat"||player.vx>-10)player.facing = 1; }
-    if (!left && !right) player.vx *= Math.pow(swimming ? .025 : selectedCharacter==="raccoon" ? .018 : selectedCharacter==="bat" ? .22 : level.decor==="parachute" ? .3 : selectedCharacter==="frog" ? .00008 : .0007, dt);
+    if (!playingDead&&left) { player.vx -= movementAcceleration * dt; if(selectedCharacter!=="bat"||player.vx<10)player.facing = -1; }
+    if (!playingDead&&right) { player.vx += movementAcceleration * dt; if(selectedCharacter!=="bat"||player.vx>-10)player.facing = 1; }
+    if (!left && !right) player.vx *= Math.pow(swimming ? .025 : selectedCharacter==="raccoon" ? .065 : selectedCharacter==="bat" ? .22 : level.decor==="parachute" ? .3 : selectedCharacter==="frog" ? .00008 : .0007, dt);
     if(playingDead)player.vx=0;
     player.vx = Math.max(-speed, Math.min(speed, player.vx));
 
@@ -1042,6 +1084,7 @@
         player.vy = 0;
         player.grounded = true;
         if(["raccoon","opossum","devilfox","crested","newt","goat","highland","frog"].includes(selectedCharacter)&&landingSpeed>150)raccoonLandingUntil=now+190;
+        if(selectedCharacter==="raccoon"&&landingSpeed>180)player.vx*=.9;
         if(raccoonMovement&&now<raccoonJumpBufferUntil){player.vy=-455;player.grounded=false;raccoonJumpBufferUntil=0;raccoonCoyoteUntil=0;}
         if(selectedCharacter==="frog")frogAutoHopping=false;
       }
@@ -1150,6 +1193,7 @@
   function jump() {
     if (state !== "playing") return;
     const now=performance.now();
+    if(levels[levelIndex]?.decor==="boatEscape")return;
     if(selectedCharacter==="opossum"&&performance.now()<playDeadUntil)return;
     if(batStartHanging){batStartHanging=false;player.ceilingClimbing=false;batReleaseUntil=now+260;player.y+=8;player.vy=65;tone(185,.05,"triangle");return;}
     if(player.ceilingClimbing){player.ceilingClimbing=false;player.climbing=false;player.y+=8;player.vy=135;tone(185,.05,"triangle");return;}
@@ -1179,6 +1223,7 @@
     const raccoonMovement=selectedCharacter==="raccoon"||selectedCharacter==="devilfox";
     if (player.grounded || player.climbing || (raccoonMovement&&now<raccoonCoyoteUntil) || (selectedCharacter === "frog" && frogAutoHopping)) {
       player.vy = selectedCharacter === "frog" ? -535 : -455;
+      if(selectedCharacter==="raccoon")raccoonLaunchUntil=now+130;
       player.grounded = false;
       if(raccoonMovement){raccoonCoyoteUntil=0;raccoonJumpBufferUntil=0;}
       if(selectedCharacter==="frog")frogAutoHopping=false;
@@ -1299,6 +1344,18 @@
       ctx.fillStyle="rgba(236,248,250,.35)";for(let i=0;i<5;i++){const x=((airTime*.018+i*230)%1160)-100,y=52+(i%3)*115;ctx.beginPath();ctx.ellipse(x,y,70,10,0,0,Math.PI*2);ctx.fill();}
       // Pulsing landing beacon and windsock make the destination readable in motion.
       ctx.strokeStyle=`rgba(255,226,83,${.35+.35*Math.abs(Math.sin(airTime*.006))})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(895,474,50+Math.sin(airTime*.006)*8,Math.PI,Math.PI*2);ctx.stroke();ctx.strokeStyle="#dde6e7";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(830,475);ctx.lineTo(830,432);ctx.stroke();ctx.fillStyle="#e15043";ctx.beginPath();ctx.moveTo(830,434);ctx.lineTo(858,442);ctx.lineTo(830,450);ctx.closePath();ctx.fill();
+    } else if(level.decor==="cheeseGetaway"){
+      const dusk=ctx.createLinearGradient(0,55,0,500);dusk.addColorStop(0,"#506d82");dusk.addColorStop(1,"#d59b73");ctx.fillStyle=dusk;ctx.fillRect(0,55,W,445);
+      ctx.fillStyle="#2f414b";for(let x=0;x<760;x+=75){const h=90+(x%140);ctx.fillRect(x,500-h,62,h);ctx.fillStyle="#e7c76c";for(let y=500-h+15;y<480;y+=22)for(let wx=x+9;wx<x+55;wx+=17)ctx.fillRect(wx,y,6,8);ctx.fillStyle="#2f414b";}
+      ctx.fillStyle="#244f62";ctx.fillRect(0,470,W,30);ctx.strokeStyle="#8f7254";ctx.lineWidth=8;for(let x=20;x<W;x+=90){ctx.beginPath();ctx.moveTo(x,430);ctx.lineTo(x,500);ctx.stroke();}
+      // Jane waits at the boat, dressed exclusively in black and making excellent decisions.
+      ctx.save();ctx.translate(846,402);ctx.fillStyle="#09090b";roundedRect(-15,8,30,62,8);ctx.fill();ctx.fillStyle="#c68f6d";ctx.beginPath();ctx.arc(0,0,13,0,Math.PI*2);ctx.fill();ctx.fillStyle="#3b241c";ctx.beginPath();ctx.arc(0,-3,15,Math.PI,Math.PI*2);ctx.fill();ctx.fillRect(-15,-3,6,29);ctx.fillRect(9,-3,6,29);ctx.fillStyle="#684328";ctx.beginPath();ctx.arc(-5,0,1.7,0,Math.PI*2);ctx.arc(5,0,1.7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.font="900 11px system-ui";ctx.textAlign="center";ctx.fillText("JANE",0,-24);ctx.restore();
+      ctx.fillStyle="#713f2d";ctx.beginPath();ctx.moveTo(825,468);ctx.lineTo(950,468);ctx.lineTo(920,500);ctx.lineTo(850,500);ctx.closePath();ctx.fill();
+    } else if(level.decor==="boatEscape"){
+      const sea=ctx.createLinearGradient(0,55,0,500);sea.addColorStop(0,"#7fc0d7");sea.addColorStop(.55,"#3e819d");sea.addColorStop(1,"#16485f");ctx.fillStyle=sea;ctx.fillRect(0,55,W,445);
+      ctx.fillStyle="#6f7e82";for(let x=0;x<W;x+=70){const h=45+(x*13)%100;ctx.fillRect(x,260-h,55,h);}ctx.fillStyle="rgba(236,248,250,.78)";
+      const t=performance.now(),strength=1+boatDistance/120;for(let i=0;i<8;i++){const x=((i*155-t*.11)%1240+1240)%1240-120,y=360+Math.sin(t*.0034+i)*38*strength;ctx.beginPath();ctx.moveTo(x-55,y+38);ctx.quadraticCurveTo(x,y-45-(i%3)*13,x+55,y+38);ctx.quadraticCurveTo(x,y+18,x-55,y+38);ctx.fill();}
+      ctx.fillStyle="rgba(255,255,255,.85)";ctx.font="900 12px system-ui";ctx.textAlign="left";ctx.fillText(`ESCAPE ${Math.floor(boatDistance)}%`,28,82);
     } else if (level.decor === "kitchen") {
       ctx.fillStyle="#aebfbb";ctx.fillRect(0,70,W,430);
       ctx.strokeStyle="rgba(70,88,86,.22)";ctx.lineWidth=1;
@@ -1717,6 +1774,7 @@
         else{ctx.fillStyle=p[4]==="obsidian"?"#17101f":"#46183f";roundedRect(p[0],p[1],p[2],p[3],8);ctx.fill();ctx.strokeStyle="#bc4b84";ctx.lineWidth=2;ctx.stroke();}
       }else if(level.habitat==="raccoon"&&p[4]!=="alley"){
         if(level.decor==="torontoTower"){
+          if(p[4]==="towerPod")continue;
           ctx.fillStyle=p[4]==="observation"?"#9d3d3a":p[4]==="antenna"?"#d8dee0":"#758086";roundedRect(p[0],p[1],p[2],p[3],4);ctx.fill();ctx.strokeStyle="#d9e0e2";ctx.lineWidth=2;ctx.stroke();ctx.fillStyle="rgba(255,255,255,.32)";ctx.fillRect(p[0]+7,p[1]+3,p[2]-14,3);
           ctx.fillStyle="#2f3b40";for(let x=p[0]+12;x<p[0]+p[2]-6;x+=26){ctx.beginPath();ctx.arc(x,p[1]+p[3]-5,2.2,0,Math.PI*2);ctx.fill();}
           if(p[4]==="observation"){ctx.fillStyle="#b9dce7";for(let x=p[0]+10;x<p[0]+p[2]-8;x+=24)ctx.fillRect(x,p[1]+5,15,8);}
@@ -1727,6 +1785,8 @@
         }else if(level.decor==="parachute"){
           if(p[4]==="cloud"){ctx.fillStyle="rgba(255,255,255,.82)";ctx.beginPath();ctx.ellipse(p[0]+p[2]/2,p[1]+7,p[2]/2,p[3]/2,0,0,Math.PI*2);ctx.ellipse(p[0]+p[2]*.35,p[1]+1,p[2]*.22,p[3]*.72,0,0,Math.PI*2);ctx.fill();}
           else{ctx.fillStyle=p[4]==="towerRoof"?"#767f84":"#424e54";roundedRect(p[0],p[1],p[2],p[3],4);ctx.fill();ctx.fillStyle="#aeb7ba";ctx.fillRect(p[0]+5,p[1]+3,p[2]-10,4);}
+        }else if(level.decor==="cheeseGetaway"){
+          ctx.fillStyle=p[4]==="crate"?"#8b633d":p[4]==="vanRoof"?"#bbc3c4":"#765238";roundedRect(p[0],p[1],p[2],p[3],5);ctx.fill();ctx.strokeStyle="#d3b487";ctx.lineWidth=2;ctx.stroke();
         }else{
           if(p[4]==="trash")ctx.fillStyle="#25292b";
           else if(p[4]==="cardboard")ctx.fillStyle="#9a724a";
@@ -1822,7 +1882,7 @@
     ctx.fillStyle = "#020604"; ctx.fillRect(x,y,w,h);
     ctx.strokeStyle = locked?"#c75b4e":level.palette[3]; ctx.lineWidth = 3; ctx.strokeRect(x,y,w,h);
     ctx.fillStyle = locked?"#df7b6c":level.palette[3];
-    const destination=level.decor==="torontoTower"?"OBSERVATION DECK":level.decor==="towerRestaurant"?"EMERGENCY EXIT":level.decor==="parachute"?"LAND HERE":level.underwater?"FILTER OUT":"EXIT";
+    const destination=level.decor==="torontoTower"?"OBSERVATION DECK":level.decor==="towerRestaurant"?"EMERGENCY EXIT":level.decor==="parachute"?"LAND HERE":level.decor==="cheeseGetaway"?"JANE + BOAT":level.underwater?"FILTER OUT":"EXIT";
     const exitLabel = locked?`${remaining} PREY LEFT`:destination;
     ctx.font = "900 12px system-ui"; ctx.textAlign = "center"; ctx.fillText(exitLabel, x+w/2, y-10);
     ctx.font = "900 24px system-ui";
@@ -2247,8 +2307,9 @@
     const moving=Math.min(1,(Math.abs(player.vx)+Math.abs(player.vy)*.72)/95);const stride=Math.sin(now*.018);const step=stride*moving*6;const airborne=!player.grounded&&!climbingPose;
     const scamperBob=player.grounded?Math.abs(stride)*moving*2.4:0;
     const landing=raccoonLandingUntil>now?Math.sin((raccoonLandingUntil-now)/190*Math.PI):0;
+    const launch=Math.max(0,(raccoonLaunchUntil-now)/130),rising=airborne?Math.max(0,Math.min(1,-player.vy/455)):0;
     const breath=player.grounded&&!moving?Math.sin(now*.0045)*.6:0;
-    ctx.translate(0,scamperBob+landing*2);ctx.scale(1+landing*.08,1-landing*.12);
+    ctx.translate(0,scamperBob+landing*2+launch*3-rising*2);ctx.scale(1+landing*.08-launch*.08-rising*.03,1-landing*.12-launch*.11+rising*.1);
     if(levels[levelIndex]?.decor==="parachute"&&airborne){
       const sway=Math.sin(now*.004)*3;ctx.strokeStyle="#e8dfd2";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-18,-5);ctx.lineTo(-35+sway,-48);ctx.moveTo(18,-5);ctx.lineTo(35+sway,-48);ctx.stroke();
       ctx.fillStyle="#d83f43";ctx.beginPath();ctx.moveTo(-48+sway,-48);ctx.quadraticCurveTo(sway,-82,48+sway,-48);ctx.quadraticCurveTo(25+sway,-58,sway,-47);ctx.quadraticCurveTo(-25+sway,-58,-48+sway,-48);ctx.fill();
@@ -2266,7 +2327,7 @@
       const kneeX=hip+(airborne?(front?7+rise*5:-8-rise*4):climbingPose?(front?7:-7):phase*.72);
       const kneeY=airborne?7-Math.abs(rise)*2:climbingPose?(front?phase:-phase):12;
       const pawX=kneeX+(airborne?(front?9:-7):climbingPose?(front?11:-10):7+phase*.28);
-      const pawY=airborne?11+Math.abs(rise)*3:climbingPose?kneeY+(front?9:-9):22;
+      const pawY=airborne?8+Math.abs(rise)*2:climbingPose?kneeY+(front?9:-9):22;
       ctx.globalAlpha=far?.58:1;ctx.strokeStyle=far?"#404548":"#565b5e";ctx.lineWidth=far?6:8;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(hip,5);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();
       ctx.fillStyle="#24282a";ctx.beginPath();ctx.ellipse(pawX+3,pawY,8,3.6,front?.08:-.08,0,Math.PI*2);ctx.fill();
       ctx.strokeStyle="#111416";ctx.lineWidth=1;const toeSpread=airborne?1.8:1;for(let toe=-1;toe<=1;toe++){ctx.beginPath();ctx.moveTo(pawX+6,pawY+toe);ctx.lineTo(pawX+11+toe*toeSpread,pawY+toe*2);ctx.stroke();}ctx.globalAlpha=1;
@@ -2403,9 +2464,24 @@
     ctx.restore();
   }
 
+  function drawBoatEscape(now){
+    ctx.save();ctx.translate(player.x+80,player.y+55);ctx.rotate(boatTilt);
+    // Arcade boat hull.
+    ctx.fillStyle="#8a3f2d";ctx.beginPath();ctx.moveTo(-82,10);ctx.lineTo(88,10);ctx.lineTo(58,48);ctx.lineTo(-58,48);ctx.closePath();ctx.fill();ctx.strokeStyle="#f0dfbd";ctx.lineWidth=4;ctx.stroke();
+    ctx.fillStyle="#e8e1d2";roundedRect(-38,-14,78,27,5);ctx.fill();ctx.fillStyle="#26343a";ctx.fillRect(-24,-9,20,13);ctx.fillRect(7,-9,20,13);
+    // Jane: black clothing, shoulder-length dark brown hair, brown eyes.
+    ctx.save();ctx.translate(-22,-37);ctx.fillStyle="#09090b";roundedRect(-11,9,22,37,6);ctx.fill();ctx.fillStyle="#c68f6d";ctx.beginPath();ctx.arc(0,2,10,0,Math.PI*2);ctx.fill();ctx.fillStyle="#3b241c";ctx.beginPath();ctx.arc(0,0,12,Math.PI,Math.PI*2);ctx.fill();ctx.fillRect(-12,0,5,22);ctx.fillRect(7,0,5,22);ctx.fillStyle="#684328";ctx.beginPath();ctx.arc(-4,2,1.4,0,Math.PI*2);ctx.arc(4,2,1.4,0,Math.PI*2);ctx.fill();ctx.restore();
+    // Tiny Trash Tank and the evidence pile remain aboard.
+    ctx.save();ctx.translate(26,-20+Math.sin(now*.018)*2);ctx.fillStyle="#73777a";ctx.beginPath();ctx.ellipse(0,8,18,12,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#25282a";ctx.beginPath();ctx.ellipse(12,2,11,9,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#d4d0c5";ctx.beginPath();ctx.arc(10,0,2.5,0,Math.PI*2);ctx.arc(16,0,2.5,0,Math.PI*2);ctx.fill();ctx.restore();
+    ctx.fillStyle="#efce55";for(const [x,y,r] of [[48,-1,12],[64,5,10],[55,13,13],[73,15,9]]){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.fillStyle="#9c7623";ctx.beginPath();ctx.arc(x+3,y-2,2,0,Math.PI*2);ctx.fill();ctx.fillStyle="#efce55";}
+    if(Math.abs(boatTilt)>.38){ctx.fillStyle="#fff";ctx.font="900 14px system-ui";ctx.textAlign="center";ctx.fillText("OH NO",0,-67);}
+    ctx.restore();
+  }
+
   function draw(time = 0) {
     const level = levels[levelIndex] || levels[0];
     drawBackdrop(level);
+    if(level.decor==="boatEscape"){drawBoatEscape(time);return;}
     drawPlatforms(level);
     drawExit(level);
     drawInsects(level, time);
