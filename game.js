@@ -1021,7 +1021,7 @@
         player.y = platform.y - player.h;
         player.vy = 0;
         player.grounded = true;
-        if(["raccoon","opossum","devilfox","crested","newt"].includes(selectedCharacter)&&landingSpeed>150)raccoonLandingUntil=now+190;
+        if(["raccoon","opossum","devilfox","crested","newt","goat","highland"].includes(selectedCharacter)&&landingSpeed>150)raccoonLandingUntil=now+190;
         if(selectedCharacter==="raccoon"&&now<raccoonJumpBufferUntil){player.vy=-455;player.grounded=false;raccoonJumpBufferUntil=0;raccoonCoyoteUntil=0;}
         if(selectedCharacter==="frog")frogAutoHopping=false;
       }
@@ -1032,7 +1032,7 @@
       const centerX=player.x+player.w/2;
       if(centerX<minX||centerX>maxX)continue;
       const surfaceY=angledPlatformY(p,centerX);
-      if(oldY+player.h<=surfaceY+6&&player.y+player.h>=surfaceY){player.y=surfaceY-player.h;player.vy=0;player.grounded=true;if(["raccoon","opossum","devilfox","crested","newt"].includes(selectedCharacter)&&landingSpeed>150)raccoonLandingUntil=now+190;if(selectedCharacter==="raccoon"&&now<raccoonJumpBufferUntil){player.vy=-455;player.grounded=false;raccoonJumpBufferUntil=0;raccoonCoyoteUntil=0;}}
+      if(oldY+player.h<=surfaceY+6&&player.y+player.h>=surfaceY){player.y=surfaceY-player.h;player.vy=0;player.grounded=true;if(["raccoon","opossum","devilfox","crested","newt","goat","highland"].includes(selectedCharacter)&&landingSpeed>150)raccoonLandingUntil=now+190;if(selectedCharacter==="raccoon"&&now<raccoonJumpBufferUntil){player.vy=-455;player.grounded=false;raccoonJumpBufferUntil=0;raccoonCoyoteUntil=0;}}
     }
 
     if (player.y > H + 80) {
@@ -2292,31 +2292,39 @@
   function drawGoat(now){
     const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;if(flash)ctx.globalAlpha=.4;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
-    const airborne=!player.grounded,walk=Math.sin(now*.017)*Math.min(1,Math.abs(player.vx)/100)*6,ram=now<goatAttackUntil?Math.sin((goatAttackUntil-now)/300*Math.PI)*10:0;
-    ctx.strokeStyle="#a79e89";ctx.lineWidth=4;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-25,-3);ctx.quadraticCurveTo(-36,-15,-39,-5);ctx.stroke();
-    const leg=(hip,phase,front)=>{const kneeX=hip+(airborne?(front?9:-9):phase),kneeY=airborne?9:15,hoofX=kneeX+(airborne?(front?8:-7):4),hoofY=airborne?14:23;ctx.strokeStyle="#c6bda8";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(hip,8);ctx.lineTo(kneeX,kneeY);ctx.lineTo(hoofX,hoofY);ctx.stroke();ctx.strokeStyle="#37322d";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(hoofX-2,hoofY);ctx.lineTo(hoofX+5,hoofY);ctx.stroke();};
-    leg(-13,walk,false);leg(12,-walk,true);
-    ctx.fillStyle="#d9d0bb";ctx.beginPath();ctx.ellipse(-3,0,28,15,0,0,Math.PI*2);ctx.fill();
-    ctx.save();ctx.translate(ram,0);ctx.fillStyle="#e3d9c5";ctx.beginPath();ctx.moveTo(14,-10);ctx.quadraticCurveTo(35,-14,45,-1);ctx.lineTo(37,11);ctx.lineTo(15,8);ctx.closePath();ctx.fill();
-    ctx.fillStyle="#8d806e";ctx.beginPath();ctx.moveTo(21,-10);ctx.quadraticCurveTo(12,-30,28,-32);ctx.quadraticCurveTo(20,-23,32,-12);ctx.fill();ctx.beginPath();ctx.moveTo(34,-10);ctx.quadraticCurveTo(32,-29,46,-27);ctx.quadraticCurveTo(36,-21,43,-8);ctx.fill();
-    ctx.fillStyle="#d9d0bb";ctx.beginPath();ctx.moveTo(18,-8);ctx.lineTo(8,-21);ctx.lineTo(27,-13);ctx.moveTo(36,-9);ctx.lineTo(48,-20);ctx.lineTo(44,-6);ctx.fill();
-    ctx.fillStyle="#171817";ctx.beginPath();ctx.ellipse(35,-5,2,3,0,0,Math.PI*2);ctx.arc(46,2,2,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#9c8e79";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(28,8);ctx.lineTo(24,22);ctx.lineTo(34,13);ctx.stroke();ctx.restore();
+    const motion=livelyMotion(now,.017),walk=motion.stride*motion.moving*7,ram=now<goatAttackUntil?Math.sin((goatAttackUntil-now)/300*Math.PI)*10:0;ctx.translate(0,Math.abs(motion.stride)*motion.moving*1.7+motion.landing*1.8);ctx.scale(1+motion.landing*.07,1-motion.landing*.11);
+    const tailWave=Math.sin(now*.012)*(1+motion.moving*3);ctx.strokeStyle="#a79e89";ctx.lineWidth=5;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-27,-3);ctx.quadraticCurveTo(-39,-15-tailWave,-42,-5+tailWave);ctx.stroke();
+    const goatLeg=(hip,phase,front,far=false)=>{const kneeX=hip+(motion.airborne?(front?9:-9):phase*.72),kneeY=motion.airborne?7:14,hoofX=kneeX+(motion.airborne?(front?9:-8):5),hoofY=motion.airborne?13:24;ctx.globalAlpha=far?.52:1;ctx.strokeStyle=far?"#958d7d":"#c6bda8";ctx.lineWidth=far?5:7;ctx.beginPath();ctx.moveTo(hip,7);ctx.lineTo(kneeX,kneeY);ctx.lineTo(hoofX,hoofY);ctx.stroke();ctx.strokeStyle="#37322d";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(hoofX-3,hoofY);ctx.lineTo(hoofX+6,hoofY);ctx.moveTo(hoofX+2,hoofY-1);ctx.lineTo(hoofX+2,hoofY+3);ctx.stroke();ctx.globalAlpha=1;};
+    goatLeg(-17,-walk*.8,false,true);goatLeg(8,walk*.8,true,true);goatLeg(-12,walk,false);goatLeg(14,-walk,true,false);
+    ctx.fillStyle="#d9d0bb";ctx.beginPath();ctx.ellipse(-3,0,29+motion.breath*.4,15+motion.breath*.25,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#c6bda8";ctx.beginPath();ctx.ellipse(-5,5,22,8,0,0,Math.PI*2);ctx.fill();
+    ctx.save();ctx.translate(ram,motion.headBob);ctx.fillStyle="#e3d9c5";ctx.beginPath();ctx.moveTo(13,-11);ctx.quadraticCurveTo(34,-15,47,-2);ctx.quadraticCurveTo(43,10,31,12);ctx.lineTo(14,8);ctx.closePath();ctx.fill();
+    ctx.strokeStyle="#8d806e";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(21,-10);ctx.quadraticCurveTo(10,-27,25,-32);ctx.quadraticCurveTo(20,-22,31,-13);ctx.moveTo(35,-11);ctx.quadraticCurveTo(35,-28,49,-27);ctx.quadraticCurveTo(39,-21,43,-9);ctx.stroke();
+    ctx.fillStyle="#d9d0bb";ctx.beginPath();ctx.moveTo(17,-8-motion.earTwitch);ctx.lineTo(6,-19-motion.earTwitch);ctx.lineTo(27,-13);ctx.moveTo(37,-9);ctx.lineTo(51,-18+motion.earTwitch*.4);ctx.lineTo(45,-5);ctx.fill();
+    ctx.fillStyle="#171817";ctx.beginPath();ctx.ellipse(35,-5,2,motion.blink?.5:3,0,0,Math.PI*2);ctx.arc(47,2,2,0,Math.PI*2);ctx.fill();ctx.fillStyle="#a89480";ctx.beginPath();ctx.ellipse(41,5,9,5,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#9c8e79";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(29,8);ctx.lineTo(25,22);ctx.lineTo(35,13);ctx.stroke();ctx.restore();
     ctx.restore();ctx.globalAlpha=1;
   }
 
   function drawHighland(now){
     const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;if(flash)ctx.globalAlpha=.4;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
-    const charging=now<cowChargeUntil,airborne=!player.grounded,walk=Math.sin(now*.014)*Math.min(1,Math.abs(player.vx)/90)*6,toss=now<cowAttackUntil?-7:0;
-    const leg=(hip,phase)=>{const kneeX=hip+(airborne?phase*1.4:phase),kneeY=airborne?12:18,hoofY=airborne?19:28;ctx.strokeStyle="#743b22";ctx.lineWidth=10;ctx.beginPath();ctx.moveTo(hip,10);ctx.lineTo(kneeX,kneeY);ctx.lineTo(kneeX+3,hoofY);ctx.stroke();ctx.strokeStyle="#25201d";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(kneeX-2,hoofY);ctx.lineTo(kneeX+8,hoofY);ctx.stroke();};
-    leg(-20,walk);leg(19,-walk);
-    ctx.fillStyle="#a95029";ctx.beginPath();ctx.ellipse(-5,0,39,21,0,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#d17a43";ctx.lineWidth=5;for(let x=-36;x<28;x+=8){ctx.beginPath();ctx.moveTo(x,-12+(x%3));ctx.quadraticCurveTo(x+5,2,x+1,20);ctx.stroke();}
-    ctx.save();ctx.translate(charging?8:toss,0);ctx.fillStyle="#b85f2e";ctx.beginPath();ctx.ellipse(32,-3,23,20,0,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#eee0be";ctx.lineWidth=6;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(20,-15);ctx.quadraticCurveTo(5,-28,-8,-20);ctx.moveTo(41,-16);ctx.quadraticCurveTo(58,-29,68,-18);ctx.stroke();
-    ctx.strokeStyle="#d77b42";ctx.lineWidth=5;for(let x=15;x<50;x+=6){ctx.beginPath();ctx.moveTo(x,-18);ctx.quadraticCurveTo(x-4,-1,x-2,15);ctx.stroke();}
-    ctx.fillStyle="#17130f";ctx.beginPath();ctx.arc(38,-5,2.5,0,Math.PI*2);ctx.arc(53,4,2.5,0,Math.PI*2);ctx.fill();ctx.restore();
+    const motion=livelyMotion(now,.014),charging=now<cowChargeUntil,walk=motion.stride*motion.moving*7,toss=now<cowAttackUntil?-7:0;ctx.translate(0,Math.abs(motion.stride)*motion.moving*1.5+motion.landing*2);ctx.scale(1+motion.landing*.08,1-motion.landing*.12);
+    // Long tail with a proper hairy switch.
+    const tailSwing=Math.sin(now*.01)*(2+motion.moving*5);ctx.strokeStyle="#8e431f";ctx.lineWidth=6;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-36,-3);ctx.quadraticCurveTo(-49,7,-48,19+tailSwing);ctx.stroke();ctx.strokeStyle="#3a261d";ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(-48,17+tailSwing);ctx.lineTo(-53,25+tailSwing);ctx.stroke();
+    const cowLeg=(hip,phase,front,far=false)=>{const kneeX=hip+(motion.airborne?(front?9:-9):phase*.65),kneeY=motion.airborne?10:18,hoofX=kneeX+(motion.airborne?(front?8:-7):3),hoofY=motion.airborne?17:29;ctx.globalAlpha=far?.5:1;ctx.strokeStyle=far?"#612e1b":"#83401f";ctx.lineWidth=far?8:10;ctx.beginPath();ctx.moveTo(hip,10);ctx.lineTo(kneeX,kneeY);ctx.lineTo(hoofX,hoofY);ctx.stroke();ctx.strokeStyle="#25201d";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(hoofX-4,hoofY);ctx.lineTo(hoofX+7,hoofY);ctx.moveTo(hoofX+1,hoofY-1);ctx.lineTo(hoofX+1,hoofY+4);ctx.stroke();ctx.globalAlpha=1;};
+    cowLeg(-24,-walk*.75,false,true);cowLeg(12,walk*.75,true,true);cowLeg(-17,walk,false);cowLeg(21,-walk,true,false);
+    // Deep, stocky body with layered shag rather than a featureless orange bean.
+    ctx.fillStyle="#93431f";ctx.beginPath();ctx.ellipse(-5,-1,39+motion.breath*.5,21+motion.breath*.3,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#b85829";ctx.beginPath();ctx.ellipse(-8,-8,33,13,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#c96d36";ctx.lineWidth=4;for(let x=-37;x<26;x+=7){const sway=Math.sin(now*.006+x)*1.5;ctx.beginPath();ctx.moveTo(x,-9);ctx.quadraticCurveTo(x+5+sway,3,x+1,18+(x%3));ctx.stroke();}
+    ctx.save();ctx.translate((charging?8:toss),motion.headBob);ctx.fillStyle="#a84c23";ctx.beginPath();ctx.ellipse(30,-3,24,21,0,0,Math.PI*2);ctx.fill();
+    // Wide cream horns curve out and upward from the skull.
+    ctx.strokeStyle="#eee0be";ctx.lineWidth=7;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(18,-14);ctx.quadraticCurveTo(5,-28,-13,-22);ctx.quadraticCurveTo(-20,-18,-14,-13);ctx.moveTo(41,-15);ctx.quadraticCurveTo(58,-30,72,-20);ctx.quadraticCurveTo(78,-15,71,-11);ctx.stroke();
+    // Rounded ears sit below the horn bases.
+    ctx.fillStyle="#7f371d";ctx.beginPath();ctx.ellipse(12,-10-motion.earTwitch,10,5,-.25,0,Math.PI*2);ctx.ellipse(47,-10+motion.earTwitch*.35,10,5,.25,0,Math.PI*2);ctx.fill();
+    // Long Highland fringe, with the eyes still readable underneath.
+    ctx.strokeStyle="#d77b42";ctx.lineWidth=5;for(let x=12;x<49;x+=6){ctx.beginPath();ctx.moveTo(x,-18);ctx.quadraticCurveTo(x-4,-5,x-1,5+(x%4));ctx.stroke();}
+    ctx.fillStyle="#24150f";ctx.beginPath();ctx.ellipse(24,-4,2.4,motion.blink?.5:2.4,0,0,Math.PI*2);ctx.ellipse(40,-4,2.4,motion.blink?.5:2.4,0,0,Math.PI*2);ctx.fill();
+    // Broad pale muzzle with two nostrils and a mouth line.
+    ctx.fillStyle="#c98a67";ctx.beginPath();ctx.ellipse(39,7,15,9,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#38221b";ctx.beginPath();ctx.ellipse(33,5,2.2,1.6,0,0,Math.PI*2);ctx.ellipse(45,5,2.2,1.6,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#6d3b2b";ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(39,7,9,.25,Math.PI-.25);ctx.stroke();ctx.restore();
     if(charging){ctx.strokeStyle="rgba(224,188,126,.55)";ctx.lineWidth=3;for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(-55-i*12,-10+i*9);ctx.lineTo(-82-i*12,-10+i*9);ctx.stroke();}}
     ctx.restore();ctx.globalAlpha=1;
   }
