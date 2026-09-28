@@ -20,4 +20,4 @@ Collect every required prey item, avoid hazards, and reach the exit. The game ru
 4. The Living Room
 5. The Highway
 
-Choose from eleven escape artists, including reptiles, amphibians, mammals, livestock, and one suspiciously infernal fox. Each has a unique starting habitat and two abilities, because equal opportunity does not mean equal biology.
+Choose from eleven escape artists, including reptiles, amphibians, mammals, livestock, and one suspicious fox. Each has a unique starting habitat and two abilities, because equal opportunity does not mean equal biology.
