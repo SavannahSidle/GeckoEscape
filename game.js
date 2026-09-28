@@ -56,6 +56,11 @@
   let trashShieldCooldownUntil = 0;
   let raccoonImpactUntil = 0;
   let raccoonLandingUntil = 0;
+  let raccoonCoyoteUntil = 0;
+  let raccoonJumpBufferUntil = 0;
+  let raccoonCombo = 0;
+  let raccoonComboUntil = 0;
+  let raccoonLastTreasureAt = 0;
   let parachuteBoostCooldownUntil = 0;
   let hissActiveUntil = 0;
   let hissCooldownUntil = 0;
@@ -519,6 +524,11 @@
     trashShieldCooldownUntil = 0;
     raccoonImpactUntil = 0;
     raccoonLandingUntil = 0;
+    raccoonCoyoteUntil = 0;
+    raccoonJumpBufferUntil = 0;
+    raccoonCombo = 0;
+    raccoonComboUntil = 0;
+    raccoonLastTreasureAt = 0;
     parachuteBoostCooldownUntil = 0;
     hissActiveUntil = 0;
     hissCooldownUntil = 0;
@@ -563,7 +573,8 @@
     if (loseLife) lives -= 1;
     if (lives <= 0) {
       state = "dead";
-      showPanel("ESCAPE FAILED", "Returned to your enclosure.", "Humiliating. The human has also added another clip to the door.", "TRY AGAIN", () => startLevel(levelIndex), true);
+      if(selectedCharacter==="raccoon")showPanel("ESCAPE FAILED", "Captured by Toronto Animal Services.", "The Trash Tank has been loaded into the municipal shame van. The dog catcher appears exhausted.", "ESCAPE CUSTODY", () => startLevel(levelIndex), true);
+      else showPanel("ESCAPE FAILED", "Returned to your enclosure.", "Humiliating. The human has also added another clip to the door.", "TRY AGAIN", () => startLevel(levelIndex), true);
       return;
     }
     player.x = player.spawnX;
@@ -602,7 +613,8 @@
       abilityLabel.textContent = `TONGUE · ${performance.now() >= camouflageCooldownUntil ? "CAMOUFLAGE READY" : "CAMOUFLAGE RECHARGING"}`;
     } else if (selectedCharacter === "raccoon") {
       const parachuteState=levels[levelIndex].decor==="parachute"?` · ${performance.now()>=parachuteBoostCooldownUntil?"AIR BRAKE READY":"AIR BRAKE RECHARGING"}`:"";
-      abilityLabel.textContent = `${performance.now() >= biteCooldownUntil ? "BITE READY" : "BITE RECHARGING"} · ${performance.now() >= trashShieldCooldownUntil ? "SHIELD READY" : "SHIELD RECHARGING"}${parachuteState}`;
+      const comboState=performance.now()<raccoonComboUntil&&raccoonCombo>1?` · TRASH COMBO ×${raccoonCombo}`:"";
+      abilityLabel.textContent = `${performance.now() >= biteCooldownUntil ? "BITE READY" : "BITE RECHARGING"} · ${performance.now() >= trashShieldCooldownUntil ? "SHIELD READY" : "SHIELD RECHARGING"}${parachuteState}${comboState}`;
     } else if (selectedCharacter === "opossum") {
       const recovery=performance.now()>playDeadUntil&&performance.now()<opossumRecoveryUntil?" · PANIC SPRINT":"";
       abilityLabel.textContent = `${performance.now() >= hissCooldownUntil ? "HISS READY" : "HISS RECHARGING"} · ${performance.now() >= playDeadCooldownUntil ? "PLAY DEAD READY" : "PLAY DEAD RECHARGING"}${recovery}`;
@@ -746,18 +758,27 @@
     player.vx+=player.facing*95;
     const biteBox={x:player.facing>0?player.x+player.w-8:player.x-46,y:player.y-5,w:54,h:player.h+10};
     const livingTypes=new Set(["cat","dalmatian","frenchie","fish","spider","bird","server","drone"]);
+    let hitSomething=false;
     for(const hazard of levels[levelIndex].hazards){
       if(hazard.defeated||!intersects(biteBox,hazard))continue;
+      hitSomething=true;
       if(hazard.type==="grab"||hazard.type==="hand"){hazard.stunnedUntil=now+1250;hazard.dir*=-1;}
       else if(livingTypes.has(hazard.type)){hazard.defeated=true;hazard.x+=player.facing*28;}
     }
+    if(hitSomething)trashShieldCooldownUntil=Math.max(now,trashShieldCooldownUntil-850);
     updateHud();tone(155,.09,"square");
   }
 
   function useTrashShield(){
     const now=performance.now();
     if(state!=="playing"||selectedCharacter!=="raccoon"||now<trashShieldCooldownUntil)return;
-    trashShieldUntil=now+2700;trashShieldCooldownUntil=now+5200;invulnerableUntil=Math.max(invulnerableUntil,trashShieldUntil);player.vx+=player.facing*55;updateHud();tone(140,.16,"triangle");
+    trashShieldUntil=now+2700;trashShieldCooldownUntil=now+5200;invulnerableUntil=Math.max(invulnerableUntil,trashShieldUntil);player.vx+=player.facing*55;
+    const bashBox={x:player.facing>0?player.x+player.w-5:player.x-72,y:player.y-14,w:77,h:player.h+28};
+    for(const hazard of levels[levelIndex].hazards){
+      if(hazard.defeated||!intersects(bashBox,hazard))continue;
+      hazard.stunnedUntil=now+1900;hazard.x+=player.facing*58;hazard.dir=(hazard.dir||1)*-1;hazard.dirX=(hazard.dirX||1)*-1;
+    }
+    updateHud();tone(140,.16,"triangle");
   }
 
   function useHiss(){
@@ -900,11 +921,13 @@
     const right = keys.ArrowRight || keys.KeyD || keys.touchRight;
     const up = keys.ArrowUp || keys.KeyW || keys.touchJump;
     const down = keys.ArrowDown || keys.KeyS;
+    if(selectedCharacter==="raccoon"&&player.grounded)raccoonCoyoteUntil=now+125;
+    if(selectedCharacter==="raccoon"&&now>=raccoonComboUntil&&raccoonCombo){raccoonCombo=0;updateHud();}
     const inHabitatWater = level.habitat === "newt" && player.x < 520 && player.y + player.h / 2 > 270;
     const swimming = Boolean(level.underwater || inHabitatWater);
     let speed = swimming ? character.swimSpeed : selectedCharacter==="bat"&&now<batFlightUntil ? 178 : level.decor === "highway" ? 245 : level.decor === "house" ? 236 : 220;
     if(selectedCharacter==="opossum"&&now>playDeadUntil&&now<opossumRecoveryUntil)speed+=72;
-    if(selectedCharacter==="raccoon"&&!swimming&&(left||right))speed+=18;
+    if(selectedCharacter==="raccoon"&&!swimming&&(left||right))speed+=18+(raccoonCombo>=3&&now<raccoonComboUntil?32:0);
     if (["chameleon","newt","frog","boa","raccoon","opossum","bat","goat","highland","devilfox"].includes(selectedCharacter)) updateHud();
 
     const acceleration = swimming ? 720 : 1450;
@@ -967,13 +990,15 @@
         }else{
           const gliding=selectedCharacter==="bat"&&now<batGlideUntil&&!down;
           const parachuting=selectedCharacter==="raccoon"&&level.decor==="parachute";
-          player.vy += (parachuting?245:gliding?265:820) * dt;
+          const jumpHeld=selectedCharacter==="raccoon"&&up&&player.vy<0;
+          player.vy += (parachuting?245:gliding?265:jumpHeld?475:820) * dt;
           if(gliding){
             if(up)player.vy-=125*dt;
             player.vx+=player.facing*22*dt;
           }
           if(parachuting&&up)player.vy-=95*dt;
           player.vy = Math.min(player.vy, parachuting?175:gliding?205:570);
+          if(selectedCharacter==="raccoon"&&onWall&&player.vy>90&&!parachuting)player.vy=90;
         }
         if(selectedCharacter==="frog"&&player.grounded&&(left||right)&&now>=frogHopCooldownUntil){
           player.vy=-145;player.grounded=false;frogAutoHopping=true;frogHopCooldownUntil=now+330;
@@ -996,7 +1021,8 @@
         player.y = platform.y - player.h;
         player.vy = 0;
         player.grounded = true;
-        if(selectedCharacter==="raccoon"&&landingSpeed>185)raccoonLandingUntil=now+190;
+        if(["raccoon","opossum","devilfox","crested","newt"].includes(selectedCharacter)&&landingSpeed>150)raccoonLandingUntil=now+190;
+        if(selectedCharacter==="raccoon"&&now<raccoonJumpBufferUntil){player.vy=-455;player.grounded=false;raccoonJumpBufferUntil=0;raccoonCoyoteUntil=0;}
         if(selectedCharacter==="frog")frogAutoHopping=false;
       }
     }
@@ -1006,7 +1032,7 @@
       const centerX=player.x+player.w/2;
       if(centerX<minX||centerX>maxX)continue;
       const surfaceY=angledPlatformY(p,centerX);
-      if(oldY+player.h<=surfaceY+6&&player.y+player.h>=surfaceY){player.y=surfaceY-player.h;player.vy=0;player.grounded=true;if(selectedCharacter==="raccoon"&&landingSpeed>185)raccoonLandingUntil=now+190;}
+      if(oldY+player.h<=surfaceY+6&&player.y+player.h>=surfaceY){player.y=surfaceY-player.h;player.vy=0;player.grounded=true;if(["raccoon","opossum","devilfox","crested","newt"].includes(selectedCharacter)&&landingSpeed>150)raccoonLandingUntil=now+190;if(selectedCharacter==="raccoon"&&now<raccoonJumpBufferUntil){player.vy=-455;player.grounded=false;raccoonJumpBufferUntil=0;raccoonCoyoteUntil=0;}}
     }
 
     if (player.y > H + 80) {
@@ -1074,6 +1100,10 @@
         if (intersects(player, bug) || (tongue && intersects(tongue, bug)) || (bite&&intersects(bite,bug))) {
           insect[2] = true;
           collected += 1;
+          if(selectedCharacter==="raccoon"){
+            raccoonCombo=now-raccoonLastTreasureAt<2500?raccoonCombo+1:1;raccoonLastTreasureAt=now;raccoonComboUntil=now+2500;
+            if(collected%4===0&&lives<3){lives+=1;invulnerableUntil=Math.max(invulnerableUntil,now+650);tone(930,.11,"sine");}
+          }
           if(["raccoon","opossum","bat"].includes(selectedCharacter))characterPickup={x:insect[0],y:insect[1],at:now,kind:selectedCharacter};
           updateHud();
           tone(720 + collected * 90, .07, "sine");
@@ -1093,12 +1123,16 @@
 
   function jump() {
     if (state !== "playing") return;
+    const now=performance.now();
     if(selectedCharacter==="opossum"&&performance.now()<playDeadUntil)return;
     if(player.ceilingClimbing){player.ceilingClimbing=false;player.climbing=false;player.y+=8;player.vy=135;tone(185,.05,"triangle");return;}
     const level=levels[levelIndex];
     if(selectedCharacter==="raccoon"&&level.decor==="parachute"&&!player.grounded){
-      const now=performance.now();if(now<parachuteBoostCooldownUntil)return;
+      if(now<parachuteBoostCooldownUntil)return;
       parachuteBoostCooldownUntil=now+650;player.vy=Math.min(player.vy,-145);player.vx+=player.facing*36;updateHud();tone(315,.07,"triangle");return;
+    }
+    if(selectedCharacter==="raccoon"&&!player.grounded&&(player.x<=7||player.x+player.w>=W-7)){
+      const offLeft=player.x<=7;player.facing=offLeft?1:-1;player.vx=offLeft?285:-285;player.vy=-455;raccoonCoyoteUntil=0;raccoonJumpBufferUntil=0;tone(285,.06,"triangle");return;
     }
     const inHabitatWater=level.habitat==="newt"&&player.x<520&&player.y+player.h/2>270;
     if(inHabitatWater){
@@ -1115,12 +1149,13 @@
       tone(210, .05, "sine");
       return;
     }
-    if (player.grounded || player.climbing || (selectedCharacter === "frog" && frogAutoHopping)) {
+    if (player.grounded || player.climbing || (selectedCharacter==="raccoon"&&now<raccoonCoyoteUntil) || (selectedCharacter === "frog" && frogAutoHopping)) {
       player.vy = selectedCharacter === "frog" ? -535 : -455;
       player.grounded = false;
+      if(selectedCharacter==="raccoon"){raccoonCoyoteUntil=0;raccoonJumpBufferUntil=0;}
       if(selectedCharacter==="frog")frogAutoHopping=false;
       tone(245, .05, "triangle");
-    }
+    }else if(selectedCharacter==="raccoon")raccoonJumpBufferUntil=now+150;
   }
 
   function roundedRect(x, y, w, h, radius) {
@@ -1965,6 +2000,12 @@
     ctx.restore();
   }
 
+  function livelyMotion(now,rate=.018){
+    const moving=Math.min(1,(Math.abs(player.vx)+Math.abs(player.vy)*.5)/105),stride=Math.sin(now*rate);
+    const airborne=!player.grounded&&!player.climbing,landing=raccoonLandingUntil>now?Math.sin((raccoonLandingUntil-now)/190*Math.PI):0;
+    return {moving,stride,airborne,landing,breath:!moving&&player.grounded?Math.sin(now*.0045):0,headBob:airborne?Math.max(-2,Math.min(2,player.vy*.006)):stride*moving*.85,blink:(now%3100)>2960,earTwitch:(now%2400)>2180?Math.max(0,Math.sin(now*.019))*2:0};
+  }
+
   function drawCrestedGecko(now) {
     const flash = now < invulnerableUntil && Math.floor(now / 90) % 2 === 0;
     if (flash) ctx.globalAlpha = .4;
@@ -1972,27 +2013,21 @@
     ctx.translate(player.x + player.w/2, player.y + player.h/2);
     ctx.scale(player.facing, 1);
     const green = characters.crested.color;
+    const motion=livelyMotion(now,.02);ctx.translate(0,Math.abs(motion.stride)*motion.moving*1.6+motion.landing*1.5);ctx.scale(1+motion.landing*.06,1-motion.landing*.1);
     // Long, gently tapering tail. Crested geckos are not curly-tailed chameleons.
     if (tailReady) {
       ctx.strokeStyle = green; ctx.lineWidth = 7; ctx.lineCap = "round";
-      ctx.beginPath(); ctx.moveTo(-14, 2); ctx.bezierCurveTo(-27, 3, -37, 8, -49, 5); ctx.stroke();
+      const tailWave=Math.sin(now*.011)*(2+motion.moving*3)+(motion.airborne?-player.vy*.012:0);ctx.beginPath(); ctx.moveTo(-14, 2); ctx.bezierCurveTo(-27, 3-tailWave*.2, -37, 8+tailWave, -49, 5+tailWave*.5); ctx.stroke();
     }
 
-    // Side view: one visible foreleg and one visible hind leg with adhesive toe pads.
-    ctx.strokeStyle = green; ctx.lineWidth = 4;
-    const feet = [[-9,5,-17,14,-27,13],[8,5,15,13,25,12]];
-    feet.forEach(([x1,y1,x2,y2,x3,y3]) => {
-      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.lineTo(x3,y3); ctx.stroke();
-      ctx.fillStyle=green;
-      ctx.beginPath();ctx.ellipse(x3,y3,4,2.5,-.12,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle=green;ctx.lineWidth=1.3;
-      for(let toe=-1;toe<=1;toe++){ctx.beginPath();ctx.moveTo(x3+1,y3+toe);ctx.lineTo(x3+7,y3+toe*2);ctx.stroke();}
-      ctx.strokeStyle=green;ctx.lineWidth=4;
-    });
+    // Four articulated side-view legs with alternating steps and adhesive toe pads.
+    const geckoLeg=(hip,phase,front,far=false)=>{const rise=Math.max(-1,Math.min(1,-player.vy/430)),kneeX=hip+(motion.airborne?(front?7+rise*4:-8-rise*3):phase*.65),kneeY=motion.airborne?5:10,pawX=kneeX+(motion.airborne?(front?9:-8):front?8:-7),pawY=motion.airborne?9+Math.abs(rise)*2:14;ctx.globalAlpha=far?.55:1;ctx.strokeStyle=far?"#a86f43":green;ctx.lineWidth=far?3:4;ctx.beginPath();ctx.moveTo(hip,3);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();ctx.fillStyle=green;ctx.beginPath();ctx.ellipse(pawX,pawY,4,2.4,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle=green;ctx.lineWidth=1.2;for(let toe=-1;toe<=1;toe++){ctx.beginPath();ctx.moveTo(pawX+1,pawY+toe);ctx.lineTo(pawX+7,pawY+toe*2);ctx.stroke();}ctx.globalAlpha=1;};
+    const step=motion.stride*motion.moving*6;geckoLeg(-12,-step*.8,false,true);geckoLeg(7,step*.8,true,true);geckoLeg(-8,step,false);geckoLeg(11,-step,true,false);
 
     // Slender body and broad, flat-topped wedge head with a distinct blunt snout.
     ctx.fillStyle = green;
-    ctx.beginPath(); ctx.ellipse(-1,0,20,9,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(-1,0,20+motion.breath*.35,9+motion.breath*.2,0,0,Math.PI*2); ctx.fill();
+    ctx.save();ctx.translate(0,motion.headBob);
     ctx.beginPath();
     ctx.moveTo(8,-7);ctx.quadraticCurveTo(19,-11,33,-8);ctx.lineTo(40,-3);
     ctx.lineTo(39,4);ctx.quadraticCurveTo(27,9,10,7);ctx.quadraticCurveTo(16,0,8,-7);ctx.fill();
@@ -2013,9 +2048,10 @@
     ctx.closePath(); ctx.fill();
 
     ctx.fillStyle="#d9c577";ctx.beginPath();ctx.ellipse(26,-9,3.6,4.2,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#071008";ctx.beginPath();ctx.ellipse(27,-9,1.4,3.1,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#071008";ctx.beginPath();ctx.ellipse(27,-9,1.4,motion.blink?.5:3.1,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#fff6c5";ctx.beginPath();ctx.arc(27,-10,1,0,Math.PI*2);ctx.fill();
     if(now<tongueActiveUntil){const progress=Math.min(1,Math.max(0,(now-(tongueActiveUntil-230))/230));const extension=Math.sin(progress*Math.PI)*48;ctx.strokeStyle="#ef829a";ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(39,1);ctx.lineTo(39+extension,1);ctx.stroke();ctx.fillStyle="#ff9db0";ctx.beginPath();ctx.ellipse(41+extension,1,4,2.8,0,0,Math.PI*2);ctx.fill();}
+    ctx.restore();
 
     ctx.restore();
     ctx.globalAlpha = 1;
@@ -2043,6 +2079,7 @@
     const flash = now < invulnerableUntil && Math.floor(now / 90) % 2 === 0;
     if (flash) ctx.globalAlpha=.4;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
+    const motion=livelyMotion(now,.018),swimming=levels[levelIndex]?.underwater||(levels[levelIndex]?.habitat==="newt"&&player.x<520&&player.y+player.h/2>270);const swimKick=swimming?Math.sin(now*.016)*Math.min(1,(Math.abs(player.vx)+Math.abs(player.vy))/90)*5:0;ctx.translate(0,(swimming?Math.sin(now*.009)*1.5:Math.abs(motion.stride)*motion.moving*1.2)+motion.landing*1.2);ctx.scale(1+motion.landing*.05,1-motion.landing*.08);
     if(now<regenerateUntil){
       const pulse=4+Math.sin(now*.018)*3;
       ctx.strokeStyle="rgba(105,244,174,.82)";ctx.lineWidth=3;
@@ -2052,15 +2089,14 @@
     }
     if(now<toxinActiveUntil){ctx.strokeStyle="rgba(255,105,49,.72)";ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(0,0,43,24,0,0,Math.PI*2);ctx.stroke();}
     const dark=characters.newt.color;
-    ctx.strokeStyle=dark;ctx.lineWidth=8;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-12,1);ctx.bezierCurveTo(-29,0,-38,5,-49,1);ctx.stroke();
-    ctx.fillStyle=dark;ctx.beginPath();ctx.ellipse(-1,0,22,8,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(20,-1,12,9,0,0,Math.PI*2);ctx.fill();
+    const tailWave=swimKick+(motion.airborne&&!swimming?-player.vy*.008:0);ctx.strokeStyle=dark;ctx.lineWidth=8;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-12,1);ctx.bezierCurveTo(-29,-tailWave*.4,-38,5+tailWave,-49,1-tailWave*.35);ctx.stroke();
+    const step=motion.stride*motion.moving*4+swimKick*.6;const newtLeg=(hip,phase,front,far=false)=>{const kneeX=hip+(swimming?(front?phase+5:-phase-5):motion.airborne?(front?7:-8):phase),kneeY=swimming?(front?-1:5):motion.airborne?5:9,pawX=kneeX+(front?8:-7),pawY=swimming?kneeY+(front?-5:5):motion.airborne?9:14;ctx.globalAlpha=far?.52:1;ctx.strokeStyle=far?"#171b1a":dark;ctx.lineWidth=far?2.3:3;ctx.beginPath();ctx.moveTo(hip,3);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();ctx.lineWidth=1;for(let toe=-1;toe<=1;toe++){ctx.beginPath();ctx.moveTo(pawX,pawY);ctx.lineTo(pawX+6,pawY+toe*2);ctx.stroke();}ctx.globalAlpha=1;};newtLeg(-10,-step,false,true);newtLeg(7,step,true,true);newtLeg(-7,step,false);newtLeg(11,-step,true,false);
+    ctx.fillStyle=dark;ctx.beginPath();ctx.ellipse(-1,0,22+motion.breath*.3,8+motion.breath*.15,0,0,Math.PI*2);ctx.fill();ctx.save();ctx.translate(0,motion.headBob+(swimming?Math.sin(now*.011):0));ctx.beginPath();ctx.ellipse(20,-1,12,9,0,0,Math.PI*2);ctx.fill();
     // Bright orange-red underside with the irregular black markings of a fire-belly newt.
     ctx.fillStyle="#ef542f";ctx.beginPath();ctx.moveTo(-18,2);ctx.quadraticCurveTo(-5,10,12,7);ctx.quadraticCurveTo(21,6,27,2);ctx.quadraticCurveTo(10,5,-18,2);ctx.fill();
     ctx.fillStyle="#ff9a35";ctx.beginPath();ctx.ellipse(-8,5,5,2.2,.12,0,Math.PI*2);ctx.ellipse(13,4,5,2,-.18,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#171918";[[-14,4,2.2],[-1,6,2.5],[7,4,1.8],[20,3,2.2]].forEach(([x,y,r])=>{ctx.beginPath();ctx.ellipse(x,y,r,r*.62,.2,0,Math.PI*2);ctx.fill();});
-    ctx.strokeStyle=dark;ctx.lineWidth=3;
-    [[-8,5,-17,13],[8,5,17,13]].forEach(([x,y,x2,y2])=>{ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.lineTo(x2+6,y2);ctx.moveTo(x2+3,y2);ctx.lineTo(x2+7,y2-3);ctx.moveTo(x2+3,y2);ctx.lineTo(x2+7,y2+3);ctx.stroke();});
-    ctx.fillStyle="#f4cb64";ctx.beginPath();ctx.arc(24,-4,2,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#f4cb64";ctx.beginPath();ctx.ellipse(24,-4,2,motion.blink?.45:2,0,0,Math.PI*2);ctx.fill();ctx.restore();
     ctx.restore();ctx.globalAlpha=1;
   }
 
@@ -2156,6 +2192,16 @@
     ctx.restore();
   }
 
+  function drawTrashScent(now){
+    if(selectedCharacter!=="raccoon"||state!=="playing")return;
+    const targets=[...levels[levelIndex].insects,...(levels[levelIndex].mice||[])].filter(item=>!item[2]);
+    if(!targets.length)return;
+    const px=player.x+player.w/2,py=player.y+player.h/2;
+    const target=targets.reduce((best,item)=>Math.hypot(item[0]-px,item[1]-py)<Math.hypot(best[0]-px,best[1]-py)?item:best,targets[0]);
+    const dx=target[0]-px,dy=target[1]-py,distance=Math.hypot(dx,dy);if(distance<55)return;
+    ctx.save();ctx.fillStyle="rgba(242,193,78,.5)";for(let d=40+(now*.035%28);d<Math.min(distance-18,245);d+=28){const t=d/distance,x=px+dx*t,y=py+dy*t+Math.sin(now*.008+d*.08)*4;ctx.beginPath();ctx.arc(x,y,2.2+(d%56?0:1.2),0,Math.PI*2);ctx.fill();}ctx.restore();
+  }
+
   function drawRaccoon(now){
     const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;if(flash)ctx.globalAlpha=.4;
     const climbingPose=player.climbing&&!player.ceilingClimbing;
@@ -2212,18 +2258,17 @@
     const playingDead=now<playDeadUntil;
     const deathProgress=playingDead?Math.min(1,(now-(playDeadUntil-2800))/320):0;
     if(playingDead){ctx.rotate(Math.PI*deathProgress);ctx.translate(0,-6*deathProgress);}
-    const scurry=Math.min(1,Math.abs(player.vx)/100),bodyBob=player.grounded&&!playingDead?Math.abs(Math.sin(now*.019))*scurry*2.5:0;ctx.translate(0,bodyBob);
-    const tailCurl=Math.sin(now*.008)*5;ctx.strokeStyle="#d6a6a7";ctx.lineWidth=5;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-23,2);ctx.bezierCurveTo(-44,-4-tailCurl,-62,5+tailCurl,-62,16);ctx.bezierCurveTo(-62,29,-46,28,-48,17);ctx.stroke();
-    ctx.fillStyle="#8e8b87";ctx.beginPath();ctx.ellipse(-4,0,28,14,0,0,Math.PI*2);ctx.fill();
+    const motion=livelyMotion(now,.019),scurry=motion.moving,bodyBob=player.grounded&&!playingDead?Math.abs(motion.stride)*scurry*2.2:0;ctx.translate(0,bodyBob+motion.landing*1.5);ctx.scale(1+motion.landing*.07,1-motion.landing*.11);
+    const tailCurl=Math.sin(now*.008)*(3+motion.moving*3)+(motion.airborne?-player.vy*.012:0);ctx.strokeStyle="#d6a6a7";ctx.lineWidth=5;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-23,2);ctx.bezierCurveTo(-44,-4-tailCurl,-62,5+tailCurl,-62,16);ctx.bezierCurveTo(-62,29,-46,28,-48,17);ctx.stroke();
+    const airborne=motion.airborne&&!playingDead,step=motion.stride*motion.moving*6;const opossumLeg=(hip,phase,front,far=false)=>{const rise=Math.max(-1,Math.min(1,-player.vy/430)),kneeX=hip+(airborne?(front?8+rise*5:-9-rise*5):phase*.7),kneeY=airborne?7:12,footX=kneeX+(airborne?(front?10:-9):7),footY=airborne?11+Math.abs(rise)*3:19;ctx.globalAlpha=far?.55:1;ctx.strokeStyle=far?"#625f5d":"#777470";ctx.lineWidth=far?4:5;ctx.beginPath();ctx.moveTo(hip,6);ctx.lineTo(kneeX,kneeY);ctx.lineTo(footX,footY);ctx.stroke();ctx.strokeStyle="#d0a4a5";ctx.lineWidth=1.5;for(let toe=-1;toe<=1;toe++){ctx.beginPath();ctx.moveTo(footX,footY);ctx.lineTo(footX+8,footY+toe*2);ctx.stroke();}ctx.globalAlpha=1;};if(!playingDead){opossumLeg(-16,-step*.8,false,true);opossumLeg(7,step*.8,true,true);opossumLeg(-11,step,false);opossumLeg(12,-step,true,false);}
+    ctx.fillStyle="#8e8b87";ctx.beginPath();ctx.ellipse(-4,0,28+motion.breath*.4,14+motion.breath*.25,0,0,Math.PI*2);ctx.fill();
     if(playingDead){ctx.fillStyle="#c7c0b6";ctx.beginPath();ctx.ellipse(-3,4,20,9,0,0,Math.PI*2);ctx.fill();}
-    ctx.fillStyle="#d1ccc3";ctx.beginPath();ctx.moveTo(11,-10);ctx.quadraticCurveTo(29,-13,45,-2);ctx.lineTo(30,8);ctx.lineTo(11,8);ctx.closePath();ctx.fill();
-    ctx.fillStyle="#242426";ctx.beginPath();ctx.arc(14,-12,7,0,Math.PI*2);ctx.arc(27,-11,6,0,Math.PI*2);ctx.fill();ctx.fillStyle="#efb4b3";ctx.beginPath();ctx.arc(14,-12,3.5,0,Math.PI*2);ctx.arc(27,-11,3,0,Math.PI*2);ctx.fill();ctx.fillStyle="#edb0ae";ctx.beginPath();ctx.ellipse(45,-1,5,4,0,0,Math.PI*2);ctx.fill();
-    if(playingDead){ctx.strokeStyle="#121315";ctx.lineWidth=1.7;for(const eyeX of [29]){ctx.beginPath();ctx.moveTo(eyeX-3,-8);ctx.lineTo(eyeX+3,-3);ctx.moveTo(eyeX+3,-8);ctx.lineTo(eyeX-3,-3);ctx.stroke();}}else{ctx.fillStyle="#121315";ctx.beginPath();ctx.arc(30,-5,2.4,0,Math.PI*2);ctx.fill();}
+    ctx.save();ctx.translate(0,motion.headBob);ctx.fillStyle="#d1ccc3";ctx.beginPath();ctx.moveTo(11,-10);ctx.quadraticCurveTo(29,-13,45,-2);ctx.lineTo(30,8);ctx.lineTo(11,8);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#242426";ctx.beginPath();ctx.arc(14,-12-motion.earTwitch,7,0,Math.PI*2);ctx.arc(27,-11+motion.earTwitch*.3,6,0,Math.PI*2);ctx.fill();ctx.fillStyle="#efb4b3";ctx.beginPath();ctx.arc(14,-12-motion.earTwitch,3.5,0,Math.PI*2);ctx.arc(27,-11+motion.earTwitch*.3,3,0,Math.PI*2);ctx.fill();ctx.fillStyle="#edb0ae";ctx.beginPath();ctx.ellipse(45,-1,5,4,0,0,Math.PI*2);ctx.fill();
+    if(playingDead){ctx.strokeStyle="#121315";ctx.lineWidth=1.7;for(const eyeX of [29]){ctx.beginPath();ctx.moveTo(eyeX-3,-8);ctx.lineTo(eyeX+3,-3);ctx.moveTo(eyeX+3,-8);ctx.lineTo(eyeX-3,-3);ctx.stroke();}}else{ctx.fillStyle="#121315";ctx.beginPath();ctx.ellipse(30,-5,2.4,motion.blink?.5:2.4,0,0,Math.PI*2);ctx.fill();}
     ctx.strokeStyle="#e2ddd2";ctx.lineWidth=1;for(const offset of [-4,0,4]){ctx.beginPath();ctx.moveTo(39,offset);ctx.lineTo(58,offset-4);ctx.stroke();}
-    const airborne=!player.grounded&&!playingDead;const step=Math.sin(now*.016)*Math.min(1,Math.abs(player.vx)/100)*5;
-    const opossumLeg=(hip,phase,front)=>{const rise=Math.max(-1,Math.min(1,-player.vy/430));const kneeX=hip+(airborne?(front?8+rise*6:-10-rise*6):phase);const kneeY=airborne?8:13;const footX=kneeX+(airborne?(front?12:-10):8);const footY=airborne?12+Math.abs(rise)*3:18;ctx.strokeStyle="#777470";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(hip,7);ctx.lineTo(kneeX,kneeY);ctx.lineTo(footX,footY);ctx.stroke();ctx.strokeStyle="#d0a4a5";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(footX,footY);ctx.lineTo(footX+8,footY);ctx.moveTo(footX+1,footY);ctx.lineTo(footX+7,footY+3);ctx.stroke();};
-    opossumLeg(-14,step,false);opossumLeg(8,-step,true);
     if(now<hissActiveUntil){ctx.save();ctx.rotate(-.08);ctx.fillStyle="#f4e8d3";ctx.beginPath();ctx.moveTo(37,2);ctx.lineTo(54,5);ctx.lineTo(39,11);ctx.closePath();ctx.fill();ctx.fillStyle="#e25967";ctx.beginPath();ctx.moveTo(42,6);ctx.lineTo(52,6);ctx.lineTo(44,10);ctx.fill();const radius=55+Math.sin(now*.04)*8;ctx.strokeStyle="rgba(238,232,202,.65)";ctx.lineWidth=3;ctx.beginPath();ctx.arc(38,2,radius,-.55,.55);ctx.stroke();ctx.strokeStyle="#b6b0a8";ctx.lineWidth=2;for(let x=-18;x<12;x+=6){ctx.beginPath();ctx.moveTo(x,-11);ctx.lineTo(x+2,-18-Math.sin(now*.04+x)*3);ctx.stroke();}ctx.restore();}
+    ctx.restore();
     if(playingDead){ctx.fillStyle="#e66d78";ctx.beginPath();ctx.ellipse(42,8,8,3,.25,0,Math.PI*2);ctx.fill();if(playDeadUntil-now<380)ctx.translate(Math.sin(now*.09)*2,0);ctx.save();ctx.rotate(Math.PI);ctx.fillStyle="#eee";ctx.font="bold 10px system-ui";ctx.textAlign="center";ctx.fillText("ABSOLUTELY DECEASED",0,34);ctx.restore();}
     ctx.restore();ctx.globalAlpha=1;
   }
@@ -2279,16 +2324,17 @@
   function drawDevilFox(now){
     const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;if(flash)ctx.globalAlpha=.4;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
-    const airborne=!player.grounded,pouncing=now<foxPounceUntil,walk=Math.sin(now*.022)*Math.min(1,Math.abs(player.vx)/100)*6,tailWave=Math.sin(now*.008)*8+(airborne?-player.vy*.02:0);
+    const motion=livelyMotion(now,.022),airborne=motion.airborne,pouncing=now<foxPounceUntil,walk=motion.stride*motion.moving*7,tailWave=Math.sin(now*.008)*(5+motion.moving*5)+(airborne?-player.vy*.02:0);ctx.translate(0,Math.abs(motion.stride)*motion.moving*1.8+motion.landing*1.6);ctx.scale(1+motion.landing*.07,1-motion.landing*.11);
     if(now<foxBlinkUntil){ctx.globalAlpha=.24;for(let g=1;g<=3;g++){ctx.save();ctx.translate(-g*18,Math.sin(g)*5);ctx.fillStyle="#dc68b3";ctx.beginPath();ctx.ellipse(0,0,28,13,0,0,Math.PI*2);ctx.fill();ctx.restore();}ctx.globalAlpha=1;}
-    const foxLeg=(hip,phase,front)=>{const kneeX=hip+(airborne?(front?12:-12):phase),kneeY=airborne?(pouncing?1:8):12,footX=kneeX+(airborne?(front?14:-10):8),footY=airborne?(pouncing?5:14):19;ctx.strokeStyle="#8f284f";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(hip,7);ctx.lineTo(kneeX,kneeY);ctx.lineTo(footX,footY);ctx.stroke();ctx.fillStyle="#2a1027";ctx.beginPath();ctx.ellipse(footX+3,footY,7,3,0,0,Math.PI*2);ctx.fill();};
+    const foxLeg=(hip,phase,front,far=false)=>{const kneeX=hip+(airborne?(front?12:-12):phase*.7),kneeY=airborne?(pouncing?1:8):12,footX=kneeX+(airborne?(front?14:-10):8),footY=airborne?(pouncing?5:14):20;ctx.globalAlpha=far?.52:1;ctx.strokeStyle=far?"#69203f":"#8f284f";ctx.lineWidth=far?4.5:6;ctx.beginPath();ctx.moveTo(hip,7);ctx.lineTo(kneeX,kneeY);ctx.lineTo(footX,footY);ctx.stroke();ctx.fillStyle="#2a1027";ctx.beginPath();ctx.ellipse(footX+3,footY,7,3,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#160a15";ctx.lineWidth=1;for(let toe=-1;toe<=1;toe++){ctx.beginPath();ctx.moveTo(footX+5,footY);ctx.lineTo(footX+10,footY+toe*2);ctx.stroke();}ctx.globalAlpha=1;};
     ctx.strokeStyle="#b74766";ctx.lineWidth=18;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-20,0);ctx.bezierCurveTo(-39,-13,-53,-2,-64,-19+tailWave*.35);ctx.stroke();ctx.strokeStyle="#f39abb";ctx.lineWidth=10;ctx.beginPath();ctx.moveTo(-30,-4);ctx.bezierCurveTo(-45,-12,-54,-5,-64,-19+tailWave*.35);ctx.stroke();ctx.fillStyle="#fff0f5";ctx.beginPath();ctx.arc(-65,-19+tailWave*.35,6,0,Math.PI*2);ctx.fill();
-    foxLeg(-11,walk,false);foxLeg(10,-walk,true);
-    ctx.fillStyle="#b74766";ctx.beginPath();ctx.ellipse(-2,0,28,14,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#d95b82";ctx.beginPath();ctx.ellipse(24,-4,19,15,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#651d48";ctx.beginPath();ctx.moveTo(14,-14);ctx.lineTo(14,-34);ctx.lineTo(28,-17);ctx.moveTo(30,-17);ctx.lineTo(43,-34);ctx.lineTo(43,-10);ctx.fill();
+    foxLeg(-16,-walk*.8,false,true);foxLeg(7,walk*.8,true,true);foxLeg(-11,walk,false);foxLeg(12,-walk,true,false);
+    ctx.fillStyle="#b74766";ctx.beginPath();ctx.ellipse(-2,0,28+motion.breath*.4,14+motion.breath*.25,0,0,Math.PI*2);ctx.fill();ctx.save();ctx.translate(0,motion.headBob);ctx.fillStyle="#d95b82";ctx.beginPath();ctx.ellipse(24,-4,19,15,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#651d48";ctx.beginPath();ctx.moveTo(14,-14-motion.earTwitch);ctx.lineTo(14,-34-motion.earTwitch);ctx.lineTo(28,-17);ctx.moveTo(30,-17);ctx.lineTo(43,-34+motion.earTwitch*.4);ctx.lineTo(43,-10);ctx.fill();
     ctx.fillStyle="#2a1027";ctx.beginPath();ctx.moveTo(20,-16);ctx.quadraticCurveTo(18,-31,27,-32);ctx.lineTo(30,-16);ctx.moveTo(33,-17);ctx.quadraticCurveTo(38,-32,46,-28);ctx.lineTo(42,-12);ctx.fill();
-    ctx.fillStyle="#f3d8e5";ctx.beginPath();ctx.ellipse(35,0,12,8,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#171018";ctx.beginPath();ctx.arc(26,-7,2.8,0,Math.PI*2);ctx.arc(44,0,2.5,0,Math.PI*2);ctx.fill();ctx.fillStyle="#ffd468";ctx.beginPath();ctx.arc(27,-8,1,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#f3d8e5";ctx.beginPath();ctx.ellipse(35,0,12,8,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#171018";ctx.beginPath();ctx.ellipse(26,-7,2.8,motion.blink?.5:2.8,0,0,Math.PI*2);ctx.arc(44,0,2.5,0,Math.PI*2);ctx.fill();ctx.fillStyle="#ffd468";ctx.beginPath();ctx.arc(27,-8,1,0,Math.PI*2);ctx.fill();
     if(pouncing){ctx.strokeStyle="rgba(255,111,183,.7)";ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,44,-1.1,1.1);ctx.stroke();}
+    ctx.restore();
     ctx.restore();ctx.globalAlpha=1;
   }
 
@@ -2319,6 +2365,7 @@
     drawAirPockets(level, time);
     level.hazards.forEach(hazard => drawHazard(hazard, time));
     drawDroppedTail(time);
+    drawTrashScent(time);
     drawPlayer(time);
     drawCharacterPickup(time);
   }
