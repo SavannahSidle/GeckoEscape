@@ -244,9 +244,9 @@
       intro:"White tablecloths. Tiny portions. Excellent margins. Steal every fancy dish before security realizes the guest list contains one enormous raccoon.",
       completeTitle:"The tasting menu has been abolished.",completeText:"Caviar, steak, cake, and several cheeses are now evidence. The only remaining exit is dramatically downward.",
       palette:["#151923","#3f3340","#8f6b45","#f0cc76"],start:[38,438],exit:[872,86,55,82],
-      platforms:[[0,500,960,40,"restaurantFloor"],[45,452,135,18,"table"],[255,452,135,18,"table"],[485,452,135,18,"table"],[715,452,135,18,"table"],[170,392,105,18,"table"],[400,392,105,18,"table"],[630,392,105,18,"table"],[330,375,105,18,"servingCart"],[535,300,145,18,"bar"],[735,230,110,18,"servingCart"],[255,126,50,16,"chandelier"],[455,126,50,16,"chandelier"],[655,126,50,16,"chandelier"],[760,125,170,18,"observation"]],
-      vines:[[190,78,16,260],[575,78,16,260]],
-      insects:[[90,418],[285,376],[455,326],[650,276],[840,226],[650,171],[810,91],[535,285],[735,275],[555,170],[745,170],[885,91],[0,0,false,"waiterCheese",0],[0,0,false,"waiterCheese",1]],
+      platforms:[[0,500,960,40,"restaurantFloor"],[45,452,135,18,"table"],[255,452,135,18,"table"],[485,452,135,18,"table"],[715,452,135,18,"table"],[170,392,105,18,"table"],[400,392,105,18,"table"],[630,392,105,18,"table"],[255,126,50,16,"chandelier"],[455,126,50,16,"chandelier"],[655,126,50,16,"chandelier"],[760,125,170,18,"observation"]],
+      vines:[[190,78,16,260],[385,78,16,260],[575,78,16,260],[765,78,16,260]],
+      insects:[[90,418],[285,376],[455,356],[650,356],[840,196],[650,171],[810,91],[535,345],[735,345],[555,170],[745,170],[885,91],[0,0,false,"waiterCheese",0],[0,0,false,"waiterCheese",1]],
       hazards:[{x:330,y:448,w:82,h:52,type:"server",axis:"x",min:250,max:470,speed:105},{x:700,y:448,w:82,h:52,type:"server",axis:"x",min:620,max:840,speed:120}],
       decor:"towerRestaurant",habitat:"raccoon"
     },
@@ -337,15 +337,15 @@
       platforms:[[0,500,960,40,"alley"],[35,463,190,24,"trash"],[85,350,155,22,"cardboard"],[245,292,120,20,"cardboard"],[280,414,175,24,"dumpster"],[405,242,120,20,"trash"],[500,342,170,22,"dumpster"],[575,185,125,20,"cardboard"],[700,270,190,22,"fence"],[790,160,145,22,"dumpster"],[610,408,72,88,"recycling"],[72,205,112,38,"openSign"]],
       angledPlatforms:[[150,380,245,292,16],[650,320,760,270,16]],
       vines:[[716,272,18,178],[370,240,18,175]],insects:[[105,430],[145,318],[300,258],[350,380],[465,208],[575,308],[635,151],[775,236],[850,126],[675,445],[128,172,false,"pizza"]],
-      completeTitle:"Toronto has been released into the raccoon.",completeText:"Freedom reveals an effectively unlimited supply of delicious garbage. The city never stood a chance.",
+      completeTitle:"Freedom achieved.",completeText:"Toronto's garbage never stood a chance.",
       hazards:[{x:420,y:430,w:92,h:70,type:"grab",axis:"x",min:330,max:610,speed:82}]
     },
     opossum: {
       title:"The Wildlife Rehab Pen",habitat:"opossum",palette:["#101914","#293b2d","#6f5134","#c7dfa2"],
       intro:"The rehabilitation pen is secure, enriched, and tragically unable to account for one determined opossum.",
       start:[72,430],exit:[870,400,52,100],
-      platforms:[[0,500,960,40,"leafLitter"],[40,455,180,22,"log"],[65,332,145,22,"nestbox"],[160,270,95,20,"meshShelf"],[225,420,125,22,"tire"],[260,305,145,22,"carrier"],[385,392,135,22,"log"],[430,245,125,22,"log"],[540,340,145,22,"log"],[585,185,125,22,"meshShelf"],[700,300,125,22,"meshShelf"],[835,330,95,22,"nestbox"]],
-      vines:[[408,240,18,150],[690,190,18,150]],swings:[[780,62,150,58,92],[260,55,150,55,84]],insects:[[92,425],[135,300],[285,386],[332,272],[455,358],[490,212],[610,307],[648,152],[750,267],[852,178],[625,455],[885,295],[300,112]],
+      platforms:[[0,500,960,40,"leafLitter"],[40,455,180,22,"log"],[65,332,145,22,"nestbox"],[225,420,125,22,"tire"],[260,305,145,22,"carrier"],[385,392,135,22,"log"],[540,340,145,22,"log"],[700,300,125,22,"meshShelf"],[835,330,95,22,"nestbox"],[384,150,68,14,"light"]],
+      vines:[[185,215,18,200],[408,240,18,150],[560,135,18,240],[690,190,18,150]],swings:[[780,62,150,58,92],[260,55,150,55,84]],insects:[[92,425],[135,300],[285,386],[332,272],[455,358],[490,212],[610,307],[648,152],[750,267],[852,178],[625,455],[885,295],[300,112]],
       completeTitle:"Rehabilitation status: aggressively self-discharged.",completeText:"The upper pen, tire swing, and fruit stash have been conquered. The opossum waddles into the night with absolutely no paperwork.",
       hazards:[{x:430,y:430,w:92,h:70,type:"grab",axis:"x",min:340,max:625,speed:78}]
     },
@@ -948,11 +948,11 @@
     if(selectedCharacter==="raccoon"&&!swimming&&(left||right))speed+=18+(raccoonCombo>=3&&now<raccoonComboUntil?32:0);
     if (["chameleon","newt","frog","boa","raccoon","opossum","bat","goat","highland","devilfox"].includes(selectedCharacter)) updateHud();
 
-    const acceleration = swimming ? 720 : selectedCharacter==="bat" ? 980 : level.decor==="parachute" ? 1180 : selectedCharacter==="frog" ? 1120 : 1450;
+    const acceleration = swimming ? 720 : selectedCharacter==="raccoon" ? 1220 : selectedCharacter==="bat" ? 980 : level.decor==="parachute" ? 1180 : selectedCharacter==="frog" ? 1120 : 1450;
     const playingDead=selectedCharacter==="opossum"&&now<playDeadUntil;
     if (!playingDead&&left) { player.vx -= acceleration * dt; if(selectedCharacter!=="bat"||player.vx<10)player.facing = -1; }
     if (!playingDead&&right) { player.vx += acceleration * dt; if(selectedCharacter!=="bat"||player.vx>-10)player.facing = 1; }
-    if (!left && !right) player.vx *= Math.pow(swimming ? .025 : selectedCharacter==="bat" ? .22 : level.decor==="parachute" ? .3 : selectedCharacter==="frog" ? .00008 : .0007, dt);
+    if (!left && !right) player.vx *= Math.pow(swimming ? .025 : selectedCharacter==="raccoon" ? .018 : selectedCharacter==="bat" ? .22 : level.decor==="parachute" ? .3 : selectedCharacter==="frog" ? .00008 : .0007, dt);
     if(playingDead)player.vx=0;
     player.vx = Math.max(-speed, Math.min(speed, player.vx));
 
@@ -1255,12 +1255,10 @@
       ctx.fillStyle="#aab2b6";ctx.beginPath();ctx.moveTo(445,500);ctx.lineTo(468,130);ctx.lineTo(492,130);ctx.lineTo(515,500);ctx.closePath();ctx.fill();
       ctx.fillStyle="#7b858a";ctx.beginPath();ctx.moveTo(414,188);ctx.quadraticCurveTo(480,155,546,188);ctx.lineTo(530,225);ctx.lineTo(430,225);ctx.closePath();ctx.fill();
       ctx.fillStyle="#dfe5e6";ctx.fillRect(474,63,12,112);ctx.fillStyle="#c33d3d";ctx.fillRect(477,42,6,28);
-      ctx.fillStyle="#183e61";roundedRect(38,74,190,39,5);ctx.fill();ctx.strokeStyle="#f4f7f7";ctx.lineWidth=2;ctx.stroke();ctx.fillStyle="#fff";ctx.font="900 18px system-ui";ctx.textAlign="center";ctx.fillText("TORONTO",133,100);
+      ctx.fillStyle="#183e61";roundedRect(38,70,190,55,5);ctx.fill();ctx.strokeStyle="#f4f7f7";ctx.lineWidth=2;ctx.stroke();ctx.fillStyle="#fff";ctx.textAlign="center";ctx.font="800 11px system-ui";ctx.fillText("TORONTO",133,90);ctx.font="900 17px system-ui";ctx.fillText("CN TOWER",133,112);
       const towerTime=performance.now();ctx.strokeStyle="rgba(255,255,255,.42)";ctx.lineWidth=2;for(let i=0;i<12;i++){const x=((towerTime*.08+i*103)%1080)-80,y=125+(i*41)%300;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+38+(i%3)*12,y-3);ctx.stroke();}
       if(Math.floor(towerTime/420)%2===0){ctx.fillStyle="#ff3f43";for(const [x,y] of [[480,43],[438,185],[522,185]]){ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();}}
       ctx.strokeStyle="rgba(211,241,248,.75)";ctx.lineWidth=4;ctx.beginPath();ctx.ellipse(480,190,62,17,0,0,Math.PI*2);ctx.stroke();
-      // Lake Ontario and the islands make the height feel unmistakably Toronto.
-      ctx.fillStyle="rgba(67,137,166,.46)";ctx.fillRect(0,455,W,45);ctx.fillStyle="#55795b";for(const [x,w] of [[45,150],[270,95],[620,175],[835,90]]){ctx.beginPath();ctx.ellipse(x,470,w,9,0,0,Math.PI*2);ctx.fill();}
       // Seagulls, because Toronto's real municipal air force must be represented.
       ctx.strokeStyle="#eef4f3";ctx.lineWidth=2;for(const [x,y] of [[255,138],[720,118],[825,205]]){ctx.beginPath();ctx.arc(x-6,y,7,Math.PI,Math.PI*2);ctx.arc(x+6,y,7,Math.PI,Math.PI*2);ctx.stroke();}
       // A tiny external service lift slowly crawls up the tower shaft.
@@ -1268,12 +1266,12 @@
       // Height markers and maintenance warnings reward anyone looking around while climbing.
       ctx.fillStyle="#f5eee0";ctx.font="900 10px system-ui";ctx.textAlign="left";for(const [y,label] of [[405,"147 m"],[300,"260 m"],[238,"346 m"]]){ctx.fillRect(535,y-13,42,17);ctx.fillStyle="#273b47";ctx.fillText(label,539,y);ctx.fillStyle="#f5eee0";}
     } else if (level.decor === "towerRestaurant") {
-      ctx.fillStyle="#211d25";ctx.fillRect(0,55,W,H-55);ctx.fillStyle="#4c4540";ctx.fillRect(0,345,W,155);ctx.strokeStyle="rgba(214,194,170,.12)";ctx.lineWidth=2;for(let y=358;y<500;y+=18){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+      ctx.fillStyle="#211d25";ctx.fillRect(0,55,W,H-55);ctx.fillStyle="#6f263d";ctx.fillRect(0,345,W,155);ctx.strokeStyle="rgba(244,202,190,.14)";ctx.lineWidth=2;for(let y=358;y<500;y+=18){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
       const windowSky=ctx.createLinearGradient(0,70,0,335);windowSky.addColorStop(0,"#65a9ce");windowSky.addColorStop(1,"#d9e1df");ctx.fillStyle=windowSky;roundedRect(30,75,900,270,18);ctx.fill();
       const skylineLayers=[{c:"#91a8b2",y:360,b:[[35,117,80],[135,100,55],[225,140,72],[330,107,48],[405,155,70],[510,121,62],[600,170,80],[710,113,58],[795,147,75],[885,101,44]]},{c:"#536672",y:365,b:[[55,91,42],[165,132,52],[275,103,45],[365,145,54],[470,115,46],[560,139,54],[670,105,40],[750,165,58],[855,125,54]]}];
       for(const layer of skylineLayers){ctx.fillStyle=layer.c;for(const [x,h,w] of layer.b){ctx.fillRect(x,layer.y-h,w,h);ctx.fillStyle="rgba(237,221,159,.58)";for(let wy=layer.y-h+12;wy<layer.y-8;wy+=16)for(let wx=x+8;wx<x+w-6;wx+=14)ctx.fillRect(wx,wy,5,7);ctx.fillStyle=layer.c;}}
       ctx.fillStyle="#41525d";ctx.fillRect(438,165,44,200);ctx.beginPath();ctx.moveTo(438,165);ctx.lineTo(460,122);ctx.lineTo(482,165);ctx.fill();ctx.fillStyle="#e0cb78";for(let y=180;y<345;y+=18){ctx.fillRect(446,y,6,8);ctx.fillRect(468,y,6,8);}ctx.fillStyle="#687b85";ctx.fillRect(733,185,54,180);ctx.fillStyle="#a6bac2";ctx.fillRect(745,198,6,147);ctx.fillRect(763,198,6,147);
-      ctx.fillStyle="#4c4540";ctx.fillRect(0,338,W,162);ctx.fillStyle="#241f25";ctx.fillRect(25,334,910,14);
+      ctx.fillStyle="#6f263d";ctx.fillRect(0,338,W,162);ctx.fillStyle="#241f25";ctx.fillRect(25,334,910,14);
       ctx.strokeStyle="#302a32";ctx.lineWidth=11;for(const x of [190,385,575,765]){ctx.beginPath();ctx.moveTo(x,76);ctx.lineTo(x,345);ctx.stroke();}
       ctx.fillStyle="#f2e6d7";ctx.font="900 15px system-ui";ctx.textAlign="center";ctx.fillText("360 RESTAURANT",480,372);
       for(const x of [280,480,680]){const glow=ctx.createRadialGradient(x,128,2,x,128,40);glow.addColorStop(0,"rgba(255,226,150,.42)");glow.addColorStop(1,"rgba(255,226,150,0)");ctx.fillStyle=glow;ctx.beginPath();ctx.arc(x,128,40,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#c7a35f";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x,55);ctx.lineTo(x,108);ctx.stroke();ctx.fillStyle="#e7c87c";ctx.beginPath();ctx.moveTo(x-22,121);ctx.quadraticCurveTo(x,100,x+22,121);ctx.lineTo(x+15,132);ctx.lineTo(x-15,132);ctx.closePath();ctx.fill();}
@@ -1537,7 +1535,7 @@
       ctx.strokeStyle="rgba(190,205,188,.28)";ctx.lineWidth=1;
       for(let x=-300;x<1200;x+=26){ctx.beginPath();ctx.moveTo(x,50);ctx.lineTo(x+450,500);ctx.stroke();ctx.beginPath();ctx.moveTo(x,500);ctx.lineTo(x+450,50);ctx.stroke();}
       ctx.fillStyle="#493520";roundedRect(54,255,180,130,8);ctx.fill();ctx.fillStyle="#131713";ctx.beginPath();ctx.arc(145,350,38,Math.PI,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#dec99e";roundedRect(65,270,158,33,4);ctx.fill();ctx.fillStyle="#463624";ctx.font="900 11px system-ui";ctx.textAlign="center";ctx.fillText("WILDLIFE REHABILITATION",144,291);
+      ctx.save();ctx.shadowColor="#f2d58a";ctx.shadowBlur=12;ctx.fillStyle="#f0d99d";roundedRect(42,72,230,55,7);ctx.fill();ctx.strokeStyle="#493520";ctx.lineWidth=4;ctx.stroke();ctx.fillStyle="#34271d";ctx.font="900 16px system-ui";ctx.textAlign="center";ctx.fillText("WILDLIFE",157,95);ctx.fillText("REHABILITATION",157,116);ctx.restore();
       ctx.fillStyle="#6a7c72";ctx.beginPath();ctx.ellipse(550,474,88,20,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="rgba(121,190,199,.58)";ctx.beginPath();ctx.ellipse(550,470,75,12,0,0,Math.PI*2);ctx.fill();
       ctx.fillStyle="#60452c";for(let x=22;x<940;x+=28){ctx.beginPath();ctx.ellipse(x,486-(x%4)*3,22,7,(x%3-.8)*.3,0,Math.PI*2);ctx.fill();}
       ctx.fillStyle="#465c3c";for(const x of [280,750,865]){ctx.beginPath();ctx.ellipse(x,450,35,65,0,0,Math.PI*2);ctx.fill();}
@@ -1743,7 +1741,8 @@
           if(p[4]==="recycling"){ctx.fillStyle="#74a5b5";ctx.fillRect(p[0]+8,p[1]+10,p[2]-16,8);ctx.fillStyle="#d5e4e5";ctx.font="900 10px system-ui";ctx.textAlign="center";ctx.fillText("RECYCLE",p[0]+p[2]/2,p[1]+53);}
         }
       }else if(level.habitat==="opossum"&&p[4]!=="leafLitter"){
-        if(p[4]==="nestbox"){ctx.fillStyle="#67472c";roundedRect(p[0],p[1],p[2],p[3],4);ctx.fill();ctx.fillStyle="#252018";ctx.beginPath();ctx.arc(p[0]+p[2]*.7,p[1]+5,12,0,Math.PI*2);ctx.fill();ctx.fillStyle="#b98d66";for(let x=p[0]+10;x<p[0]+p[2]*.48;x+=12){ctx.beginPath();ctx.ellipse(x,p[1]+6,10,3,-.2,0,Math.PI*2);ctx.fill();}}
+        if(p[4]==="light"){ctx.fillStyle="#d8a95d";ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(p[0]+p[2],p[1]);ctx.lineTo(p[0]+p[2]-14,p[1]+p[3]);ctx.lineTo(p[0]+14,p[1]+p[3]);ctx.closePath();ctx.fill();ctx.strokeStyle="#8a693c";ctx.lineWidth=2;ctx.stroke();}
+        else if(p[4]==="nestbox"){ctx.fillStyle="#67472c";roundedRect(p[0],p[1],p[2],p[3],4);ctx.fill();ctx.fillStyle="#252018";ctx.beginPath();ctx.arc(p[0]+p[2]*.7,p[1]+5,12,0,Math.PI*2);ctx.fill();ctx.fillStyle="#b98d66";for(let x=p[0]+10;x<p[0]+p[2]*.48;x+=12){ctx.beginPath();ctx.ellipse(x,p[1]+6,10,3,-.2,0,Math.PI*2);ctx.fill();}}
         else if(p[4]==="meshShelf"){ctx.fillStyle="#77817a";ctx.fillRect(p[0],p[1],p[2],p[3]);ctx.strokeStyle="#b3bbb5";for(let x=p[0]+8;x<p[0]+p[2];x+=16){ctx.beginPath();ctx.moveTo(x,p[1]);ctx.lineTo(x,p[1]+p[3]);ctx.stroke();}}
         else if(p[4]==="tire"){ctx.strokeStyle="#252826";ctx.lineWidth=15;ctx.beginPath();ctx.ellipse(p[0]+p[2]/2,p[1]+8,p[2]*.42,18,0,Math.PI,Math.PI*2);ctx.stroke();ctx.strokeStyle="#737b74";ctx.lineWidth=2;ctx.stroke();}
         else if(p[4]==="carrier"){ctx.fillStyle="#3e4a46";roundedRect(p[0],p[1],p[2],p[3],5);ctx.fill();ctx.strokeStyle="#9aa59e";ctx.lineWidth=2;for(let x=p[0]+10;x<p[0]+p[2]-5;x+=16){ctx.beginPath();ctx.moveTo(x,p[1]+3);ctx.lineTo(x,p[1]+p[3]-3);ctx.stroke();}}
