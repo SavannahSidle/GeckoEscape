@@ -71,6 +71,7 @@
   let echoCooldownUntil = 0;
   let batFlightUntil = 0;
   let batGlideUntil = 0;
+  let batStartHanging = false;
   let opossumRecoveryUntil = 0;
   let characterPickup = null;
   let goatAttackUntil = 0;
@@ -110,7 +111,7 @@
     x: 0, y: 0, w: 38, h: 24,
     vx: 0, vy: 0, facing: 1,
     grounded: false, climbing: false, ceilingClimbing: false,
-    spawnX: 0, spawnY: 0
+    spawnX: 0, spawnY: 0, onSwing: false
   };
 
   const levels = [
@@ -239,7 +240,7 @@
       intro:"White tablecloths. Tiny portions. Excellent margins. Steal every fancy dish before security realizes the guest list contains one enormous raccoon.",
       completeTitle:"The tasting menu has been abolished.",completeText:"Caviar, steak, cake, and several cheeses are now evidence. The only remaining exit is dramatically downward.",
       palette:["#151923","#3f3340","#8f6b45","#f0cc76"],start:[38,438],exit:[872,86,55,82],
-      platforms:[[0,500,960,40,"restaurantFloor"],[25,452,170,22,"banquette"],[225,410,125,18,"table"],[405,360,105,18,"servingCart"],[580,310,140,18,"table"],[765,260,155,18,"bar"],[585,205,135,18,"table"],[760,125,170,18,"observation"]],
+      platforms:[[0,500,960,40,"restaurantFloor"],[45,452,135,18,"table"],[255,452,135,18,"table"],[485,452,135,18,"table"],[715,452,135,18,"table"],[330,375,105,18,"servingCart"],[535,300,145,18,"bar"],[735,230,110,18,"servingCart"],[255,126,50,16,"chandelier"],[455,126,50,16,"chandelier"],[655,126,50,16,"chandelier"],[760,125,170,18,"observation"]],
       vines:[],
       insects:[[90,418],[285,376],[455,326],[650,276],[840,226],[650,171],[810,91],[535,285],[735,275],[555,170],[745,170],[885,91]],
       hazards:[{x:330,y:466,w:70,h:34,type:"server",axis:"x",min:250,max:470,speed:105},{x:700,y:466,w:70,h:34,type:"server",axis:"x",min:620,max:840,speed:120}],
@@ -250,7 +251,8 @@
       intro:"There is no approved raccoon exit from the CN Tower. Deploy the stolen emergency parachute, catch the airborne snacks, and land somewhere that cannot issue a bill.",
       completeTitle:"A majestic garbage meteor lands.",completeText:"Toronto survives. Several pigeons file formal complaints. The Trash Tank disappears into the city with a parachute and twelve thousand dollars in cheese.",
       palette:["#5aa9d6","#dff3f4","#506c79","#ff5b4f"],start:[38,92],exit:[872,400,58,92],
-      platforms:[[18,130,155,20,"towerRoof"],[205,198,125,18,"cloud"],[385,270,130,18,"cloud"],[560,205,110,18,"cloud"],[700,330,125,18,"rooftop"],[835,470,125,30,"rooftop"],[470,405,115,18,"rooftop"],[260,380,105,18,"cloud"],[105,245,90,16,"cloud"],[300,305,82,16,"cloud"],[485,330,78,16,"cloud"],[625,285,80,16,"cloud"],[770,245,82,16,"cloud"],[150,350,84,16,"rooftop"],[360,445,82,16,"rooftop"],[600,455,86,16,"rooftop"],[735,410,76,16,"rooftop"],[865,360,74,16,"rooftop"]],
+      platforms:[[18,130,155,20,"towerRoof"],[205,198,125,18,"cloud"],[385,270,130,18,"cloud"],[560,205,110,18,"cloud"],[700,330,125,18,"cloud"],[260,380,105,18,"cloud"],[105,245,90,16,"cloud"],[300,305,82,16,"cloud"],[485,330,78,16,"cloud"],[625,285,80,16,"cloud"],[770,245,82,16,"cloud"],[835,470,125,30,"rooftop"]],
+      airCurrents:[[170,150,130,-115,55],[430,180,120,-135,-35],[675,235,125,-105,65]],
       vines:[],insects:[[110,92],[265,160],[445,232],[615,168],[755,292],[525,367],[315,342],[865,430]],
       hazards:[{x:260,y:105,w:62,h:30,type:"bird",axis:"diagonal",minX:190,maxX:520,minY:85,maxY:260,speedX:82,speedY:56},{x:590,y:260,w:52,h:30,type:"drone",axis:"diagonal",minX:520,maxX:840,minY:170,maxY:370,speedX:70,speedY:48}],
       decor:"parachute",habitat:"raccoon",parachute:true
@@ -328,7 +330,7 @@
       title:"The Dumpster Den",habitat:"raccoon",palette:["#101418","#283037","#765b3f","#f2c14e"],
       intro:"The dumpster lid has fallen shut. Rummage through the good stuff, climb the trash corral, and escape before collection day.",
       start:[62,438],exit:[870,390,55,110],
-      platforms:[[0,500,960,40,"alley"],[35,463,190,24,"trash"],[85,350,155,22,"cardboard"],[245,292,120,20,"cardboard"],[280,414,175,24,"dumpster"],[405,242,120,20,"trash"],[500,342,170,22,"dumpster"],[575,185,125,20,"cardboard"],[700,270,190,22,"fence"],[790,160,145,22,"dumpster"],[625,438,85,20,"recycling"],[32,235,105,18,"awning"]],
+      platforms:[[0,500,960,40,"alley"],[35,463,190,24,"trash"],[85,350,155,22,"cardboard"],[245,292,120,20,"cardboard"],[280,414,175,24,"dumpster"],[405,242,120,20,"trash"],[500,342,170,22,"dumpster"],[575,185,125,20,"cardboard"],[700,270,190,22,"fence"],[790,160,145,22,"dumpster"],[610,408,72,88,"recycling"],[32,235,105,18,"awning"]],
       angledPlatforms:[[150,380,245,292,16],[650,320,760,270,16]],
       vines:[[716,272,18,178],[370,240,18,175]],insects:[[105,430],[145,318],[300,258],[350,380],[465,208],[575,308],[635,151],[775,236],[850,126],[675,445]],
       hazards:[{x:420,y:430,w:92,h:70,type:"grab",axis:"x",min:330,max:610,speed:82}]
@@ -337,17 +339,19 @@
       title:"The Wildlife Rehab Pen",habitat:"opossum",palette:["#101914","#293b2d","#6f5134","#c7dfa2"],
       intro:"The rehabilitation pen is secure, enriched, and tragically unable to account for one determined opossum.",
       start:[72,430],exit:[870,400,52,100],
-      platforms:[[0,500,960,40,"leafLitter"],[40,455,180,22,"log"],[65,332,145,22,"nestbox"],[225,420,125,22,"tire"],[260,305,145,22,"carrier"],[385,392,135,22,"log"],[430,245,125,22,"log"],[540,340,145,22,"log"],[585,185,125,22,"meshShelf"],[700,270,170,22,"meshShelf"],[790,155,145,22,"nestbox"]],
-      vines:[[210,305,18,155],[408,240,18,150],[690,190,18,150]],insects:[[92,425],[135,300],[285,386],[332,272],[455,358],[490,212],[610,307],[648,152],[765,237],[852,122],[625,455]],
+      platforms:[[0,500,960,40,"leafLitter"],[40,455,180,22,"log"],[65,332,145,22,"nestbox"],[225,420,125,22,"tire"],[260,305,145,22,"carrier"],[385,392,135,22,"log"],[430,245,125,22,"log"],[540,340,145,22,"log"],[585,185,125,22,"meshShelf"],[700,300,125,22,"meshShelf"],[835,330,95,22,"nestbox"]],
+      vines:[[210,305,18,155],[408,240,18,150],[690,190,18,150]],swing:[780,62,150,58,92],insects:[[92,425],[135,300],[285,386],[332,272],[455,358],[490,212],[610,307],[648,152],[750,267],[852,178],[625,455],[885,295]],
+      completeTitle:"Rehabilitation status: aggressively self-discharged.",completeText:"The upper pen, tire swing, and fruit stash have been conquered. The opossum waddles into the night with absolutely no paperwork.",
       hazards:[{x:430,y:430,w:92,h:70,type:"grab",axis:"x",min:340,max:625,speed:78}]
     },
     bat: {
       title:"The Nocturnal Flight Habitat",habitat:"bat",palette:["#070817","#1d213c","#5d493e","#d5b0ff"],
       intro:"The keeper door is open beneath the artificial cave. Flap between fruit stations and leave the colony after dark.",
-      start:[65,430],exit:[870,390,54,110],
+      start:[245,108],exit:[870,390,54,110],
       platforms:[[0,500,960,40,"caveFloor"],[40,455,175,20,"rock"],[100,340,140,18,"fruitTray"],[285,405,165,18,"roost"],[500,330,165,18,"fruitTray"],[685,255,185,18,"roost"],[785,150,150,18,"fruitTray"]],
       vines:[[435,250,15,160],[735,145,15,115]],ceilingVines:[[110,72,730,14,"batRope"]],insects:[[95,420],[160,305],[360,370],[575,295],[760,220],[850,115],[475,105]],
-      hazards:[{x:430,y:430,w:92,h:70,type:"grab",axis:"x",min:340,max:625,speed:84}]
+      hazards:[{x:430,y:430,w:92,h:70,type:"grab",axis:"x",min:340,max:625,speed:84}],
+      completeTitle:"The night air belongs to you.",completeText:"You dropped from the roost, crossed the cave on wingbeats, and vanished beyond the moonlit door.",
     },
     goat: {
       title:"The Goat Barn",habitat:"goat",palette:["#93b7c4","#d8c993","#7a5632","#fff0a8"],
@@ -361,8 +365,8 @@
       title:"The Highland Pasture",habitat:"highland",palette:["#8ab2c2","#66784e","#75543c","#f2d38c"],
       intro:"The field gate is open beyond the stone byre. Collect the best grass and depart with immense hair and no remorse.",
       start:[42,420],exit:[870,390,58,110],
-      platforms:[[0,500,960,40,"mudPasture"],[28,452,205,26,"stoneWall"],[70,335,155,24,"hayBale"],[275,410,185,24,"stoneWall"],[490,335,180,24,"hayBale"],[685,260,185,24,"stoneWall"],[790,155,150,24,"byreRoof"]],
-      vines:[],insects:[[145,300],[350,372],[565,298],[760,222],[855,117]],
+      platforms:[[0,500,960,40,"mudPasture"],[25,450,250,50,"grassHill"],[350,405,245,95,"grassHill"],[690,360,270,140,"mountainShelf"],[485,285,190,24,"grassLedge"],[760,210,175,24,"grassLedge"]],
+      angledPlatforms:[[205,450,380,405,34],[565,405,735,360,38],[620,285,790,210,32]],vines:[],insects:[[120,412],[300,405],[455,365],[610,360],[755,320],[565,247],[845,172]],
       hazards:[{x:420,y:430,w:92,h:70,type:"grab",axis:"x",min:330,max:610,speed:72}]
     },
     devilfox: {
@@ -382,7 +386,7 @@
     levels[0].diagonalVines=[];
     levels[0].angledPlatforms=[];
     levels[0].mice=[];
-    Object.assign(levels[0], JSON.parse(JSON.stringify(habitat)), {label:"LEVEL 1 · EASY",decor:"enclosure",completeTitle:"The room is larger than expected.",completeText:"Freedom contains shelves, suspicious noises, and absolutely no climate control."});
+    Object.assign(levels[0], JSON.parse(JSON.stringify(habitat)), {label:"LEVEL 1 · EASY",decor:"enclosure",completeTitle:habitat.completeTitle||"The room is larger than expected.",completeText:habitat.completeText||"Freedom contains shelves, suspicious noises, and absolutely no climate control."});
     standardStoryLayouts.forEach((layout,index)=>{
       const level=levels[index+1];
       level.platforms=layout.platforms.map(platform=>[...platform]);
@@ -539,6 +543,7 @@
     echoCooldownUntil = 0;
     batFlightUntil = 0;
     batGlideUntil = 0;
+    batStartHanging = false;
     opossumRecoveryUntil = 0;
     characterPickup = null;
     goatAttackUntil = 0;
@@ -582,7 +587,9 @@
     player.vx = 0;
     player.vy = 0;
     player.grounded = false;
-    player.ceilingClimbing = false;
+    batStartHanging=selectedCharacter==="bat"&&levels[levelIndex]?.habitat==="bat";
+    player.ceilingClimbing = batStartHanging;
+    player.onSwing=false;
     frogAutoHopping = false;
     waterJumpUntil = 0;
     air = 100;
@@ -803,7 +810,7 @@
   function useFlap(){
     const now=performance.now();
     if(state!=="playing"||selectedCharacter!=="bat"||now<flapCooldownUntil)return;
-    flapCooldownUntil=now+240;batFlightUntil=Math.max(batFlightUntil,now)+1850;batGlideUntil=batFlightUntil+1350;player.ceilingClimbing=false;player.climbing=false;player.vy=Math.min(player.vy,-105);player.vx*=.82;player.grounded=false;updateHud();tone(430,.05,"triangle");
+    batStartHanging=false;flapCooldownUntil=now+240;batFlightUntil=Math.max(batFlightUntil,now)+1850;batGlideUntil=batFlightUntil+1350;player.ceilingClimbing=false;player.climbing=false;player.vy=Math.min(player.vy,-105);player.vx*=.82;player.grounded=false;updateHud();tone(430,.05,"triangle");
   }
 
   function useEchoPulse(){
@@ -921,21 +928,22 @@
     const right = keys.ArrowRight || keys.KeyD || keys.touchRight;
     const up = keys.ArrowUp || keys.KeyW || keys.touchJump;
     const down = keys.ArrowDown || keys.KeyS;
+    if(batStartHanging){player.x=player.spawnX;player.y=player.spawnY;player.vx=0;player.vy=0;player.ceilingClimbing=true;return;}
     const raccoonMovement=selectedCharacter==="raccoon"||selectedCharacter==="devilfox";
     if(raccoonMovement&&player.grounded)raccoonCoyoteUntil=now+125;
     if(selectedCharacter==="raccoon"&&now>=raccoonComboUntil&&raccoonCombo){raccoonCombo=0;updateHud();}
     const inHabitatWater = level.habitat === "newt" && player.x < 520 && player.y + player.h / 2 > 270;
     const swimming = Boolean(level.underwater || inHabitatWater);
-    let speed = swimming ? character.swimSpeed : selectedCharacter==="bat"&&now<batFlightUntil ? 178 : level.decor === "highway" ? 245 : level.decor === "house" ? 236 : 220;
+    let speed = swimming ? character.swimSpeed : selectedCharacter==="bat"&&now<batFlightUntil ? 210 : level.decor === "parachute" ? 265 : level.decor === "highway" ? 245 : level.decor === "house" ? 236 : 220;
     if(selectedCharacter==="opossum"&&now>playDeadUntil&&now<opossumRecoveryUntil)speed+=72;
     if(selectedCharacter==="raccoon"&&!swimming&&(left||right))speed+=18+(raccoonCombo>=3&&now<raccoonComboUntil?32:0);
     if (["chameleon","newt","frog","boa","raccoon","opossum","bat","goat","highland","devilfox"].includes(selectedCharacter)) updateHud();
 
-    const acceleration = swimming ? 720 : selectedCharacter==="bat"&&now<batFlightUntil ? 760 : selectedCharacter==="frog" ? 1120 : 1450;
+    const acceleration = swimming ? 720 : selectedCharacter==="bat"&&now<batFlightUntil ? 980 : level.decor==="parachute" ? 1180 : selectedCharacter==="frog" ? 1120 : 1450;
     const playingDead=selectedCharacter==="opossum"&&now<playDeadUntil;
     if (!playingDead&&left) { player.vx -= acceleration * dt; if(selectedCharacter!=="bat"||player.vx<10)player.facing = -1; }
     if (!playingDead&&right) { player.vx += acceleration * dt; if(selectedCharacter!=="bat"||player.vx>-10)player.facing = 1; }
-    if (!left && !right) player.vx *= Math.pow(swimming ? .025 : selectedCharacter==="bat" ? .12 : selectedCharacter==="frog" ? .00008 : .0007, dt);
+    if (!left && !right) player.vx *= Math.pow(swimming ? .025 : selectedCharacter==="bat" ? .22 : level.decor==="parachute" ? .3 : selectedCharacter==="frog" ? .00008 : .0007, dt);
     if(playingDead)player.vx=0;
     player.vx = Math.max(-speed, Math.min(speed, player.vx));
 
@@ -975,21 +983,21 @@
         const flying=selectedCharacter==="bat"&&now<batFlightUntil;
         if(flying){
           // Powered flight: up and down steer, neutral input gently hovers.
-          if(up)player.vy-=390*dt;
-          else if(down)player.vy+=390*dt;
-          else{player.vy+=26*dt;player.vy*=Math.pow(.18,dt);}
-          player.vy=Math.max(-150,Math.min(150,player.vy));
+          if(up)player.vy-=520*dt;
+          else if(down)player.vy+=480*dt;
+          else{player.vy+=18*dt;player.vy*=Math.pow(.28,dt);}
+          player.vy=Math.max(-190,Math.min(190,player.vy));
         }else{
           const gliding=selectedCharacter==="bat"&&now<batGlideUntil&&!down;
           const parachuting=selectedCharacter==="raccoon"&&level.decor==="parachute";
           const jumpHeld=raccoonMovement&&up&&player.vy<0;
-          player.vy += (parachuting?245:gliding?265:jumpHeld?475:820) * dt;
+          player.vy += (parachuting?178:gliding?265:jumpHeld?475:820) * dt;
           if(gliding){
             if(up)player.vy-=125*dt;
             player.vx+=player.facing*22*dt;
           }
-          if(parachuting&&up)player.vy-=95*dt;
-          player.vy = Math.min(player.vy, parachuting?175:gliding?205:570);
+          if(parachuting){if(up)player.vy-=155*dt;if(down)player.vy+=80*dt;for(const current of level.airCurrents||[]){if(player.x+player.w>current[0]&&player.x<current[0]+current[1]){player.vy+=current[2]*dt;player.vx+=current[3]*dt;}}}
+          player.vy = Math.min(player.vy, parachuting?145:gliding?205:570);
           if(raccoonMovement&&onWall&&player.vy>90&&!parachuting)player.vy=90;
         }
         if(selectedCharacter==="frog"&&player.grounded&&(left||right)&&now>=frogHopCooldownUntil){
@@ -999,6 +1007,8 @@
     }
 
     const oldY = player.y;
+    if(player.onSwing&&level.swing){const current=tireSwingPosition(level,now),previous=tireSwingPosition(level,now-dt*1000);player.x+=current.x-previous.x;}
+    player.onSwing=false;
     player.x += player.vx * dt;
     player.x = Math.max(0, Math.min(W - player.w, player.x));
     player.y += player.vy * dt;
@@ -1018,6 +1028,7 @@
         if(selectedCharacter==="frog")frogAutoHopping=false;
       }
     }
+    if(level.swing&&!level.underwater&&player.vy>=0){const swing=tireSwingPosition(level,now);if(oldY+player.h<=swing.y+5&&intersects(player,swing)){player.y=swing.y-player.h;player.vy=0;player.grounded=true;player.onSwing=true;}}
     for(const p of level.angledPlatforms||[]){
       if(level.underwater||swimming||player.vy<0)continue;
       const minX=Math.min(p[0],p[2]),maxX=Math.max(p[0],p[2]);
@@ -1117,6 +1128,7 @@
     if (state !== "playing") return;
     const now=performance.now();
     if(selectedCharacter==="opossum"&&performance.now()<playDeadUntil)return;
+    if(batStartHanging){batStartHanging=false;player.ceilingClimbing=false;player.y+=8;player.vy=120;tone(185,.05,"triangle");return;}
     if(player.ceilingClimbing){player.ceilingClimbing=false;player.climbing=false;player.y+=8;player.vy=135;tone(185,.05,"triangle");return;}
     const level=levels[levelIndex];
     if(selectedCharacter==="raccoon"&&level.decor==="parachute"&&!player.grounded){
@@ -1169,6 +1181,14 @@
     const [x1,y1,x2,y2]=platform;
     const t=Math.max(0,Math.min(1,(worldX-x1)/(x2-x1)));
     return y1+(y2-y1)*t;
+  }
+
+  function tireSwingPosition(level,now){
+    const [anchorX,anchorY,length,amplitude,width]=level.swing;
+    const angle=Math.sin(now*.00115)*.42;
+    const centerX=anchorX+Math.sin(angle)*amplitude;
+    const centerY=anchorY+Math.cos(angle)*length;
+    return {x:centerX-width/2,y:centerY-22,w:width,h:18,anchorX,anchorY,centerX,centerY};
   }
 
   function drawBackdrop(level) {
@@ -1225,27 +1245,27 @@
       // Height markers and maintenance warnings reward anyone looking around while climbing.
       ctx.fillStyle="#f5eee0";ctx.font="900 10px system-ui";ctx.textAlign="left";for(const [y,label] of [[405,"147 m"],[300,"260 m"],[238,"346 m"]]){ctx.fillRect(535,y-13,42,17);ctx.fillStyle="#273b47";ctx.fillText(label,539,y);ctx.fillStyle="#f5eee0";}
     } else if (level.decor === "towerRestaurant") {
-      ctx.fillStyle="#211d25";ctx.fillRect(0,55,W,H-55);ctx.fillStyle="#b99762";ctx.fillRect(0,468,W,32);
+      ctx.fillStyle="#211d25";ctx.fillRect(0,55,W,H-55);ctx.fillStyle="#4c4540";ctx.fillRect(0,345,W,155);ctx.strokeStyle="rgba(214,194,170,.12)";ctx.lineWidth=2;for(let y=358;y<500;y+=18){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
       const windowSky=ctx.createLinearGradient(0,70,0,335);windowSky.addColorStop(0,"#65a9ce");windowSky.addColorStop(1,"#d9e1df");ctx.fillStyle=windowSky;roundedRect(30,75,900,270,18);ctx.fill();
-      const skylineLayers=[{c:"#91a8b2",y:335,b:[[35,92,80],[135,75,55],[225,115,72],[330,82,48],[405,130,70],[510,96,62],[600,145,80],[710,88,58],[795,122,75],[885,76,44]]},{c:"#536672",y:338,b:[[55,64,42],[165,105,52],[275,76,45],[365,118,54],[470,88,46],[560,112,54],[670,78,40],[750,138,58],[855,98,54]]}];
+      const skylineLayers=[{c:"#91a8b2",y:360,b:[[35,117,80],[135,100,55],[225,140,72],[330,107,48],[405,155,70],[510,121,62],[600,170,80],[710,113,58],[795,147,75],[885,101,44]]},{c:"#536672",y:365,b:[[55,91,42],[165,132,52],[275,103,45],[365,145,54],[470,115,46],[560,139,54],[670,105,40],[750,165,58],[855,125,54]]}];
       for(const layer of skylineLayers){ctx.fillStyle=layer.c;for(const [x,h,w] of layer.b){ctx.fillRect(x,layer.y-h,w,h);ctx.fillStyle="rgba(237,221,159,.58)";for(let wy=layer.y-h+12;wy<layer.y-8;wy+=16)for(let wx=x+8;wx<x+w-6;wx+=14)ctx.fillRect(wx,wy,5,7);ctx.fillStyle=layer.c;}}
       ctx.fillStyle="#41525d";ctx.fillRect(438,165,44,173);ctx.beginPath();ctx.moveTo(438,165);ctx.lineTo(460,122);ctx.lineTo(482,165);ctx.fill();ctx.fillStyle="#687b85";ctx.fillRect(733,185,54,153);ctx.fillStyle="#a6bac2";ctx.fillRect(745,198,6,140);ctx.fillRect(763,198,6,140);
       ctx.strokeStyle="#302a32";ctx.lineWidth=11;for(const x of [190,385,575,765]){ctx.beginPath();ctx.moveTo(x,76);ctx.lineTo(x,345);ctx.stroke();}
       ctx.fillStyle="#f2e6d7";ctx.font="900 15px system-ui";ctx.textAlign="center";ctx.fillText("360 RESTAURANT",480,372);
       for(const x of [280,480,680]){const glow=ctx.createRadialGradient(x,128,2,x,128,40);glow.addColorStop(0,"rgba(255,226,150,.42)");glow.addColorStop(1,"rgba(255,226,150,0)");ctx.fillStyle=glow;ctx.beginPath();ctx.arc(x,128,40,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#c7a35f";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x,55);ctx.lineTo(x,108);ctx.stroke();ctx.fillStyle="#e7c87c";ctx.beginPath();ctx.moveTo(x-22,121);ctx.quadraticCurveTo(x,100,x+22,121);ctx.lineTo(x+15,132);ctx.lineTo(x-15,132);ctx.closePath();ctx.fill();}
-      const diningTables=[[287,410],[650,310],[652,205]];for(const [x,y] of diningTables){ctx.fillStyle="#5d3c48";for(const sx of [-1,1]){roundedRect(x+sx*60-13,y-25,26,43,7);ctx.fill();ctx.strokeStyle="#b99762";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x+sx*60-9,y+17);ctx.lineTo(x+sx*60-12,y+34);ctx.moveTo(x+sx*60+9,y+17);ctx.lineTo(x+sx*60+12,y+34);ctx.stroke();}}
-      const guests=[[267,373,"#f0c8a4","#221b18","#25395b"],[307,373,"#70452f","#151414","#6a2944"],[630,273,"#9a6548","#2c1714","#244f42"],[670,273,"#e1ad84","#d8c2a6","#26272b"],[632,168,"#5b3529","#171316","#47285c"],[672,168,"#c98f68","#8a4b2f","#244263"]];
+      const diningTables=[[112,452],[322,452],[552,452],[782,452]];for(const [x,y] of diningTables){ctx.fillStyle="#5d3c48";for(const sx of [-1,1]){roundedRect(x+sx*48-13,y-34,26,43,7);ctx.fill();ctx.strokeStyle="#b99762";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x+sx*48-9,y+8);ctx.lineTo(x+sx*48-12,y+36);ctx.moveTo(x+sx*48+9,y+8);ctx.lineTo(x+sx*48+12,y+36);ctx.stroke();}}
+      const guests=[[64,408,"#f0c8a4","#221b18","#25395b"],[160,408,"#70452f","#151414","#6a2944"],[274,408,"#9a6548","#2c1714","#244f42"],[370,408,"#e1ad84","#d8c2a6","#26272b"],[504,408,"#5b3529","#171316","#47285c"],[600,408,"#c98f68","#8a4b2f","#244263"],[734,408,"#d7a47e","#3d241d","#3f355f"],[830,408,"#6a4030","#d9c8b2","#27493e"],[910,421,"#b87955","#1b1718","#5a2942"]];
       for(const [x,y,skin,hair,clothes] of guests){ctx.fillStyle=clothes;roundedRect(x-10,y+9,20,31,7);ctx.fill();ctx.fillStyle=skin;ctx.beginPath();ctx.arc(x,y,9,0,Math.PI*2);ctx.fill();ctx.fillStyle=hair;ctx.beginPath();ctx.arc(x,y-3,9,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle="#d8b85f";ctx.fillRect(x-5,y+20,10,3);}
       ctx.fillStyle="#202a25";roundedRect(48,92,110,88,5);ctx.fill();ctx.strokeStyle="#d5bc7d";ctx.lineWidth=2;ctx.stroke();ctx.fillStyle="#f1dfaa";ctx.font="900 10px system-ui";ctx.fillText("TASTING MENU",103,113);ctx.font="8px system-ui";ctx.fillText("CHEESE  $47",103,134);ctx.fillText("ONE GRAPE  $19",103,150);ctx.fillText("AIR  MARKET",103,166);
-      ctx.fillStyle="#17191d";roundedRect(745,292,170,48,5);ctx.fill();ctx.strokeStyle="#c09a62";ctx.stroke();ctx.fillStyle="#e6d8c7";ctx.font="900 9px system-ui";ctx.fillText("CHEF'S PASS · ORDER UP",830,320);
       ctx.save();ctx.translate(480,468);ctx.strokeStyle="rgba(245,220,172,.18)";ctx.lineWidth=2;for(let a=0;a<Math.PI*2;a+=Math.PI/8){ctx.beginPath();ctx.moveTo(Math.cos(a)*45,Math.sin(a)*7);ctx.lineTo(Math.cos(a)*520,Math.sin(a)*78);ctx.stroke();}ctx.restore();
     } else if (level.decor === "parachute") {
       const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,"#4c9fd2");sky.addColorStop(.65,"#cce9ed");sky.addColorStop(1,"#6f9daa");ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
-      ctx.fillStyle="rgba(255,255,255,.78)";for(const [x,y,s] of [[115,215,1],[385,125,.72],[620,285,1.05],[835,175,.82]]){ctx.beginPath();ctx.ellipse(x,y,52*s,16*s,0,0,Math.PI*2);ctx.ellipse(x+38*s,y-7*s,38*s,20*s,0,0,Math.PI*2);ctx.ellipse(x-35*s,y-3*s,32*s,17*s,0,0,Math.PI*2);ctx.fill();}
+      ctx.fillStyle="rgba(255,255,255,.2)";for(const [x,y,s] of [[115,215,1],[385,125,.72],[620,285,1.05],[835,175,.82]]){ctx.beginPath();ctx.ellipse(x,y,70*s,9*s,0,0,Math.PI*2);ctx.fill();}
       ctx.fillStyle="#4f6671";for(let x=0;x<W;x+=64){const bh=40+(x*11)%145;ctx.fillRect(x,H-bh,54,bh);ctx.fillStyle="#d4c57b";for(let wy=H-bh+14;wy<H-12;wy+=19)ctx.fillRect(x+10,wy,5,7);ctx.fillStyle="#4f6671";}
       ctx.fillStyle="#507f94";ctx.fillRect(0,485,W,15);ctx.strokeStyle="rgba(255,255,255,.32)";ctx.lineWidth=2;for(let x=0;x<W;x+=70){ctx.beginPath();ctx.arc(x,489,26,Math.PI,Math.PI*2);ctx.stroke();}
       ctx.fillStyle="#a4adb2";ctx.beginPath();ctx.moveTo(50,500);ctx.lineTo(76,70);ctx.lineTo(98,70);ctx.lineTo(124,500);ctx.closePath();ctx.fill();ctx.fillStyle="#727e84";ctx.beginPath();ctx.ellipse(87,105,64,26,0,0,Math.PI*2);ctx.fill();
       const airTime=performance.now();ctx.strokeStyle="rgba(255,255,255,.46)";ctx.lineWidth=2;for(let i=0;i<11;i++){const x=((airTime*.1+i*121)%1080)-90,y=80+(i*47)%350;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+28,y-7,x+64,y);ctx.stroke();}
+      for(const current of level.airCurrents||[]){ctx.strokeStyle="rgba(225,250,255,.55)";ctx.lineWidth=3;for(let x=current[0]+15;x<current[0]+current[1];x+=28){ctx.beginPath();ctx.moveTo(x,395);ctx.quadraticCurveTo(x+10,330,x+3,265);ctx.stroke();ctx.beginPath();ctx.moveTo(x-4,278);ctx.lineTo(x+3,265);ctx.lineTo(x+10,278);ctx.stroke();}}
       ctx.strokeStyle="#f5d247";ctx.lineWidth=6;ctx.beginPath();ctx.arc(895,474,42,Math.PI,Math.PI*2);ctx.stroke();ctx.fillStyle="#f5d247";ctx.font="900 12px system-ui";ctx.textAlign="center";ctx.fillText("LAND HERE",895,455);
       // Islands and beaches sit in the lake beneath the falling raccoon.
       ctx.fillStyle="#608d61";ctx.beginPath();ctx.ellipse(570,487,125,8,-.03,0,Math.PI*2);ctx.ellipse(765,491,72,5,.04,0,Math.PI*2);ctx.fill();ctx.fillStyle="#d7c58a";ctx.fillRect(520,489,170,3);
@@ -1470,7 +1490,6 @@
       // Fire escape, graffiti, recycling, wet pavement, and animated alley drips.
       ctx.strokeStyle="#262b2f";ctx.lineWidth=7;ctx.strokeRect(720,105,172,94);ctx.beginPath();ctx.moveTo(735,199);ctx.lineTo(695,286);ctx.moveTo(875,199);ctx.lineTo(835,286);ctx.stroke();
       ctx.lineWidth=3;for(let x=735;x<890;x+=26){ctx.beginPath();ctx.moveTo(x,108);ctx.lineTo(x,196);ctx.stroke();}
-      ctx.fillStyle="#386477";roundedRect(610,408,72,88,8);ctx.fill();ctx.fillStyle="#74a5b5";ctx.fillRect(619,421,54,8);ctx.fillStyle="#d5e4e5";ctx.font="900 12px system-ui";ctx.fillText("RECYCLE",646,460);
       ctx.strokeStyle="rgba(109,199,159,.48)";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(70,155);ctx.quadraticCurveTo(125,125,176,158);ctx.quadraticCurveTo(130,190,78,172);ctx.stroke();
       const alleyTime=performance.now();ctx.strokeStyle="rgba(168,202,214,.28)";ctx.lineWidth=2;for(let i=0;i<18;i++){const x=35+(i*83)%880,y=70+((alleyTime*.06+i*47)%330);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-4,y+12);ctx.stroke();}
       ctx.fillStyle="rgba(247,211,112,.18)";ctx.beginPath();ctx.arc(805,92,55+Math.sin(alleyTime*.006)*5,0,Math.PI*2);ctx.fill();
@@ -1513,7 +1532,7 @@
       ctx.fillStyle="#090914";ctx.fillRect(20,50,920,446);
       const caveGlow=ctx.createRadialGradient(720,250,10,720,250,300);caveGlow.addColorStop(0,"rgba(89,82,126,.36)");caveGlow.addColorStop(1,"rgba(5,5,12,0)");ctx.fillStyle=caveGlow;ctx.fillRect(20,50,920,446);
       ctx.fillStyle="#25243a";ctx.beginPath();ctx.moveTo(20,50);for(let x=20;x<=940;x+=80)ctx.lineTo(x,70+(x%160?35:0));ctx.lineTo(940,50);ctx.closePath();ctx.fill();
-      ctx.fillStyle="#312d3d";for(const [x,h] of [[65,88],[155,55],[280,100],[430,65],[560,105],[735,70],[900,115]]){ctx.beginPath();ctx.moveTo(x-24,50);ctx.lineTo(x,50+h);ctx.lineTo(x+25,50);ctx.closePath();ctx.fill();}
+      ctx.fillStyle="#57506a";ctx.strokeStyle="#8b819d";ctx.lineWidth=2;for(const [x,h] of [[65,88],[155,55],[245,112],[280,100],[430,65],[560,105],[735,70],[900,115]]){ctx.beginPath();ctx.moveTo(x-27,50);ctx.lineTo(x,50+h);ctx.lineTo(x+28,50);ctx.closePath();ctx.fill();ctx.stroke();}
       ctx.fillStyle="#343044";for(const [x,y,r] of [[80,430,85],[255,470,100],[520,460,95],[760,450,120],[920,440,80]]){ctx.beginPath();ctx.arc(x,y,r,Math.PI,Math.PI*2);ctx.fill();}
       ctx.fillStyle="#171827";for(const [x,y] of [[170,105],[340,130],[610,96],[790,118]]){ctx.beginPath();ctx.moveTo(x-22,y);ctx.quadraticCurveTo(x,y+28,x+22,y);ctx.lineTo(x+12,y+45);ctx.lineTo(x-12,y+45);ctx.closePath();ctx.fill();}
       ctx.fillStyle="rgba(111,140,172,.18)";ctx.beginPath();ctx.ellipse(675,455,115,24,0,0,Math.PI*2);ctx.fill();
@@ -1534,13 +1553,11 @@
       ctx.fillStyle="#8d765c";ctx.beginPath();ctx.arc(155,395,62,0,Math.PI*2);ctx.fill();ctx.fillStyle="#27231e";ctx.beginPath();ctx.arc(155,395,20,0,Math.PI*2);ctx.fill();
       ctx.fillStyle="#f3e3ae";ctx.font="900 14px system-ui";ctx.textAlign="center";ctx.fillText("GOAT-PROOF LATCH",765,145);
     }else if(level.habitat==="highland"){
-      const moor=ctx.createLinearGradient(0,50,0,500);moor.addColorStop(0,"#88aeba");moor.addColorStop(.5,"#9aa17b");moor.addColorStop(1,"#4f5d3c");ctx.fillStyle=moor;ctx.fillRect(20,50,920,446);
-      ctx.fillStyle="#66734a";ctx.beginPath();ctx.moveTo(20,250);ctx.quadraticCurveTo(190,130,360,255);ctx.quadraticCurveTo(560,100,760,240);ctx.quadraticCurveTo(860,170,940,230);ctx.lineTo(940,500);ctx.lineTo(20,500);ctx.fill();
-      ctx.fillStyle="#57402f";ctx.fillRect(20,452,920,44);ctx.fillStyle="#272b2c";for(let x=25;x<940;x+=42){ctx.beginPath();ctx.ellipse(x,470+(x%4)*5,29,10,.1,0,Math.PI*2);ctx.fill();}
-      ctx.fillStyle="#6e6d67";for(let x=35;x<620;x+=48){ctx.beginPath();ctx.ellipse(x,390+(x%3)*7,30,18,.1,0,Math.PI*2);ctx.fill();}
-      ctx.fillStyle="#6b4a31";roundedRect(670,115,245,245,8);ctx.fill();ctx.fillStyle="#3d2c22";ctx.beginPath();ctx.moveTo(640,125);ctx.lineTo(790,55);ctx.lineTo(935,125);ctx.closePath();ctx.fill();ctx.fillStyle="#16130f";roundedRect(750,205,92,155,5);ctx.fill();
-      ctx.fillStyle="#7a8582";roundedRect(500,445,150,32,10);ctx.fill();ctx.fillStyle="rgba(104,174,191,.65)";ctx.beginPath();ctx.ellipse(575,450,64,9,0,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle="rgba(224,235,235,.45)";ctx.lineWidth=2;for(let i=0;i<55;i++){const x=(i*83)%940+10,y=55+(i*47)%260;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-6,y+10);ctx.stroke();}
+      const moor=ctx.createLinearGradient(0,50,0,500);moor.addColorStop(0,"#8fc4d2");moor.addColorStop(.52,"#b8c49a");moor.addColorStop(1,"#526b3e");ctx.fillStyle=moor;ctx.fillRect(20,50,920,446);
+      ctx.fillStyle="#788a67";ctx.beginPath();ctx.moveTo(20,300);ctx.lineTo(175,125);ctx.lineTo(310,300);ctx.lineTo(500,95);ctx.lineTo(680,300);ctx.lineTo(820,145);ctx.lineTo(940,280);ctx.lineTo(940,500);ctx.lineTo(20,500);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#d7d9d0";ctx.beginPath();ctx.moveTo(150,150);ctx.lineTo(175,125);ctx.lineTo(202,160);ctx.lineTo(185,154);ctx.lineTo(170,170);ctx.closePath();ctx.moveTo(465,132);ctx.lineTo(500,95);ctx.lineTo(535,134);ctx.lineTo(510,126);ctx.lineTo(493,146);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#5d7845";ctx.beginPath();ctx.moveTo(20,405);ctx.quadraticCurveTo(180,300,335,425);ctx.quadraticCurveTo(510,285,690,415);ctx.quadraticCurveTo(825,320,940,390);ctx.lineTo(940,500);ctx.lineTo(20,500);ctx.fill();
+      ctx.fillStyle="#789a55";for(let x=25;x<940;x+=24){ctx.beginPath();ctx.moveTo(x,490);ctx.lineTo(x+5,470-(x%5)*5);ctx.lineTo(x+10,490);ctx.fill();}
     }else if(level.habitat==="devilfox"){
       const inferno=ctx.createRadialGradient(480,280,20,480,280,500);inferno.addColorStop(0,"#5b174b");inferno.addColorStop(.55,"#24102f");inferno.addColorStop(1,"#090510");ctx.fillStyle=inferno;ctx.fillRect(20,50,920,446);
       ctx.fillStyle="#0b0611";ctx.beginPath();ctx.arc(760,135,70,0,Math.PI*2);ctx.fill();ctx.fillStyle="#f0c4e7";ctx.beginPath();ctx.arc(742,125,54,0,Math.PI*2);ctx.fill();ctx.fillStyle="#24102f";ctx.beginPath();ctx.arc(764,110,52,0,Math.PI*2);ctx.fill();
@@ -1624,8 +1641,8 @@
   function drawAngledPlatform(platform,level){
     const [x1,y1,x2,y2,width]=platform;
     ctx.save();ctx.lineCap="round";
-    ctx.strokeStyle=level.palette[2];ctx.lineWidth=width||18;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
-    ctx.strokeStyle="rgba(255,255,255,.18)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x1-2,y1-4);ctx.lineTo(x2-2,y2-4);ctx.stroke();
+    ctx.strokeStyle=level.habitat==="highland"?"#49613a":level.palette[2];ctx.lineWidth=width||18;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+    ctx.strokeStyle=level.habitat==="highland"?"#83a85d":"rgba(255,255,255,.18)";ctx.lineWidth=level.habitat==="highland"?7:2;ctx.beginPath();ctx.moveTo(x1-2,y1-4);ctx.lineTo(x2-2,y2-4);ctx.stroke();
     ctx.restore();
   }
 
@@ -1672,8 +1689,7 @@
         else if(p[4]==="spool"){ctx.fillStyle="#80684d";roundedRect(p[0],p[1],p[2],p[3],8);ctx.fill();ctx.strokeStyle="#4a3828";ctx.lineWidth=4;ctx.beginPath();ctx.arc(p[0]+p[2]/2,p[1]+p[3]/2,Math.min(30,p[3]),0,Math.PI*2);ctx.stroke();}
         else{ctx.fillStyle=p[4]==="loft"?"#5a3925":"#8a613b";roundedRect(p[0],p[1],p[2],p[3],4);ctx.fill();ctx.fillStyle="#b98b58";ctx.fillRect(p[0]+6,p[1]+3,p[2]-12,4);}
       }else if(level.habitat==="highland"&&p[4]!=="mudPasture"){
-        if(p[4]==="hayBale"){ctx.fillStyle="#c69c45";roundedRect(p[0],p[1],p[2],p[3],6);ctx.fill();ctx.strokeStyle="#80632b";ctx.lineWidth=2;for(let x=p[0]+12;x<p[0]+p[2];x+=21){ctx.beginPath();ctx.moveTo(x,p[1]+3);ctx.lineTo(x-5,p[1]+p[3]-3);ctx.stroke();}}
-        else{ctx.fillStyle="#70706b";roundedRect(p[0],p[1],p[2],p[3],7);ctx.fill();ctx.strokeStyle="#464744";ctx.lineWidth=3;for(let x=p[0]+18;x<p[0]+p[2];x+=36){ctx.beginPath();ctx.arc(x,p[1]+p[3]/2,15,0,Math.PI*2);ctx.stroke();}}
+        ctx.fillStyle=p[4]==="mountainShelf"?"#506245":"#627b49";roundedRect(p[0],p[1],p[2],p[3],18);ctx.fill();ctx.fillStyle="#86a95e";ctx.fillRect(p[0]+6,p[1],p[2]-12,8);ctx.strokeStyle="#9cba74";ctx.lineWidth=2;for(let x=p[0]+12;x<p[0]+p[2]-8;x+=18){ctx.beginPath();ctx.moveTo(x,p[1]+5);ctx.lineTo(x+4,p[1]-4);ctx.stroke();}
       }else if(level.habitat==="devilfox"&&p[4]!=="velvetFloor"){
         if(p[4]==="mushroom"){ctx.fillStyle="#dd4c93";ctx.beginPath();ctx.ellipse(p[0]+p[2]/2,p[1]+5,p[2]/2,p[3],0,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle="#eee0e8";ctx.fillRect(p[0]+p[2]/2-10,p[1]+5,20,p[3]);}
         else if(p[4]==="crystal"){ctx.fillStyle="#b957d3";ctx.beginPath();ctx.moveTo(p[0],p[1]+p[3]);ctx.lineTo(p[0]+18,p[1]-13);ctx.lineTo(p[0]+34,p[1]+p[3]);ctx.lineTo(p[0]+p[2]/2,p[1]-20);ctx.lineTo(p[0]+p[2]-22,p[1]+p[3]);ctx.lineTo(p[0]+p[2],p[1]-10);ctx.lineTo(p[0]+p[2],p[1]+p[3]);ctx.closePath();ctx.fill();}
@@ -1684,7 +1700,7 @@
           ctx.fillStyle="#2f3b40";for(let x=p[0]+12;x<p[0]+p[2]-6;x+=26){ctx.beginPath();ctx.arc(x,p[1]+p[3]-5,2.2,0,Math.PI*2);ctx.fill();}
           if(p[4]==="observation"){ctx.fillStyle="#b9dce7";for(let x=p[0]+10;x<p[0]+p[2]-8;x+=24)ctx.fillRect(x,p[1]+5,15,8);}
         }else if(level.decor==="towerRestaurant"){
-          if(p[4]==="table"||p[4]==="chandelier"){ctx.fillStyle="#eee5d8";ctx.beginPath();ctx.ellipse(p[0]+p[2]/2,p[1]+6,p[2]/2,p[3]/2,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#b99b69";ctx.lineWidth=3;ctx.stroke();}
+          if(p[4]==="table"||p[4]==="chandelier"){if(p[4]==="table"&&p[1]>400){ctx.fillStyle="#a98b61";ctx.fillRect(p[0]+p[2]/2-5,p[1]+6,10,500-p[1]-6);}ctx.fillStyle="#eee5d8";ctx.beginPath();ctx.ellipse(p[0]+p[2]/2,p[1]+6,p[2]/2,p[3]/2,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#b99b69";ctx.lineWidth=3;ctx.stroke();}
           else{ctx.fillStyle=p[4]==="banquette"?"#762b3c":p[4]==="bar"?"#9a754b":"#555c61";roundedRect(p[0],p[1],p[2],p[3],6);ctx.fill();ctx.strokeStyle="#d6c093";ctx.lineWidth=2;ctx.stroke();}
         }else if(level.decor==="parachute"){
           if(p[4]==="cloud"){ctx.fillStyle="rgba(255,255,255,.82)";ctx.beginPath();ctx.ellipse(p[0]+p[2]/2,p[1]+7,p[2]/2,p[3]/2,0,0,Math.PI*2);ctx.ellipse(p[0]+p[2]*.35,p[1]+1,p[2]*.22,p[3]*.72,0,0,Math.PI*2);ctx.fill();}
@@ -1700,6 +1716,7 @@
           if(p[4]==="dumpster"){ctx.fillStyle="#172024";ctx.fillRect(p[0]+8,p[1]+5,p[2]-16,5);ctx.fillStyle="#9aa3a5";for(const x of [p[0]+15,p[0]+p[2]-15]){ctx.beginPath();ctx.arc(x,p[1]+p[3]/2,2,0,Math.PI*2);ctx.fill();}}
           if(p[4]==="cardboard"){ctx.fillStyle="rgba(225,190,135,.55)";ctx.fillRect(p[0]+p[2]/2-8,p[1]+2,16,p[3]-4);ctx.strokeStyle="#6e4f32";ctx.beginPath();ctx.moveTo(p[0]+8,p[1]+p[3]-4);ctx.lineTo(p[0]+p[2]-8,p[1]+4);ctx.stroke();}
           if(p[4]==="fence"){ctx.strokeStyle="#aab1b4";for(let x=p[0]+10;x<p[0]+p[2];x+=18){ctx.beginPath();ctx.moveTo(x,p[1]);ctx.lineTo(x,p[1]+p[3]);ctx.stroke();}}
+          if(p[4]==="recycling"){ctx.fillStyle="#74a5b5";ctx.fillRect(p[0]+8,p[1]+10,p[2]-16,8);ctx.fillStyle="#d5e4e5";ctx.font="900 10px system-ui";ctx.textAlign="center";ctx.fillText("RECYCLE",p[0]+p[2]/2,p[1]+53);}
         }
       }else if(level.habitat==="opossum"&&p[4]!=="leafLitter"){
         if(p[4]==="nestbox"){ctx.fillStyle="#67472c";roundedRect(p[0],p[1],p[2],p[3],4);ctx.fill();ctx.fillStyle="#252018";ctx.beginPath();ctx.arc(p[0]+p[2]*.7,p[1]+5,12,0,Math.PI*2);ctx.fill();ctx.fillStyle="#b98d66";for(let x=p[0]+10;x<p[0]+p[2]*.48;x+=12){ctx.beginPath();ctx.ellipse(x,p[1]+6,10,3,-.2,0,Math.PI*2);ctx.fill();}}
@@ -1767,6 +1784,7 @@
     }
     for (const v of level.diagonalVines||[]) drawDiagonalVine(v);
     for (const v of level.ceilingVines||[]) drawCeilingVine(v);
+    if(level.swing){const swing=tireSwingPosition(level,performance.now());ctx.strokeStyle="#6b5945";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(swing.anchorX,swing.anchorY);ctx.lineTo(swing.centerX,swing.centerY);ctx.stroke();ctx.strokeStyle="#232625";ctx.lineWidth=16;ctx.beginPath();ctx.ellipse(swing.centerX,swing.centerY,level.swing[4]/2,22,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle="#7c837c";ctx.lineWidth=2;ctx.stroke();}
   }
 
   function drawExit(level) {
@@ -2284,16 +2302,16 @@
 
   function drawGoat(now){
     const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;if(flash)ctx.globalAlpha=.4;
-    ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
+    ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing*.9,.9);ctx.translate(0,3);
     const motion=livelyMotion(now,.017),walk=motion.stride*motion.moving*7,ram=now<goatAttackUntil?Math.sin((goatAttackUntil-now)/300*Math.PI)*10:0;ctx.translate(0,Math.abs(motion.stride)*motion.moving*1.7+motion.landing*1.8);ctx.scale(1+motion.landing*.07,1-motion.landing*.11);
     const tailWave=Math.sin(now*.012)*(1+motion.moving*3);ctx.strokeStyle="#a79e89";ctx.lineWidth=5;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-27,-3);ctx.quadraticCurveTo(-39,-15-tailWave,-42,-5+tailWave);ctx.stroke();
-    const goatLeg=(hip,phase,front,far=false)=>{const kneeX=hip+(motion.airborne?(front?9:-9):phase*.72),kneeY=motion.airborne?7:14,hoofX=kneeX+(motion.airborne?(front?9:-8):5),hoofY=motion.airborne?13:24;ctx.globalAlpha=far?.52:1;ctx.strokeStyle=far?"#958d7d":"#c6bda8";ctx.lineWidth=far?5:7;ctx.beginPath();ctx.moveTo(hip,7);ctx.lineTo(kneeX,kneeY);ctx.lineTo(hoofX,hoofY);ctx.stroke();ctx.strokeStyle="#37322d";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(hoofX-3,hoofY);ctx.lineTo(hoofX+6,hoofY);ctx.moveTo(hoofX+2,hoofY-1);ctx.lineTo(hoofX+2,hoofY+3);ctx.stroke();ctx.globalAlpha=1;};
+    const goatLeg=(hip,phase,front,far=false)=>{const kneeX=hip+(motion.airborne?(front?8:-8):phase*.62),kneeY=motion.airborne?7:12,hoofX=kneeX+(motion.airborne?(front?8:-7):4),hoofY=motion.airborne?12:21;ctx.globalAlpha=far?.52:1;ctx.strokeStyle=far?"#958d7d":"#c6bda8";ctx.lineWidth=far?5:7;ctx.beginPath();ctx.moveTo(hip,7);ctx.lineTo(kneeX,kneeY);ctx.lineTo(hoofX,hoofY);ctx.stroke();ctx.strokeStyle="#37322d";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(hoofX-3,hoofY);ctx.lineTo(hoofX+6,hoofY);ctx.moveTo(hoofX+2,hoofY-1);ctx.lineTo(hoofX+2,hoofY+3);ctx.stroke();ctx.globalAlpha=1;};
     goatLeg(-17,-walk*.8,false,true);goatLeg(8,walk*.8,true,true);goatLeg(-12,walk,false);goatLeg(14,-walk,true,false);
     ctx.fillStyle="#d9d0bb";ctx.beginPath();ctx.ellipse(-3,0,29+motion.breath*.4,15+motion.breath*.25,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#c6bda8";ctx.beginPath();ctx.ellipse(-5,5,22,8,0,0,Math.PI*2);ctx.fill();
-    ctx.save();ctx.translate(ram,motion.headBob);ctx.fillStyle="#e3d9c5";ctx.beginPath();ctx.moveTo(13,-11);ctx.quadraticCurveTo(34,-15,47,-2);ctx.quadraticCurveTo(43,10,31,12);ctx.lineTo(14,8);ctx.closePath();ctx.fill();
+    ctx.save();ctx.translate(ram,motion.headBob);ctx.strokeStyle="#c6bda8";ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(13,4);ctx.lineTo(20,-5);ctx.stroke();ctx.fillStyle="#e3d9c5";ctx.beginPath();ctx.moveTo(14,-11);ctx.quadraticCurveTo(31,-14,43,-3);ctx.quadraticCurveTo(41,8,30,10);ctx.lineTo(15,7);ctx.closePath();ctx.fill();
     ctx.strokeStyle="#8d806e";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(21,-10);ctx.quadraticCurveTo(10,-27,25,-32);ctx.quadraticCurveTo(20,-22,31,-13);ctx.moveTo(35,-11);ctx.quadraticCurveTo(35,-28,49,-27);ctx.quadraticCurveTo(39,-21,43,-9);ctx.stroke();
     ctx.fillStyle="#d9d0bb";ctx.beginPath();ctx.moveTo(17,-8-motion.earTwitch);ctx.lineTo(6,-19-motion.earTwitch);ctx.lineTo(27,-13);ctx.moveTo(37,-9);ctx.lineTo(51,-18+motion.earTwitch*.4);ctx.lineTo(45,-5);ctx.fill();
-    ctx.fillStyle="#171817";ctx.beginPath();ctx.ellipse(35,-5,2,motion.blink?.5:3,0,0,Math.PI*2);ctx.arc(47,2,2,0,Math.PI*2);ctx.fill();ctx.fillStyle="#a89480";ctx.beginPath();ctx.ellipse(41,5,9,5,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#171817";ctx.beginPath();ctx.ellipse(32,-5,2,motion.blink?.5:3,0,0,Math.PI*2);ctx.arc(43,1,2,0,Math.PI*2);ctx.fill();ctx.fillStyle="#a89480";ctx.beginPath();ctx.ellipse(38,5,8,5,0,0,Math.PI*2);ctx.fill();
     ctx.strokeStyle="#9c8e79";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(29,8);ctx.lineTo(25,22);ctx.lineTo(35,13);ctx.stroke();ctx.restore();
     ctx.restore();ctx.globalAlpha=1;
   }
