@@ -95,6 +95,9 @@
     devilfox: { name: "FOX", ability: "POUNCE", secondary: "MISCHIEF BLINK", collectible: "SOUL BERRIES", color: "#b74766", climbSpeed: 180, swimSpeed: 155, w: 60, h: 36 }
   };
 
+  const singleLevelCharacters=new Set(["opossum","bat","goat","highland","devilfox"]);
+  const storyLevelCount=()=>singleLevelCharacters.has(selectedCharacter)?1:levels.length;
+
   const player = {
     x: 0, y: 0, w: 38, h: 24,
     vx: 0, vy: 0, facing: 1,
@@ -325,8 +328,8 @@
       title:"The Wildlife Rehab Pen",habitat:"opossum",palette:["#101914","#293b2d","#6f5134","#c7dfa2"],
       intro:"The rehabilitation pen is secure, enriched, and tragically unable to account for one determined opossum.",
       start:[72,430],exit:[870,400,52,100],
-      platforms:[[0,500,960,40,"leafLitter"],[40,455,180,22,"log"],[65,332,145,22,"nestbox"],[260,410,180,22,"log"],[480,340,170,22,"log"],[675,265,185,22,"meshShelf"],[790,155,145,22,"nestbox"]],
-      vines:[[220,310,18,150],[710,205,18,140]],insects:[[92,425],[135,300],[330,377],[555,307],[750,232],[852,122],[625,455]],
+      platforms:[[0,500,960,40,"leafLitter"],[40,455,180,22,"log"],[65,332,145,22,"nestbox"],[225,420,125,22,"tire"],[260,305,145,22,"carrier"],[385,392,135,22,"log"],[430,245,125,22,"log"],[540,340,145,22,"log"],[585,185,125,22,"meshShelf"],[700,270,170,22,"meshShelf"],[790,155,145,22,"nestbox"]],
+      vines:[[210,305,18,155],[408,240,18,150],[690,190,18,150]],insects:[[92,425],[135,300],[285,386],[332,272],[455,358],[490,212],[610,307],[648,152],[765,237],[852,122],[625,455]],
       hazards:[{x:430,y:430,w:92,h:70,type:"grab",axis:"x",min:340,max:625,speed:78}]
     },
     bat: {
@@ -435,7 +438,7 @@
     state = "character-select";
     panelKicker.textContent = "CHOOSE YOUR ESCAPE ARTIST";
     panelTitle.textContent = "Eleven animals. Catastrophic judgment.";
-    panelText.textContent = "Each character has a different enclosure and two abilities. Your choice lasts for all five levels.";
+    panelText.textContent = "Each character has a different enclosure and two abilities. Some crimes become significantly longer road trips.";
     primaryButton.classList.add("hidden");
     secondaryButton.classList.add("hidden");
     levelSelect.classList.add("hidden");
@@ -452,7 +455,8 @@
     characterSelect.classList.add("hidden");
     levelSelect.classList.remove("hidden");
     levelSelect.querySelectorAll("[data-level]").forEach(button=>{
-      const level=levels[Number(button.dataset.level)];
+      const index=Number(button.dataset.level);const level=levels[index];
+      button.classList.toggle("hidden",index>=storyLevelCount());
       const label=button.querySelector("small");
       if(level&&label)label.textContent=level.title.replace(/^The\s+/i,"");
     });
@@ -873,7 +877,7 @@
     tone(523, .1, "triangle");
     setTimeout(() => tone(659, .13, "triangle"), 100);
     const level = levels[levelIndex];
-    if (levelIndex < levels.length - 1) {
+    if (levelIndex < storyLevelCount() - 1) {
       showPanel("ESCAPE SUCCESSFUL", level.completeTitle, level.completeText, "NEXT LEVEL", () => showIntro(levelIndex + 1));
     } else {
       showPanel("STORY COMPLETE", level.completeTitle, level.completeText, "ESCAPE AGAIN", showMenu);
@@ -1611,6 +1615,8 @@
       }else if(level.habitat==="opossum"&&p[4]!=="leafLitter"){
         if(p[4]==="nestbox"){ctx.fillStyle="#67472c";roundedRect(p[0],p[1],p[2],p[3],4);ctx.fill();ctx.fillStyle="#252018";ctx.beginPath();ctx.arc(p[0]+p[2]*.7,p[1]+5,12,0,Math.PI*2);ctx.fill();ctx.fillStyle="#b98d66";for(let x=p[0]+10;x<p[0]+p[2]*.48;x+=12){ctx.beginPath();ctx.ellipse(x,p[1]+6,10,3,-.2,0,Math.PI*2);ctx.fill();}}
         else if(p[4]==="meshShelf"){ctx.fillStyle="#77817a";ctx.fillRect(p[0],p[1],p[2],p[3]);ctx.strokeStyle="#b3bbb5";for(let x=p[0]+8;x<p[0]+p[2];x+=16){ctx.beginPath();ctx.moveTo(x,p[1]);ctx.lineTo(x,p[1]+p[3]);ctx.stroke();}}
+        else if(p[4]==="tire"){ctx.strokeStyle="#252826";ctx.lineWidth=15;ctx.beginPath();ctx.ellipse(p[0]+p[2]/2,p[1]+8,p[2]*.42,18,0,Math.PI,Math.PI*2);ctx.stroke();ctx.strokeStyle="#737b74";ctx.lineWidth=2;ctx.stroke();}
+        else if(p[4]==="carrier"){ctx.fillStyle="#3e4a46";roundedRect(p[0],p[1],p[2],p[3],5);ctx.fill();ctx.strokeStyle="#9aa59e";ctx.lineWidth=2;for(let x=p[0]+10;x<p[0]+p[2]-5;x+=16){ctx.beginPath();ctx.moveTo(x,p[1]+3);ctx.lineTo(x,p[1]+p[3]-3);ctx.stroke();}}
         else{ctx.strokeStyle="#543b27";ctx.lineWidth=p[3];ctx.lineCap="round";ctx.beginPath();ctx.moveTo(p[0]+5,p[1]+p[3]/2);ctx.quadraticCurveTo(p[0]+p[2]/2,p[1]-3,p[0]+p[2]-5,p[1]+p[3]/2);ctx.stroke();}
       }else if(level.habitat==="bat"&&p[4]!=="caveFloor"){
         if(p[4]==="fruitTray"){ctx.fillStyle="#715746";roundedRect(p[0],p[1],p[2],p[3],5);ctx.fill();for(let x=p[0]+16,index=0;x<p[0]+p[2]-8;x+=25,index++){ctx.fillStyle=["#e4a33a","#8c4f79","#d95b4e"][index%3];ctx.beginPath();ctx.arc(x,p[1]+3,7,Math.PI,Math.PI*2);ctx.fill();ctx.strokeStyle="#517447";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,p[1]-4);ctx.lineTo(x+4,p[1]-9);ctx.stroke();}}
