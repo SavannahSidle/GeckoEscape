@@ -228,10 +228,10 @@
       intro:"The Toronto Trash Tank has selected the tallest available bad idea. Climb the maintenance ledges, raid every snack, and reach the observation deck.",
       completeTitle:"Toronto has made a tactical error.",completeText:"The Trash Tank has reached the top. The restaurant contains rich people food and insufficient security.",
       palette:["#5a99c2","#d4e4e8","#59636b","#ef4c45"],start:[38,438],exit:[862,72,58,94],
-      platforms:[[0,500,960,40,"street"],[28,458,165,22,"concrete"],[210,402,135,18,"towerLedge"],[365,350,130,18,"towerLedge"],[520,292,130,18,"towerLedge"],[675,235,130,18,"towerLedge"],[800,166,135,20,"observation"],[585,110,125,18,"antenna"],[385,178,105,18,"service"],[165,258,120,18,"service"]],
+      platforms:[[0,500,960,40,"street"],[28,458,165,22,"concrete"],[210,402,135,18,"towerLedge"],[365,350,130,18,"towerLedge"],[520,292,130,18,"towerLedge"],[675,235,130,18,"towerLedge"],[800,166,135,20,"observation"],[585,110,125,18,"antenna"],[385,178,105,18,"service"],[165,258,120,18,"service"],[215,466,76,14,"utilityBox"],[315,432,72,14,"scaffold"],[460,390,82,14,"scaffold"],[590,334,72,14,"vent"],[720,278,68,14,"service"],[842,218,72,14,"service"],[545,240,66,14,"sign"],[300,296,72,14,"service"],[92,330,74,14,"awning"],[505,148,62,14,"antenna"]],
       vines:[[184,300,18,158],[345,348,18,102],[650,230,18,125],[785,160,18,120]],
       insects:[[90,425],[268,368],[430,316],[585,258],[742,201],[860,132],[635,77],[435,144],[220,224]],
-      hazards:[{x:300,y:285,w:62,h:30,type:"bird",axis:"x",min:230,max:600,speed:115},{x:620,y:145,w:52,h:30,type:"drone",axis:"diagonal",minX:510,maxX:810,minY:120,maxY:280,speedX:62,speedY:45}],
+      hazards:[{x:300,y:285,w:62,h:30,type:"bird",axis:"x",min:230,max:600,speed:115},{x:620,y:145,w:52,h:30,type:"bird",axis:"diagonal",minX:510,maxX:810,minY:120,maxY:280,speedX:62,speedY:45}],
       decor:"torontoTower",habitat:"raccoon",vinesLabel:"maintenance ladders"
     },
     {
@@ -239,10 +239,10 @@
       intro:"White tablecloths. Tiny portions. Excellent margins. Steal every fancy dish before security realizes the guest list contains one enormous raccoon.",
       completeTitle:"The tasting menu has been abolished.",completeText:"Caviar, steak, cake, and several cheeses are now evidence. The only remaining exit is dramatically downward.",
       palette:["#151923","#3f3340","#8f6b45","#f0cc76"],start:[38,438],exit:[872,86,55,82],
-      platforms:[[0,500,960,40,"restaurantFloor"],[25,452,190,22,"banquette"],[245,398,150,20,"table"],[430,445,125,20,"servingCart"],[575,365,155,20,"table"],[755,430,175,22,"banquette"],[785,285,135,18,"bar"],[570,220,135,18,"table"],[340,275,135,18,"servingCart"],[120,225,145,18,"table"],[48,130,145,18,"bar"],[285,112,140,18,"chandelier"],[535,112,145,18,"chandelier"],[760,112,170,18,"observation"]],
+      platforms:[[0,500,960,40,"restaurantFloor"],[25,452,190,22,"banquette"],[245,398,150,20,"table"],[430,445,125,20,"servingCart"],[575,365,155,20,"table"],[755,430,175,22,"banquette"],[785,285,135,18,"bar"],[570,220,135,18,"table"],[340,275,135,18,"servingCart"],[120,225,145,18,"table"],[48,130,145,18,"bar"],[285,112,140,18,"chandelier"],[535,112,145,18,"chandelier"],[760,112,170,18,"observation"],[215,458,70,14,"servingCart"],[390,365,72,14,"chair"],[500,325,68,14,"chair"],[710,395,64,14,"chair"],[830,350,72,14,"table"],[700,275,62,14,"servingCart"],[485,258,62,14,"chair"],[270,210,68,14,"chair"],[195,165,66,14,"servingCart"],[690,158,72,14,"bar"]],
       vines:[[218,220,16,178],[730,282,16,150]],
       insects:[[90,418],[320,364],[490,410],[650,331],[840,395],[850,251],[635,186],[405,241],[190,191],[112,96],[360,78],[610,78]],
-      hazards:[{x:410,y:411,w:70,h:34,type:"server",axis:"x",min:365,max:690,speed:105},{x:680,y:186,w:52,h:30,type:"drone",axis:"x",min:610,max:865,speed:120}],
+      hazards:[{x:410,y:411,w:70,h:34,type:"server",axis:"x",min:365,max:690,speed:105},{x:680,y:186,w:70,h:34,type:"server",axis:"x",min:610,max:865,speed:120}],
       decor:"towerRestaurant",habitat:"raccoon"
     },
     {
@@ -250,7 +250,7 @@
       intro:"There is no approved raccoon exit from the CN Tower. Deploy the stolen emergency parachute, catch the airborne snacks, and land somewhere that cannot issue a bill.",
       completeTitle:"A majestic garbage meteor lands.",completeText:"Toronto survives. Several pigeons file formal complaints. The Trash Tank disappears into the city with a parachute and twelve thousand dollars in cheese.",
       palette:["#5aa9d6","#dff3f4","#506c79","#ff5b4f"],start:[38,92],exit:[872,400,58,92],
-      platforms:[[18,130,155,20,"towerRoof"],[205,198,125,18,"cloud"],[385,270,130,18,"cloud"],[560,205,110,18,"cloud"],[700,330,125,18,"rooftop"],[835,470,125,30,"rooftop"],[470,405,115,18,"rooftop"],[260,380,105,18,"cloud"]],
+      platforms:[[18,130,155,20,"towerRoof"],[205,198,125,18,"cloud"],[385,270,130,18,"cloud"],[560,205,110,18,"cloud"],[700,330,125,18,"rooftop"],[835,470,125,30,"rooftop"],[470,405,115,18,"rooftop"],[260,380,105,18,"cloud"],[105,245,90,16,"cloud"],[300,305,82,16,"cloud"],[485,330,78,16,"cloud"],[625,285,80,16,"cloud"],[770,245,82,16,"cloud"],[150,350,84,16,"rooftop"],[360,445,82,16,"rooftop"],[600,455,86,16,"rooftop"],[735,410,76,16,"rooftop"],[865,360,74,16,"rooftop"]],
       vines:[],insects:[[110,92],[265,160],[445,232],[615,168],[755,292],[525,367],[315,342],[865,430]],
       hazards:[{x:260,y:105,w:62,h:30,type:"bird",axis:"diagonal",minX:190,maxX:520,minY:85,maxY:260,speedX:82,speedY:56},{x:590,y:260,w:52,h:30,type:"drone",axis:"diagonal",minX:520,maxX:840,minY:170,maxY:370,speedX:70,speedY:48}],
       decor:"parachute",habitat:"raccoon",parachute:true
@@ -312,8 +312,8 @@
       title:"The Planted Vivarium",habitat:"frog",palette:["#061810","#164528","#67502d","#74df79"],
       intro:"A bromeliad has reached the door. Leap through the leaves before the human arrives with entirely too much concern.",
       start:[170,430],exit:[870,410,48,90],
-      platforms:[[0,500,960,40],[75,455,175,20],[90,342,145,18],[285,405,145,18],[265,270,135,18],[380,65,140,18],[465,350,150,18],[530,220,130,18],[650,295,160,18],[780,215,145,18]],
-      vines:[],insects:[[158,309],[330,370],[332,237],[450,32],[535,315],[595,187],[825,180]],
+      platforms:[[0,500,960,40],[75,455,175,20],[90,342,145,18],[285,405,145,18],[265,270,135,18],[380,95,140,18],[465,350,150,18],[530,220,130,18],[650,295,160,18],[780,215,145,18]],
+      vines:[],insects:[[158,309],[330,370],[332,237],[450,62],[535,315],[595,187],[825,180]],
       hazards:[{x:450,y:430,w:92,h:70,type:"grab",axis:"x",min:350,max:630,speed:84}]
     },
     boa: {
@@ -921,7 +921,8 @@
     const right = keys.ArrowRight || keys.KeyD || keys.touchRight;
     const up = keys.ArrowUp || keys.KeyW || keys.touchJump;
     const down = keys.ArrowDown || keys.KeyS;
-    if(selectedCharacter==="raccoon"&&player.grounded)raccoonCoyoteUntil=now+125;
+    const raccoonMovement=selectedCharacter==="raccoon"||selectedCharacter==="devilfox";
+    if(raccoonMovement&&player.grounded)raccoonCoyoteUntil=now+125;
     if(selectedCharacter==="raccoon"&&now>=raccoonComboUntil&&raccoonCombo){raccoonCombo=0;updateHud();}
     const inHabitatWater = level.habitat === "newt" && player.x < 520 && player.y + player.h / 2 > 270;
     const swimming = Boolean(level.underwater || inHabitatWater);
@@ -930,11 +931,11 @@
     if(selectedCharacter==="raccoon"&&!swimming&&(left||right))speed+=18+(raccoonCombo>=3&&now<raccoonComboUntil?32:0);
     if (["chameleon","newt","frog","boa","raccoon","opossum","bat","goat","highland","devilfox"].includes(selectedCharacter)) updateHud();
 
-    const acceleration = swimming ? 720 : 1450;
+    const acceleration = swimming ? 720 : selectedCharacter==="bat"&&now<batFlightUntil ? 760 : selectedCharacter==="frog" ? 1120 : 1450;
     const playingDead=selectedCharacter==="opossum"&&now<playDeadUntil;
-    if (!playingDead&&left) { player.vx -= acceleration * dt; player.facing = -1; }
-    if (!playingDead&&right) { player.vx += acceleration * dt; player.facing = 1; }
-    if (!left && !right) player.vx *= Math.pow(swimming ? .025 : .0007, dt);
+    if (!playingDead&&left) { player.vx -= acceleration * dt; if(selectedCharacter!=="bat"||player.vx<10)player.facing = -1; }
+    if (!playingDead&&right) { player.vx += acceleration * dt; if(selectedCharacter!=="bat"||player.vx>-10)player.facing = 1; }
+    if (!left && !right) player.vx *= Math.pow(swimming ? .025 : selectedCharacter==="bat" ? .12 : selectedCharacter==="frog" ? .00008 : .0007, dt);
     if(playingDead)player.vx=0;
     player.vx = Math.max(-speed, Math.min(speed, player.vx));
 
@@ -964,33 +965,24 @@
     } else {
       const diagonalVine=(level.diagonalVines||[]).find(v=>touchesDiagonalVine(player,v));
       const onVine = level.vines.some(v => intersects(player, {x:v[0], y:v[1], w:v[2], h:v[3]})) || Boolean(diagonalVine);
-      const ceilingVine = (level.ceilingVines||[]).find(v => intersects(player,{x:v[0],y:v[1]-4,w:v[2],h:v[3]+22}));
       const onWall = player.x <= 5 || player.x + player.w >= W - 5;
-      const canHang=["chameleon","crested","bat"].includes(selectedCharacter);
-      player.ceilingClimbing=Boolean(canHang&&ceilingVine&&!down&&(player.ceilingClimbing||up||player.vy<0||(selectedCharacter==="bat"&&now<batFlightUntil)));
-      player.climbing = player.ceilingClimbing || ((onVine || onWall) && (up || down));
-      if(player.ceilingClimbing){
-        player.y=ceilingVineY(ceilingVine,player.x+player.w/2)+5;
-        player.vy=0;
-      }else if (player.climbing) {
-        if(diagonalVine){
-          const dx=diagonalVine[2]-diagonalVine[0],dy=diagonalVine[3]-diagonalVine[1],length=Math.hypot(dx,dy);
-          const direction=up?1:down?-1:0;
-          player.vx=dx/length*character.climbSpeed*direction;
-          player.vy=dy/length*character.climbSpeed*direction;
-        }else player.vy = up ? -character.climbSpeed : down ? character.climbSpeed : 0;
+      player.ceilingClimbing=false;
+      player.climbing = (onVine || onWall) && (up || down);
+      if (player.climbing) {
+        player.vx=0;
+        player.vy = up ? -character.climbSpeed : down ? character.climbSpeed : 0;
       } else {
         const flying=selectedCharacter==="bat"&&now<batFlightUntil;
         if(flying){
           // Powered flight: up and down steer, neutral input gently hovers.
-          if(up)player.vy-=460*dt;
-          else if(down)player.vy+=460*dt;
-          else{player.vy+=38*dt;player.vy*=Math.pow(.08,dt);}
-          player.vy=Math.max(-175,Math.min(175,player.vy));
+          if(up)player.vy-=390*dt;
+          else if(down)player.vy+=390*dt;
+          else{player.vy+=26*dt;player.vy*=Math.pow(.18,dt);}
+          player.vy=Math.max(-150,Math.min(150,player.vy));
         }else{
           const gliding=selectedCharacter==="bat"&&now<batGlideUntil&&!down;
           const parachuting=selectedCharacter==="raccoon"&&level.decor==="parachute";
-          const jumpHeld=selectedCharacter==="raccoon"&&up&&player.vy<0;
+          const jumpHeld=raccoonMovement&&up&&player.vy<0;
           player.vy += (parachuting?245:gliding?265:jumpHeld?475:820) * dt;
           if(gliding){
             if(up)player.vy-=125*dt;
@@ -998,10 +990,10 @@
           }
           if(parachuting&&up)player.vy-=95*dt;
           player.vy = Math.min(player.vy, parachuting?175:gliding?205:570);
-          if(selectedCharacter==="raccoon"&&onWall&&player.vy>90&&!parachuting)player.vy=90;
+          if(raccoonMovement&&onWall&&player.vy>90&&!parachuting)player.vy=90;
         }
         if(selectedCharacter==="frog"&&player.grounded&&(left||right)&&now>=frogHopCooldownUntil){
-          player.vy=-145;player.grounded=false;frogAutoHopping=true;frogHopCooldownUntil=now+330;
+          player.vy=-178;player.grounded=false;frogAutoHopping=true;frogHopCooldownUntil=now+300;
         }
       }
     }
@@ -1021,8 +1013,8 @@
         player.y = platform.y - player.h;
         player.vy = 0;
         player.grounded = true;
-        if(["raccoon","opossum","devilfox","crested","newt","goat","highland"].includes(selectedCharacter)&&landingSpeed>150)raccoonLandingUntil=now+190;
-        if(selectedCharacter==="raccoon"&&now<raccoonJumpBufferUntil){player.vy=-455;player.grounded=false;raccoonJumpBufferUntil=0;raccoonCoyoteUntil=0;}
+        if(["raccoon","opossum","devilfox","crested","newt","goat","highland","frog"].includes(selectedCharacter)&&landingSpeed>150)raccoonLandingUntil=now+190;
+        if(raccoonMovement&&now<raccoonJumpBufferUntil){player.vy=-455;player.grounded=false;raccoonJumpBufferUntil=0;raccoonCoyoteUntil=0;}
         if(selectedCharacter==="frog")frogAutoHopping=false;
       }
     }
@@ -1131,7 +1123,7 @@
       if(now<parachuteBoostCooldownUntil)return;
       parachuteBoostCooldownUntil=now+650;player.vy=Math.min(player.vy,-145);player.vx+=player.facing*36;updateHud();tone(315,.07,"triangle");return;
     }
-    if(selectedCharacter==="raccoon"&&!player.grounded&&(player.x<=7||player.x+player.w>=W-7)){
+    if((selectedCharacter==="raccoon"||selectedCharacter==="devilfox")&&!player.grounded&&(player.x<=7||player.x+player.w>=W-7)){
       const offLeft=player.x<=7;player.facing=offLeft?1:-1;player.vx=offLeft?285:-285;player.vy=-455;raccoonCoyoteUntil=0;raccoonJumpBufferUntil=0;tone(285,.06,"triangle");return;
     }
     const inHabitatWater=level.habitat==="newt"&&player.x<520&&player.y+player.h/2>270;
@@ -1149,13 +1141,14 @@
       tone(210, .05, "sine");
       return;
     }
-    if (player.grounded || player.climbing || (selectedCharacter==="raccoon"&&now<raccoonCoyoteUntil) || (selectedCharacter === "frog" && frogAutoHopping)) {
+    const raccoonMovement=selectedCharacter==="raccoon"||selectedCharacter==="devilfox";
+    if (player.grounded || player.climbing || (raccoonMovement&&now<raccoonCoyoteUntil) || (selectedCharacter === "frog" && frogAutoHopping)) {
       player.vy = selectedCharacter === "frog" ? -535 : -455;
       player.grounded = false;
-      if(selectedCharacter==="raccoon"){raccoonCoyoteUntil=0;raccoonJumpBufferUntil=0;}
+      if(raccoonMovement){raccoonCoyoteUntil=0;raccoonJumpBufferUntil=0;}
       if(selectedCharacter==="frog")frogAutoHopping=false;
       tone(245, .05, "triangle");
-    }else if(selectedCharacter==="raccoon")raccoonJumpBufferUntil=now+150;
+    }else if(raccoonMovement)raccoonJumpBufferUntil=now+150;
   }
 
   function roundedRect(x, y, w, h, radius) {
@@ -1239,6 +1232,7 @@
       ctx.fillStyle="#7b2637";roundedRect(18,365,925,105,16);ctx.fill();ctx.fillStyle="#e8ded0";for(const x of [175,455,745]){ctx.beginPath();ctx.ellipse(x,395,75,14,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#b99b69";ctx.fillRect(x-5,395,10,58);ctx.fillStyle="#e8ded0";}
       ctx.strokeStyle="#cfae63";ctx.lineWidth=4;for(const x of [355,600]){ctx.beginPath();ctx.moveTo(x,55);ctx.lineTo(x,120);ctx.stroke();ctx.fillStyle="#f2d789";ctx.beginPath();ctx.arc(x,132,25,0,Math.PI*2);ctx.fill();}
       for(const x of [175,455,745]){ctx.strokeStyle="#d8c6ac";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-25,386);ctx.lineTo(x-20,370);ctx.lineTo(x-15,386);ctx.stroke();ctx.fillStyle="#e9e2d7";ctx.beginPath();ctx.ellipse(x+18,384,16,5,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#bca071";ctx.stroke();}
+      for(const [x,suit,hair] of [[142,"#17233b","#d6b36a"],[205,"#522133","#2c1c16"],[422,"#202020","#dad2c7"],[488,"#263f35","#b87742"],[712,"#342044","#e4ca7e"],[775,"#172d4d","#2b201a"]]){ctx.fillStyle=suit;roundedRect(x-10,397,20,38,7);ctx.fill();ctx.fillStyle="#d6a47f";ctx.beginPath();ctx.arc(x,389,9,0,Math.PI*2);ctx.fill();ctx.fillStyle=hair;ctx.beginPath();ctx.arc(x,386,9,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle="#d9b85e";ctx.fillRect(x-5,412,10,3);}
       ctx.fillStyle="#a78b5e";roundedRect(510,405,92,48,6);ctx.fill();ctx.fillStyle="#eee3d4";ctx.fillRect(521,413,70,5);ctx.fillStyle="#702a39";ctx.font="900 9px system-ui";ctx.fillText("RESERVED",556,439);
       ctx.fillStyle="#efe8db";ctx.font="900 17px system-ui";ctx.textAlign="center";ctx.fillText("360 RESTAURANT",480,365);
       // Chef's pass, wildly expensive menu, velvet rope, candles, and rotating-floor seams.
@@ -2111,7 +2105,8 @@
     const falling=airborne?Math.max(0,Math.min(1,player.vy/480)):0;
     const swimmingKick=underwater&&(Math.abs(player.vx)+Math.abs(player.vy)>12)?(.5+.5*Math.sin(now*.014)):0;
     const push=underwater?swimmingKick*.8:rising;
-    const landing=underwater?0:falling;
+    const landing=underwater?0:(raccoonLandingUntil>now?Math.sin((raccoonLandingUntil-now)/190*Math.PI):falling);
+    ctx.translate(0,landing*2);ctx.scale(1+landing*.05,1-landing*.08);
     const lerp=(a,b,t)=>a+(b-a)*t;
     // At take-off the hind legs extend, at the apex they tuck under the body,
     // and during descent the feet reach forward to absorb the landing.
