@@ -209,6 +209,43 @@
     mice:(level.mice||[]).map(mouse=>mouse.slice(0,2))
   }));
 
+  const standardStoryLevels=levels.slice(1).map(level=>JSON.parse(JSON.stringify(level)));
+
+  const raccoonTorontoLevels=[
+    {
+      label:"LEVEL 2 · VERTICAL MENACE",title:"Climb the CN Tower",
+      intro:"The Toronto Trash Tank has selected the tallest available bad idea. Climb the maintenance ledges, raid every snack, and reach the observation deck.",
+      completeTitle:"Toronto has made a tactical error.",completeText:"The Trash Tank has reached the top. The restaurant contains rich people food and insufficient security.",
+      palette:["#5a99c2","#d4e4e8","#59636b","#ef4c45"],start:[38,438],exit:[862,72,58,94],
+      platforms:[[0,500,960,40,"street"],[28,458,165,22,"concrete"],[210,402,135,18,"towerLedge"],[365,350,130,18,"towerLedge"],[520,292,130,18,"towerLedge"],[675,235,130,18,"towerLedge"],[800,166,135,20,"observation"],[585,110,125,18,"antenna"],[385,178,105,18,"service"],[165,258,120,18,"service"]],
+      vines:[[184,300,18,158],[345,348,18,102],[650,230,18,125],[785,160,18,120]],
+      insects:[[90,425],[268,368],[430,316],[585,258],[742,201],[860,132],[635,77],[435,144],[220,224]],
+      hazards:[{x:300,y:285,w:62,h:30,type:"bird",axis:"x",min:230,max:600,speed:115},{x:620,y:145,w:52,h:30,type:"drone",axis:"diagonal",minX:510,maxX:810,minY:120,maxY:280,speedX:62,speedY:45}],
+      decor:"torontoTower",habitat:"raccoon",vinesLabel:"maintenance ladders"
+    },
+    {
+      label:"LEVEL 3 · FINE DINING FELONY",title:"The 360 Restaurant Heist",
+      intro:"White tablecloths. Tiny portions. Excellent margins. Steal every fancy dish before security realizes the guest list contains one enormous raccoon.",
+      completeTitle:"The tasting menu has been abolished.",completeText:"Caviar, steak, cake, and several cheeses are now evidence. The only remaining exit is dramatically downward.",
+      palette:["#151923","#3f3340","#8f6b45","#f0cc76"],start:[38,438],exit:[872,86,55,82],
+      platforms:[[0,500,960,40,"restaurantFloor"],[25,452,190,22,"banquette"],[245,398,150,20,"table"],[430,445,125,20,"servingCart"],[575,365,155,20,"table"],[755,430,175,22,"banquette"],[785,285,135,18,"bar"],[570,220,135,18,"table"],[340,275,135,18,"servingCart"],[120,225,145,18,"table"],[48,130,145,18,"bar"],[285,112,140,18,"chandelier"],[535,112,145,18,"chandelier"],[760,112,170,18,"observation"]],
+      vines:[[218,220,16,178],[730,282,16,150]],
+      insects:[[90,418],[320,364],[490,410],[650,331],[840,395],[850,251],[635,186],[405,241],[190,191],[112,96],[360,78],[610,78]],
+      hazards:[{x:410,y:411,w:70,h:34,type:"server",axis:"x",min:365,max:690,speed:105},{x:680,y:186,w:52,h:30,type:"drone",axis:"x",min:610,max:865,speed:120}],
+      decor:"towerRestaurant",habitat:"raccoon"
+    },
+    {
+      label:"LEVEL 4 · GRAVITY DISPUTE",title:"Parachute Escape",
+      intro:"There is no approved raccoon exit from the CN Tower. Deploy the stolen emergency parachute, catch the airborne snacks, and land somewhere that cannot issue a bill.",
+      completeTitle:"A majestic garbage meteor lands.",completeText:"Toronto survives. Several pigeons file formal complaints. The Trash Tank continues toward the highway.",
+      palette:["#5aa9d6","#dff3f4","#506c79","#ff5b4f"],start:[38,92],exit:[872,400,58,92],
+      platforms:[[18,130,155,20,"towerRoof"],[205,198,125,18,"cloud"],[385,270,130,18,"cloud"],[560,205,110,18,"cloud"],[700,330,125,18,"rooftop"],[835,470,125,30,"rooftop"],[470,405,115,18,"rooftop"],[260,380,105,18,"cloud"]],
+      vines:[],insects:[[110,92],[265,160],[445,232],[615,168],[755,292],[525,367],[315,342],[865,430]],
+      hazards:[{x:260,y:105,w:62,h:30,type:"bird",axis:"diagonal",minX:190,maxX:520,minY:85,maxY:260,speedX:82,speedY:56},{x:590,y:260,w:52,h:30,type:"drone",axis:"diagonal",minX:520,maxX:840,minY:170,maxY:370,speedX:70,speedY:48}],
+      decor:"parachute",habitat:"raccoon",parachute:true
+    }
+  ];
+
   const frogLevelExtras={
     kitchen:{
       platforms:[[108,310,135,18],[690,225,125,18]],
@@ -280,8 +317,8 @@
       title:"The Dumpster Den",habitat:"raccoon",palette:["#101418","#283037","#765b3f","#f2c14e"],
       intro:"The dumpster lid has fallen shut. Rummage through the good stuff, climb the trash corral, and escape before collection day.",
       start:[62,438],exit:[870,390,55,110],
-      platforms:[[0,500,960,40,"alley"],[35,463,190,24,"trash"],[85,350,155,22,"cardboard"],[280,414,175,24,"dumpster"],[500,342,170,22,"dumpster"],[700,270,190,22,"fence"],[790,160,145,22,"dumpster"]],
-      vines:[[716,272,18,178]],insects:[[105,430],[145,318],[350,380],[575,308],[775,236],[850,126],[675,445]],
+      platforms:[[0,500,960,40,"alley"],[35,463,190,24,"trash"],[85,350,155,22,"cardboard"],[245,292,120,20,"cardboard"],[280,414,175,24,"dumpster"],[405,242,120,20,"trash"],[500,342,170,22,"dumpster"],[575,185,125,20,"cardboard"],[700,270,190,22,"fence"],[790,160,145,22,"dumpster"]],
+      vines:[[716,272,18,178],[370,240,18,175]],insects:[[105,430],[145,318],[300,258],[350,380],[465,208],[575,308],[635,151],[775,236],[850,126],[675,445]],
       hazards:[{x:420,y:430,w:92,h:70,type:"grab",axis:"x",min:330,max:610,speed:82}]
     },
     opossum: {
@@ -328,6 +365,7 @@
 
   function applyCharacterHabitat() {
     const habitat = habitatConfigs[selectedCharacter];
+    standardStoryLevels.forEach((level,index)=>{levels[index+1]=JSON.parse(JSON.stringify(level));});
     levels[0].ceilingVines=[];
     levels[0].diagonalVines=[];
     levels[0].angledPlatforms=[];
@@ -351,6 +389,9 @@
         level.mice=prey.mice.map(mouse=>[...mouse]);
       }
     });
+    if(selectedCharacter==="raccoon"){
+      raccoonTorontoLevels.forEach((level,index)=>{levels[index+1]=JSON.parse(JSON.stringify(level));});
+    }
   }
 
   function tone(frequency, duration = 0.08, type = "sine") {
@@ -410,6 +451,11 @@
     primaryButton.classList.add("hidden");
     characterSelect.classList.add("hidden");
     levelSelect.classList.remove("hidden");
+    levelSelect.querySelectorAll("[data-level]").forEach(button=>{
+      const level=levels[Number(button.dataset.level)];
+      const label=button.querySelector("small");
+      if(level&&label)label.textContent=level.title.replace(/^The\s+/i,"");
+    });
     secondaryButton.textContent="BACK TO CHARACTERS";
     secondaryButton.onclick=showCharacterSelect;
     secondaryButton.classList.remove("hidden");
@@ -526,7 +572,8 @@
     const character = characters[selectedCharacter];
     const preyTotal = levels[levelIndex].insects.length;
     const miceTotal=(levels[levelIndex].mice||[]).length;
-    bugLabel.textContent = `${character.collectible} ${collected}/${preyTotal}${miceTotal?` · MICE ${miceCollected}/${miceTotal}`:""}`;
+    const collectibleLabel=selectedCharacter==="raccoon"&&levels[levelIndex].decor==="towerRestaurant"?"FANCY FOOD":selectedCharacter==="raccoon"&&levels[levelIndex].decor==="parachute"?"AIRBORNE SNACKS":character.collectible;
+    bugLabel.textContent = `${collectibleLabel} ${collected}/${preyTotal}${miceTotal?` · MICE ${miceCollected}/${miceTotal}`:""}`;
     if (levels[levelIndex]?.underwater && selectedCharacter !== "newt") {
       abilityLabel.textContent = `AIR ${Math.max(0, Math.ceil(air))}% · ${character.ability}`;
     } else if (selectedCharacter === "crested") {
@@ -668,7 +715,7 @@
     if(state!=="playing"||selectedCharacter!=="boa"||now<strikeCooldownUntil)return;
     strikeActiveUntil=now+300;strikeCooldownUntil=now+1150;
     const strikeBox={x:player.facing>0?player.x+player.w-12:player.x-92,y:player.y-7,w:104,h:player.h+14};
-    const livingTypes=new Set(["cat","dalmatian","frenchie","fish","spider"]);
+    const livingTypes=new Set(["cat","dalmatian","frenchie","fish","spider","bird","server","drone"]);
     for(const hazard of levels[levelIndex].hazards){
       if(hazard.defeated||!intersects(strikeBox,hazard))continue;
       if(hazard.type==="grab"||hazard.type==="hand"){
@@ -686,7 +733,7 @@
     biteActiveUntil=now+280;biteCooldownUntil=now+720;
     player.vx+=player.facing*95;
     const biteBox={x:player.facing>0?player.x+player.w-8:player.x-46,y:player.y-5,w:54,h:player.h+10};
-    const livingTypes=new Set(["cat","dalmatian","frenchie","fish","spider"]);
+    const livingTypes=new Set(["cat","dalmatian","frenchie","fish","spider","bird","server","drone"]);
     for(const hazard of levels[levelIndex].hazards){
       if(hazard.defeated||!intersects(biteBox,hazard))continue;
       if(hazard.type==="grab"||hazard.type==="hand"){hazard.stunnedUntil=now+1250;hazard.dir*=-1;}
@@ -907,12 +954,14 @@
           player.vy=Math.max(-175,Math.min(175,player.vy));
         }else{
           const gliding=selectedCharacter==="bat"&&now<batGlideUntil&&!down;
-          player.vy += (gliding?265:820) * dt;
+          const parachuting=selectedCharacter==="raccoon"&&level.decor==="parachute";
+          player.vy += (parachuting?245:gliding?265:820) * dt;
           if(gliding){
             if(up)player.vy-=125*dt;
             player.vx+=player.facing*22*dt;
           }
-          player.vy = Math.min(player.vy, gliding?205:570);
+          if(parachuting&&up)player.vy-=95*dt;
+          player.vy = Math.min(player.vy, parachuting?175:gliding?205:570);
         }
         if(selectedCharacter==="frog"&&player.grounded&&(left||right)&&now>=frogHopCooldownUntil){
           player.vy=-145;player.grounded=false;frogAutoHopping=true;frogHopCooldownUntil=now+330;
@@ -1110,6 +1159,28 @@
       }
       drawHabitatDetails(level);
       if(!["raccoon","opossum","bat","goat","highland","devilfox"].includes(level.habitat)){drawLeaves(48, 220, "#245f36");drawLeaves(665,180,"#1d4e2e");drawLeaves(720,400,"#245f36");}
+    } else if (level.decor === "torontoTower") {
+      const sky=ctx.createLinearGradient(0,55,0,H);sky.addColorStop(0,"#68acd2");sky.addColorStop(1,"#d8e6e8");ctx.fillStyle=sky;ctx.fillRect(0,55,W,H-55);
+      ctx.fillStyle="rgba(255,255,255,.72)";for(const [x,y,s] of [[90,105,1],[430,170,.8],[760,85,1.15]]){ctx.beginPath();ctx.ellipse(x,y,48*s,15*s,0,0,Math.PI*2);ctx.ellipse(x+38*s,y-5*s,35*s,18*s,0,0,Math.PI*2);ctx.fill();}
+      ctx.fillStyle="#53636c";for(let x=0;x<W;x+=58){const bh=45+(x*7)%105;ctx.fillRect(x,500-bh,48,bh);ctx.fillStyle="#d5c57a";for(let wy=500-bh+12;wy<486;wy+=18)for(let wx=x+8;wx<x+42;wx+=14)ctx.fillRect(wx,wy,5,7);ctx.fillStyle="#53636c";}
+      ctx.fillStyle="#aab2b6";ctx.beginPath();ctx.moveTo(445,500);ctx.lineTo(468,130);ctx.lineTo(492,130);ctx.lineTo(515,500);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#7b858a";ctx.beginPath();ctx.moveTo(414,188);ctx.quadraticCurveTo(480,155,546,188);ctx.lineTo(530,225);ctx.lineTo(430,225);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#dfe5e6";ctx.fillRect(474,63,12,112);ctx.fillStyle="#c33d3d";ctx.fillRect(477,42,6,28);
+      ctx.fillStyle="#183e61";roundedRect(38,74,190,39,5);ctx.fill();ctx.strokeStyle="#f4f7f7";ctx.lineWidth=2;ctx.stroke();ctx.fillStyle="#fff";ctx.font="900 18px system-ui";ctx.textAlign="center";ctx.fillText("TORONTO",133,100);
+    } else if (level.decor === "towerRestaurant") {
+      ctx.fillStyle="#201b25";ctx.fillRect(0,55,W,H-55);ctx.fillStyle="#c6a16f";ctx.fillRect(0,468,W,32);
+      const windowSky=ctx.createLinearGradient(0,70,0,330);windowSky.addColorStop(0,"#5aa4cc");windowSky.addColorStop(1,"#dfddd3");ctx.fillStyle=windowSky;roundedRect(30,75,900,260,18);ctx.fill();
+      ctx.fillStyle="#5c6970";for(let x=38;x<930;x+=46){const bh=25+(x*13)%85;ctx.fillRect(x,335-bh,35,bh);}
+      ctx.strokeStyle="#332830";ctx.lineWidth=12;for(let x=185;x<900;x+=190){ctx.beginPath();ctx.moveTo(x,76);ctx.lineTo(x,335);ctx.stroke();}
+      ctx.fillStyle="#7b2637";roundedRect(18,365,925,105,16);ctx.fill();ctx.fillStyle="#e8ded0";for(const x of [175,455,745]){ctx.beginPath();ctx.ellipse(x,395,75,14,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#b99b69";ctx.fillRect(x-5,395,10,58);ctx.fillStyle="#e8ded0";}
+      ctx.strokeStyle="#cfae63";ctx.lineWidth=4;for(const x of [355,600]){ctx.beginPath();ctx.moveTo(x,55);ctx.lineTo(x,120);ctx.stroke();ctx.fillStyle="#f2d789";ctx.beginPath();ctx.arc(x,132,25,0,Math.PI*2);ctx.fill();}
+      ctx.fillStyle="#efe8db";ctx.font="900 17px system-ui";ctx.textAlign="center";ctx.fillText("360 RESTAURANT",480,365);
+    } else if (level.decor === "parachute") {
+      const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,"#4c9fd2");sky.addColorStop(.65,"#cce9ed");sky.addColorStop(1,"#6f9daa");ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+      ctx.fillStyle="rgba(255,255,255,.78)";for(const [x,y,s] of [[115,215,1],[385,125,.72],[620,285,1.05],[835,175,.82]]){ctx.beginPath();ctx.ellipse(x,y,52*s,16*s,0,0,Math.PI*2);ctx.ellipse(x+38*s,y-7*s,38*s,20*s,0,0,Math.PI*2);ctx.ellipse(x-35*s,y-3*s,32*s,17*s,0,0,Math.PI*2);ctx.fill();}
+      ctx.fillStyle="#4f6671";for(let x=0;x<W;x+=64){const bh=40+(x*11)%145;ctx.fillRect(x,H-bh,54,bh);ctx.fillStyle="#d4c57b";for(let wy=H-bh+14;wy<H-12;wy+=19)ctx.fillRect(x+10,wy,5,7);ctx.fillStyle="#4f6671";}
+      ctx.fillStyle="#507f94";ctx.fillRect(0,485,W,15);ctx.strokeStyle="rgba(255,255,255,.32)";ctx.lineWidth=2;for(let x=0;x<W;x+=70){ctx.beginPath();ctx.arc(x,489,26,Math.PI,Math.PI*2);ctx.stroke();}
+      ctx.fillStyle="#a4adb2";ctx.beginPath();ctx.moveTo(50,500);ctx.lineTo(76,70);ctx.lineTo(98,70);ctx.lineTo(124,500);ctx.closePath();ctx.fill();ctx.fillStyle="#727e84";ctx.beginPath();ctx.ellipse(87,105,64,26,0,0,Math.PI*2);ctx.fill();
     } else if (level.decor === "kitchen") {
       ctx.fillStyle="#aebfbb";ctx.fillRect(0,70,W,430);
       ctx.strokeStyle="rgba(70,88,86,.22)";ctx.lineWidth=1;
@@ -1314,7 +1385,10 @@
       ctx.fillStyle="#e8d27a";ctx.font="900 22px system-ui";ctx.textAlign="center";ctx.fillText("WASTE",470,390);
       ctx.fillStyle="#17191b";for(const [x,y,r] of [[90,450,45],[190,470,35],[735,458,42],[820,475,32]]){ctx.beginPath();ctx.arc(x,y,r,Math.PI,Math.PI*2);ctx.fill();ctx.strokeStyle="#596066";ctx.lineWidth=2;ctx.stroke();}
       ctx.fillStyle="#94704b";ctx.fillRect(36,400,140,60);ctx.strokeStyle="#5e432b";ctx.strokeRect(36,400,140,60);
-      ctx.fillStyle="#e8d27a";ctx.font="900 18px system-ui";ctx.textAlign="center";ctx.fillText("NO PARKING",805,100);
+      // Toronto civic confidence, followed immediately by a deeply untrustworthy old advertisement.
+      ctx.fillStyle="#1769a6";roundedRect(690,68,220,43,5);ctx.fill();ctx.strokeStyle="#e9f4f7";ctx.lineWidth=2;ctx.stroke();ctx.fillStyle="#fff";ctx.font="900 20px system-ui";ctx.textAlign="center";ctx.fillText("TORONTO",800,95);
+      ctx.save();ctx.translate(72,110);ctx.rotate(-.035);ctx.fillStyle="#cab27b";roundedRect(0,0,205,76,4);ctx.fill();ctx.strokeStyle="#6e5135";ctx.lineWidth=4;ctx.stroke();ctx.fillStyle="rgba(74,44,30,.23)";for(let i=0;i<16;i++){ctx.fillRect(8+(i*31)%188,7+(i*17)%58,7+(i%4)*3,3);}
+      ctx.fillStyle="#772f28";ctx.font="900 19px system-ui";ctx.fillText("PIZZA 99¢",102,31);ctx.font="800 11px system-ui";ctx.fillText("PROBABLY STILL FINE",102,53);ctx.fillStyle="#5a4030";ctx.beginPath();ctx.moveTo(170,0);ctx.lineTo(205,0);ctx.lineTo(205,27);ctx.closePath();ctx.fill();ctx.restore();
       ctx.fillStyle="#e7bc33";ctx.fillRect(130,432,32,15);ctx.fillStyle="#d44d42";ctx.fillRect(92,444,24,11);ctx.fillStyle="#6f9fba";ctx.beginPath();ctx.arc(220,465,11,0,Math.PI*2);ctx.fill();
       const oil=ctx.createRadialGradient(700,480,3,700,480,70);oil.addColorStop(0,"rgba(117,76,155,.45)");oil.addColorStop(.55,"rgba(57,124,139,.25)");oil.addColorStop(1,"rgba(0,0,0,0)");ctx.fillStyle=oil;ctx.beginPath();ctx.ellipse(700,480,78,13,0,0,Math.PI*2);ctx.fill();
       // Fire escape, graffiti, recycling, wet pavement, and animated alley drips.
@@ -1515,14 +1589,25 @@
         else if(p[4]==="crystal"){ctx.fillStyle="#b957d3";ctx.beginPath();ctx.moveTo(p[0],p[1]+p[3]);ctx.lineTo(p[0]+18,p[1]-13);ctx.lineTo(p[0]+34,p[1]+p[3]);ctx.lineTo(p[0]+p[2]/2,p[1]-20);ctx.lineTo(p[0]+p[2]-22,p[1]+p[3]);ctx.lineTo(p[0]+p[2],p[1]-10);ctx.lineTo(p[0]+p[2],p[1]+p[3]);ctx.closePath();ctx.fill();}
         else{ctx.fillStyle=p[4]==="obsidian"?"#17101f":"#46183f";roundedRect(p[0],p[1],p[2],p[3],8);ctx.fill();ctx.strokeStyle="#bc4b84";ctx.lineWidth=2;ctx.stroke();}
       }else if(level.habitat==="raccoon"&&p[4]!=="alley"){
-        if(p[4]==="trash")ctx.fillStyle="#25292b";
-        else if(p[4]==="cardboard")ctx.fillStyle="#9a724a";
-        else if(p[4]==="fence")ctx.fillStyle="#667078";
-        else ctx.fillStyle="#3c484c";
-        roundedRect(p[0],p[1],p[2],p[3],5);ctx.fill();ctx.strokeStyle="#8c9698";ctx.lineWidth=2;ctx.stroke();
-        if(p[4]==="dumpster"){ctx.fillStyle="#172024";ctx.fillRect(p[0]+8,p[1]+5,p[2]-16,5);ctx.fillStyle="#9aa3a5";for(const x of [p[0]+15,p[0]+p[2]-15]){ctx.beginPath();ctx.arc(x,p[1]+p[3]/2,2,0,Math.PI*2);ctx.fill();}}
-        if(p[4]==="cardboard"){ctx.fillStyle="rgba(225,190,135,.55)";ctx.fillRect(p[0]+p[2]/2-8,p[1]+2,16,p[3]-4);ctx.strokeStyle="#6e4f32";ctx.beginPath();ctx.moveTo(p[0]+8,p[1]+p[3]-4);ctx.lineTo(p[0]+p[2]-8,p[1]+4);ctx.stroke();}
-        if(p[4]==="fence"){ctx.strokeStyle="#aab1b4";for(let x=p[0]+10;x<p[0]+p[2];x+=18){ctx.beginPath();ctx.moveTo(x,p[1]);ctx.lineTo(x,p[1]+p[3]);ctx.stroke();}}
+        if(level.decor==="torontoTower"){
+          ctx.fillStyle=p[4]==="observation"?"#9d3d3a":p[4]==="antenna"?"#d8dee0":"#758086";roundedRect(p[0],p[1],p[2],p[3],4);ctx.fill();ctx.strokeStyle="#d9e0e2";ctx.lineWidth=2;ctx.stroke();ctx.fillStyle="rgba(255,255,255,.32)";ctx.fillRect(p[0]+7,p[1]+3,p[2]-14,3);
+          if(p[4]==="observation"){ctx.fillStyle="#b9dce7";for(let x=p[0]+10;x<p[0]+p[2]-8;x+=24)ctx.fillRect(x,p[1]+5,15,8);}
+        }else if(level.decor==="towerRestaurant"){
+          if(p[4]==="table"||p[4]==="chandelier"){ctx.fillStyle="#eee5d8";ctx.beginPath();ctx.ellipse(p[0]+p[2]/2,p[1]+6,p[2]/2,p[3]/2,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#b99b69";ctx.lineWidth=3;ctx.stroke();}
+          else{ctx.fillStyle=p[4]==="banquette"?"#762b3c":p[4]==="bar"?"#9a754b":"#555c61";roundedRect(p[0],p[1],p[2],p[3],6);ctx.fill();ctx.strokeStyle="#d6c093";ctx.lineWidth=2;ctx.stroke();}
+        }else if(level.decor==="parachute"){
+          if(p[4]==="cloud"){ctx.fillStyle="rgba(255,255,255,.82)";ctx.beginPath();ctx.ellipse(p[0]+p[2]/2,p[1]+7,p[2]/2,p[3]/2,0,0,Math.PI*2);ctx.ellipse(p[0]+p[2]*.35,p[1]+1,p[2]*.22,p[3]*.72,0,0,Math.PI*2);ctx.fill();}
+          else{ctx.fillStyle=p[4]==="towerRoof"?"#767f84":"#424e54";roundedRect(p[0],p[1],p[2],p[3],4);ctx.fill();ctx.fillStyle="#aeb7ba";ctx.fillRect(p[0]+5,p[1]+3,p[2]-10,4);}
+        }else{
+          if(p[4]==="trash")ctx.fillStyle="#25292b";
+          else if(p[4]==="cardboard")ctx.fillStyle="#9a724a";
+          else if(p[4]==="fence")ctx.fillStyle="#667078";
+          else ctx.fillStyle="#3c484c";
+          roundedRect(p[0],p[1],p[2],p[3],5);ctx.fill();ctx.strokeStyle="#8c9698";ctx.lineWidth=2;ctx.stroke();
+          if(p[4]==="dumpster"){ctx.fillStyle="#172024";ctx.fillRect(p[0]+8,p[1]+5,p[2]-16,5);ctx.fillStyle="#9aa3a5";for(const x of [p[0]+15,p[0]+p[2]-15]){ctx.beginPath();ctx.arc(x,p[1]+p[3]/2,2,0,Math.PI*2);ctx.fill();}}
+          if(p[4]==="cardboard"){ctx.fillStyle="rgba(225,190,135,.55)";ctx.fillRect(p[0]+p[2]/2-8,p[1]+2,16,p[3]-4);ctx.strokeStyle="#6e4f32";ctx.beginPath();ctx.moveTo(p[0]+8,p[1]+p[3]-4);ctx.lineTo(p[0]+p[2]-8,p[1]+4);ctx.stroke();}
+          if(p[4]==="fence"){ctx.strokeStyle="#aab1b4";for(let x=p[0]+10;x<p[0]+p[2];x+=18){ctx.beginPath();ctx.moveTo(x,p[1]);ctx.lineTo(x,p[1]+p[3]);ctx.stroke();}}
+        }
       }else if(level.habitat==="opossum"&&p[4]!=="leafLitter"){
         if(p[4]==="nestbox"){ctx.fillStyle="#67472c";roundedRect(p[0],p[1],p[2],p[3],4);ctx.fill();ctx.fillStyle="#252018";ctx.beginPath();ctx.arc(p[0]+p[2]*.7,p[1]+5,12,0,Math.PI*2);ctx.fill();ctx.fillStyle="#b98d66";for(let x=p[0]+10;x<p[0]+p[2]*.48;x+=12){ctx.beginPath();ctx.ellipse(x,p[1]+6,10,3,-.2,0,Math.PI*2);ctx.fill();}}
         else if(p[4]==="meshShelf"){ctx.fillStyle="#77817a";ctx.fillRect(p[0],p[1],p[2],p[3]);ctx.strokeStyle="#b3bbb5";for(let x=p[0]+8;x<p[0]+p[2];x+=16){ctx.beginPath();ctx.moveTo(x,p[1]);ctx.lineTo(x,p[1]+p[3]);ctx.stroke();}}
@@ -1597,7 +1682,8 @@
     ctx.fillStyle = "#020604"; ctx.fillRect(x,y,w,h);
     ctx.strokeStyle = locked?"#c75b4e":level.palette[3]; ctx.lineWidth = 3; ctx.strokeRect(x,y,w,h);
     ctx.fillStyle = locked?"#df7b6c":level.palette[3];
-    const exitLabel = locked?`${remaining} PREY LEFT`:level.underwater ? "FILTER OUT" : "EXIT";
+    const destination=level.decor==="torontoTower"?"OBSERVATION DECK":level.decor==="towerRestaurant"?"EMERGENCY EXIT":level.decor==="parachute"?"LAND HERE":level.underwater?"FILTER OUT":"EXIT";
+    const exitLabel = locked?`${remaining} PREY LEFT`:destination;
     ctx.font = "900 12px system-ui"; ctx.textAlign = "center"; ctx.fillText(exitLabel, x+w/2, y-10);
     ctx.font = "900 24px system-ui";
     ctx.fillText(locked?"×":"↓", x+w/2, y-28);
@@ -1622,11 +1708,19 @@
         ctx.strokeStyle="#302c2b";ctx.lineWidth=2;for(let fx=-17;fx<15;fx+=8){ctx.beginPath();ctx.moveTo(fx,-7);ctx.lineTo(fx-4,-12);ctx.stroke();}
       }else if(selectedCharacter==="raccoon"){
         const kind=i%5;
-        if(kind===0){ctx.fillStyle="#d83445";roundedRect(-12,-7,24,14,3);ctx.fill();ctx.fillStyle="#fff3c4";ctx.fillRect(-8,-2,16,4);ctx.fillStyle="#63252c";ctx.font="bold 7px system-ui";ctx.textAlign="center";ctx.fillText("BAR",0,2);}
-        else if(kind===1){ctx.fillStyle="#e6b932";ctx.beginPath();ctx.moveTo(-12,-9);ctx.lineTo(13,-6);ctx.lineTo(10,10);ctx.lineTo(-10,8);ctx.closePath();ctx.fill();ctx.fillStyle="#a33b2f";ctx.font="bold 7px system-ui";ctx.textAlign="center";ctx.fillText("CHIPS",0,2);}
-        else if(kind===2){ctx.fillStyle="#61351f";roundedRect(-13,-7,26,14,2);ctx.fill();ctx.fillStyle="#b98555";for(let x=-8;x<10;x+=6){ctx.beginPath();ctx.arc(x,-2,2,0,Math.PI*2);ctx.fill();}}
-        else if(kind===3){ctx.fillStyle="#d56732";ctx.beginPath();ctx.moveTo(-14,8);ctx.lineTo(12,-10);ctx.lineTo(14,10);ctx.closePath();ctx.fill();ctx.fillStyle="#f3d366";ctx.beginPath();ctx.arc(3,1,3,0,Math.PI*2);ctx.fill();}
-        else{ctx.strokeStyle="#b6bcc0";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,1,9,13,0,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(0,-9,5,0,Math.PI);ctx.stroke();ctx.fillStyle="#79a4bd";ctx.fillRect(-7,-5,14,12);}
+        if(level.decor==="towerRestaurant"){
+          if(kind===0){ctx.fillStyle="#242126";ctx.beginPath();ctx.arc(0,2,12,0,Math.PI*2);ctx.fill();ctx.fillStyle="#222";for(let n=0;n<8;n++){ctx.beginPath();ctx.arc(-7+(n%4)*5,-1+Math.floor(n/4)*5,2,0,Math.PI*2);ctx.fill();}ctx.fillStyle="#d7b35c";ctx.fillRect(-13,9,26,3);}
+          else if(kind===1){ctx.fillStyle="#b84b48";ctx.beginPath();ctx.ellipse(0,2,14,8,-.15,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#f0d8c3";ctx.lineWidth=2;for(let x=-8;x<10;x+=5){ctx.beginPath();ctx.moveTo(x,-4);ctx.lineTo(x+2,8);ctx.stroke();}}
+          else if(kind===2){ctx.fillStyle="#f1d6a1";ctx.beginPath();ctx.moveTo(-13,9);ctx.quadraticCurveTo(0,-14,13,9);ctx.closePath();ctx.fill();ctx.strokeStyle="#c18a4b";ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,4,11,.15,Math.PI-.15);ctx.stroke();}
+          else if(kind===3){ctx.fillStyle="#f3e6d4";roundedRect(-11,-10,22,20,3);ctx.fill();ctx.fillStyle="#b95a6b";ctx.fillRect(-11,-3,22,5);ctx.fillStyle="#e7bd3d";ctx.beginPath();ctx.arc(0,-11,3,0,Math.PI*2);ctx.fill();}
+          else{ctx.fillStyle="#d9b349";ctx.beginPath();ctx.moveTo(-13,9);ctx.lineTo(11,-9);ctx.lineTo(13,9);ctx.closePath();ctx.fill();ctx.fillStyle="#896226";for(const [x,y] of [[-4,5],[4,1],[8,6]]){ctx.beginPath();ctx.arc(x,y,2,0,Math.PI*2);ctx.fill();}}
+        }else{
+          if(kind===0){ctx.fillStyle="#d83445";roundedRect(-12,-7,24,14,3);ctx.fill();ctx.fillStyle="#fff3c4";ctx.fillRect(-8,-2,16,4);ctx.fillStyle="#63252c";ctx.font="bold 7px system-ui";ctx.textAlign="center";ctx.fillText("BAR",0,2);}
+          else if(kind===1){ctx.fillStyle="#e6b932";ctx.beginPath();ctx.moveTo(-12,-9);ctx.lineTo(13,-6);ctx.lineTo(10,10);ctx.lineTo(-10,8);ctx.closePath();ctx.fill();ctx.fillStyle="#a33b2f";ctx.font="bold 7px system-ui";ctx.textAlign="center";ctx.fillText("CHIPS",0,2);}
+          else if(kind===2){ctx.fillStyle="#61351f";roundedRect(-13,-7,26,14,2);ctx.fill();ctx.fillStyle="#b98555";for(let x=-8;x<10;x+=6){ctx.beginPath();ctx.arc(x,-2,2,0,Math.PI*2);ctx.fill();}}
+          else if(kind===3){ctx.fillStyle="#d56732";ctx.beginPath();ctx.moveTo(-14,8);ctx.lineTo(12,-10);ctx.lineTo(14,10);ctx.closePath();ctx.fill();ctx.fillStyle="#f3d366";ctx.beginPath();ctx.arc(3,1,3,0,Math.PI*2);ctx.fill();}
+          else{ctx.strokeStyle="#b6bcc0";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,1,9,13,0,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(0,-9,5,0,Math.PI);ctx.stroke();ctx.fillStyle="#79a4bd";ctx.fillRect(-7,-5,14,12);}
+        }
       }else if(selectedCharacter==="opossum"){
         if(i%3===0){ctx.fillStyle="#713956";for(const [x,y] of [[-6,2],[1,-3],[7,3],[0,7]]){ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();}ctx.strokeStyle="#5b7a40";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-7);ctx.lineTo(4,-14);ctx.stroke();}
         else{ctx.fillStyle="#bd8a62";ctx.beginPath();ctx.ellipse(0,2,12,7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#684a38";ctx.beginPath();ctx.arc(8,0,4,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#8a6044";ctx.lineWidth=2;for(let x=-8;x<8;x+=5){ctx.beginPath();ctx.moveTo(x,7);ctx.lineTo(x+2,11);ctx.stroke();}}
@@ -1709,6 +1803,12 @@
       ctx.fillStyle=h.color||"#e3b33f";roundedRect(4,5,h.w-42,h.h-15,5);ctx.fill();roundedRect(h.w-40,17,36,h.h-27,6);ctx.fill();
       ctx.fillStyle="#b9dce4";ctx.beginPath();ctx.moveTo(h.w-34,20);ctx.lineTo(h.w-11,20);ctx.lineTo(h.w-7,32);ctx.lineTo(h.w-34,32);ctx.closePath();ctx.fill();
       ctx.fillStyle="#fff1a1";ctx.fillRect(h.w-7,h.h-22,5,7);ctx.fillStyle="#bfc2c4";ctx.beginPath();ctx.arc(22,h.h-5,3.5,0,Math.PI*2);ctx.arc(h.w-22,h.h-5,3.5,0,Math.PI*2);ctx.fill();ctx.restore();
+    } else if(h.type==="bird"){
+      const flap=Math.sin(now*.026)*8;ctx.fillStyle="#4d5155";ctx.beginPath();ctx.ellipse(h.w*.5,h.h*.58,18,10,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.moveTo(h.w*.42,h.h*.52);ctx.quadraticCurveTo(7,flap,h.w*.08,h.h*.4);ctx.quadraticCurveTo(18,h.h*.65,h.w*.45,h.h*.65);ctx.fill();ctx.beginPath();ctx.moveTo(h.w*.58,h.h*.52);ctx.quadraticCurveTo(h.w-8,flap,h.w*.92,h.h*.4);ctx.quadraticCurveTo(h.w-18,h.h*.65,h.w*.55,h.h*.65);ctx.fill();ctx.fillStyle="#d2a441";ctx.beginPath();ctx.moveTo(h.w*.72,h.h*.55);ctx.lineTo(h.w*.94,h.h*.62);ctx.lineTo(h.w*.72,h.h*.68);ctx.fill();ctx.fillStyle="#111";ctx.beginPath();ctx.arc(h.w*.66,h.h*.49,2,0,Math.PI*2);ctx.fill();
+    } else if(h.type==="drone"){
+      ctx.strokeStyle="#30363a";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(8,8);ctx.lineTo(h.w-8,8);ctx.moveTo(h.w/2,8);ctx.lineTo(h.w/2,h.h-5);ctx.stroke();ctx.fillStyle="#4c565c";roundedRect(h.w/2-13,7,26,17,5);ctx.fill();ctx.fillStyle="#df4c48";ctx.beginPath();ctx.arc(h.w/2,18,3,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#aeb8bd";ctx.lineWidth=2;for(const x of [8,h.w-8]){ctx.beginPath();ctx.ellipse(x,7,13,3,0,0,Math.PI*2);ctx.stroke();}
+    } else if(h.type==="server"){
+      ctx.fillStyle="#15161a";roundedRect(h.w*.28,5,h.w*.42,h.h-5,7);ctx.fill();ctx.fillStyle="#f1e8dc";ctx.beginPath();ctx.arc(h.w*.5,5,8,0,Math.PI*2);ctx.fill();ctx.fillStyle="#ece5da";ctx.beginPath();ctx.ellipse(h.w*.78,9,18,4,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#b99b69";ctx.lineWidth=2;ctx.stroke();ctx.fillStyle="#9f2738";ctx.beginPath();ctx.moveTo(h.w*.45,14);ctx.lineTo(h.w*.55,14);ctx.lineTo(h.w*.5,23);ctx.closePath();ctx.fill();
     } else if (h.type === "hand") {
       ctx.fillStyle="#c99072";roundedRect(0,5,h.w,h.h-5,10);ctx.fill();
       for(let i=0;i<4;i++){roundedRect(25+i*9,0,8,16,4);ctx.fill();}
@@ -1991,6 +2091,11 @@
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
     const moving=Math.min(1,Math.abs(player.vx)/95);const step=Math.sin(now*.018)*moving*5;const airborne=!player.grounded;
     const scamperBob=player.grounded?Math.abs(Math.sin(now*.018))*moving*3:0;ctx.translate(0,scamperBob);
+    if(levels[levelIndex]?.decor==="parachute"&&airborne){
+      const sway=Math.sin(now*.004)*3;ctx.strokeStyle="#e8dfd2";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-18,-5);ctx.lineTo(-35+sway,-48);ctx.moveTo(18,-5);ctx.lineTo(35+sway,-48);ctx.stroke();
+      ctx.fillStyle="#d83f43";ctx.beginPath();ctx.moveTo(-48+sway,-48);ctx.quadraticCurveTo(sway,-82,48+sway,-48);ctx.quadraticCurveTo(25+sway,-58,sway,-47);ctx.quadraticCurveTo(-25+sway,-58,-48+sway,-48);ctx.fill();
+      ctx.strokeStyle="#f5d568";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(sway,-72);ctx.lineTo(sway,-48);ctx.stroke();
+    }
     const tailSwing=(Math.sin(now*.012)*moving*7)+(airborne?Math.max(-8,Math.min(9,-player.vy*.025)):0);
     // Plush and tapered instead of a uniform pipe-cleaner tail.
     ctx.strokeStyle="#777b7d";ctx.lineWidth=16;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-20,1);ctx.bezierCurveTo(-32,-10-tailSwing*.25,-46,-7+tailSwing,-61,-15+tailSwing*.42);ctx.stroke();
@@ -2001,7 +2106,10 @@
     ctx.fillStyle="#73777a";ctx.beginPath();ctx.ellipse(-2,1,27,16,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#8b8e8e";ctx.beginPath();ctx.ellipse(-5,-7,20,8,0,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle="#73777a";ctx.beginPath();ctx.ellipse(24,-3,17,14,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#36393c";ctx.beginPath();ctx.arc(17,-13,7,0,Math.PI*2);ctx.arc(30,-13,7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#b58a82";ctx.beginPath();ctx.arc(17,-13,3.5,0,Math.PI*2);ctx.arc(30,-13,3.5,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#232528";ctx.beginPath();ctx.moveTo(10,-10);ctx.quadraticCurveTo(25,-17,39,-7);ctx.lineTo(37,2);ctx.quadraticCurveTo(24,7,11,0);ctx.closePath();ctx.fill();
-    ctx.fillStyle="#d4d0c5";ctx.beginPath();ctx.ellipse(20,-5,5,3,0,0,Math.PI*2);ctx.ellipse(30,-5,5,3,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#a6a39b";ctx.beginPath();ctx.ellipse(37,1,10,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#0d0e0f";ctx.beginPath();ctx.arc(21,-5,2,0,Math.PI*2);ctx.arc(31,-5,2,0,Math.PI*2);ctx.arc(43,0,3,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#d8d1c4";ctx.lineWidth=1;for(const offset of [-3,1,5]){ctx.beginPath();ctx.moveTo(39,offset);ctx.lineTo(58,offset-3);ctx.stroke();}
+    ctx.fillStyle="#d4d0c5";ctx.beginPath();ctx.ellipse(20,-5,5,3,0,0,Math.PI*2);ctx.ellipse(30,-5,5,3,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#a6a39b";ctx.beginPath();ctx.ellipse(37,1,10,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#0d0e0f";ctx.beginPath();ctx.arc(21,-5,2,0,Math.PI*2);ctx.arc(31,-5,2,0,Math.PI*2);ctx.arc(43,0,3,0,Math.PI*2);ctx.fill();
+    // Short, curved muzzle whiskers. The previous antenna array has been euthanized.
+    ctx.fillStyle="#5f6160";for(const [dx,dy] of [[35,-1],[37,2],[35,5]]){ctx.beginPath();ctx.arc(dx,dy,1,0,Math.PI*2);ctx.fill();}
+    ctx.strokeStyle="rgba(226,220,207,.78)";ctx.lineWidth=.8;for(const [sy,curve,ey] of [[-1,-3,-4],[2,0,1],[5,3,6]]){ctx.beginPath();ctx.moveTo(40,sy);ctx.quadraticCurveTo(48,sy+curve*.35,54,ey);ctx.stroke();}
     if(now<biteActiveUntil){const snap=Math.sin(Math.min(1,(now-(biteActiveUntil-280))/280)*Math.PI);ctx.fillStyle="#171719";ctx.beginPath();ctx.moveTo(34,1);ctx.lineTo(49+snap*13,5);ctx.lineTo(35,10);ctx.closePath();ctx.fill();ctx.fillStyle="#f0e5cd";for(let x=39;x<49+snap*8;x+=5){ctx.beginPath();ctx.moveTo(x,4);ctx.lineTo(x+2,8);ctx.lineTo(x+4,4);ctx.fill();}}
     if(now<trashShieldUntil){ctx.save();ctx.translate(1,-7);ctx.rotate(-.12+Math.sin(now*.035)*.08);ctx.fillStyle="#667178";ctx.beginPath();ctx.ellipse(0,0,38,19,0,Math.PI,Math.PI*2);ctx.lineTo(38,4);ctx.lineTo(-38,4);ctx.closePath();ctx.fill();ctx.strokeStyle="#adb4b6";ctx.lineWidth=3;ctx.stroke();ctx.fillStyle="#3d464b";roundedRect(-11,-20,22,6,3);ctx.fill();ctx.fillStyle="#c5cbcb";for(const x of [-27,27]){ctx.beginPath();ctx.arc(x,-2,2,0,Math.PI*2);ctx.fill();}ctx.strokeStyle="#4f5a60";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-16,-5);ctx.lineTo(11,1);ctx.stroke();ctx.restore();}
     ctx.restore();ctx.globalAlpha=1;
