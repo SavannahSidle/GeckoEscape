@@ -55,6 +55,7 @@
   let trashShieldUntil = 0;
   let trashShieldCooldownUntil = 0;
   let raccoonImpactUntil = 0;
+  let raccoonLandingUntil = 0;
   let parachuteBoostCooldownUntil = 0;
   let hissActiveUntil = 0;
   let hissCooldownUntil = 0;
@@ -89,7 +90,7 @@
     newt: { name: "FIRE-BELLY NEWT", ability: "REGENERATE", secondary: "TOXIN", collectible: "WORMS", color: "#252a28", climbSpeed: 130, swimSpeed: 235, w: 46, h: 23 },
     frog: { name: "AZUREUS DART FROG", ability: "TONGUE", secondary: "POWER LEAP", collectible: "FRUIT FLIES", color: "#2679cb", climbSpeed: 120, swimSpeed: 155, w: 38, h: 27 },
     boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", secondary: "STRIKE", collectible: "RATS", color: "#030405", climbSpeed: 155, swimSpeed: 190, w: 94, h: 36 },
-    raccoon: { name: "TORONTO TRASH TANK (RACCOON)", ability: "BITE", secondary: "TRASH SHIELD", collectible: "TRASH TREASURES", color: "#73777a", climbSpeed: 178, swimSpeed: 145, w: 58, h: 34 },
+    raccoon: { name: "TORONTO TRASH TANK (RACCOON)", ability: "BITE", secondary: "TRASH SHIELD", collectible: "TRASH TREASURES", color: "#73777a", climbSpeed: 178, swimSpeed: 145, w: 58, h: 38 },
     opossum: { name: "VIRGINIA OPOSSUM", ability: "HISS", secondary: "PLAY DEAD", collectible: "FORAGE", color: "#b8b2aa", climbSpeed: 182, swimSpeed: 135, w: 58, h: 31 },
     bat: { name: "EGYPTIAN FRUIT BAT", ability: "FLY", secondary: "ECHO PULSE", collectible: "FRUIT", color: "#806956", climbSpeed: 190, swimSpeed: 145, w: 54, h: 30 },
     goat: { name: "GOAT", ability: "HEADBUTT", secondary: "MOUNTAIN SCRAMBLE", collectible: "FORAGE", color: "#d9d0bb", climbSpeed: 165, swimSpeed: 130, w: 62, h: 38 },
@@ -517,6 +518,7 @@
     trashShieldUntil = 0;
     trashShieldCooldownUntil = 0;
     raccoonImpactUntil = 0;
+    raccoonLandingUntil = 0;
     parachuteBoostCooldownUntil = 0;
     hissActiveUntil = 0;
     hissCooldownUntil = 0;
@@ -985,6 +987,7 @@
     player.y += player.vy * dt;
     if(player.y<52){player.y=52;player.vy=Math.max(0,player.vy);}
     if (level.underwater) player.y = Math.max(48, Math.min(H - player.h, player.y));
+    const landingSpeed=player.vy;
     player.grounded = false;
 
     for (const p of level.platforms) {
@@ -993,6 +996,7 @@
         player.y = platform.y - player.h;
         player.vy = 0;
         player.grounded = true;
+        if(selectedCharacter==="raccoon"&&landingSpeed>185)raccoonLandingUntil=now+190;
         if(selectedCharacter==="frog")frogAutoHopping=false;
       }
     }
@@ -1002,7 +1006,7 @@
       const centerX=player.x+player.w/2;
       if(centerX<minX||centerX>maxX)continue;
       const surfaceY=angledPlatformY(p,centerX);
-      if(oldY+player.h<=surfaceY+6&&player.y+player.h>=surfaceY){player.y=surfaceY-player.h;player.vy=0;player.grounded=true;}
+      if(oldY+player.h<=surfaceY+6&&player.y+player.h>=surfaceY){player.y=surfaceY-player.h;player.vy=0;player.grounded=true;if(selectedCharacter==="raccoon"&&landingSpeed>185)raccoonLandingUntil=now+190;}
     }
 
     if (player.y > H + 80) {
@@ -1184,6 +1188,14 @@
       const towerTime=performance.now();ctx.strokeStyle="rgba(255,255,255,.42)";ctx.lineWidth=2;for(let i=0;i<12;i++){const x=((towerTime*.08+i*103)%1080)-80,y=125+(i*41)%300;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+38+(i%3)*12,y-3);ctx.stroke();}
       if(Math.floor(towerTime/420)%2===0){ctx.fillStyle="#ff3f43";for(const [x,y] of [[480,43],[438,185],[522,185]]){ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();}}
       ctx.strokeStyle="rgba(211,241,248,.75)";ctx.lineWidth=4;ctx.beginPath();ctx.ellipse(480,190,62,17,0,0,Math.PI*2);ctx.stroke();
+      // Lake Ontario and the islands make the height feel unmistakably Toronto.
+      ctx.fillStyle="rgba(67,137,166,.46)";ctx.fillRect(0,455,W,45);ctx.fillStyle="#55795b";for(const [x,w] of [[45,150],[270,95],[620,175],[835,90]]){ctx.beginPath();ctx.ellipse(x,470,w,9,0,0,Math.PI*2);ctx.fill();}
+      // Seagulls, because Toronto's real municipal air force must be represented.
+      ctx.strokeStyle="#eef4f3";ctx.lineWidth=2;for(const [x,y] of [[255,138],[720,118],[825,205]]){ctx.beginPath();ctx.arc(x-6,y,7,Math.PI,Math.PI*2);ctx.arc(x+6,y,7,Math.PI,Math.PI*2);ctx.stroke();}
+      // A tiny external service lift slowly crawls up the tower shaft.
+      const liftY=330-Math.abs(Math.sin(towerTime*.00045))*145;ctx.fillStyle="#d6a33b";roundedRect(500,liftY,23,31,3);ctx.fill();ctx.strokeStyle="#4b555a";ctx.lineWidth=2;ctx.stroke();ctx.fillStyle="#25333a";ctx.fillRect(505,liftY+6,13,10);
+      // Height markers and maintenance warnings reward anyone looking around while climbing.
+      ctx.fillStyle="#f5eee0";ctx.font="900 10px system-ui";ctx.textAlign="left";for(const [y,label] of [[405,"147 m"],[300,"260 m"],[238,"346 m"]]){ctx.fillRect(535,y-13,42,17);ctx.fillStyle="#273b47";ctx.fillText(label,539,y);ctx.fillStyle="#f5eee0";}
     } else if (level.decor === "towerRestaurant") {
       ctx.fillStyle="#201b25";ctx.fillRect(0,55,W,H-55);ctx.fillStyle="#c6a16f";ctx.fillRect(0,468,W,32);
       const windowSky=ctx.createLinearGradient(0,70,0,330);windowSky.addColorStop(0,"#5aa4cc");windowSky.addColorStop(1,"#dfddd3");ctx.fillStyle=windowSky;roundedRect(30,75,900,260,18);ctx.fill();
@@ -1194,6 +1206,12 @@
       for(const x of [175,455,745]){ctx.strokeStyle="#d8c6ac";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-25,386);ctx.lineTo(x-20,370);ctx.lineTo(x-15,386);ctx.stroke();ctx.fillStyle="#e9e2d7";ctx.beginPath();ctx.ellipse(x+18,384,16,5,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#bca071";ctx.stroke();}
       ctx.fillStyle="#a78b5e";roundedRect(510,405,92,48,6);ctx.fill();ctx.fillStyle="#eee3d4";ctx.fillRect(521,413,70,5);ctx.fillStyle="#702a39";ctx.font="900 9px system-ui";ctx.fillText("RESERVED",556,439);
       ctx.fillStyle="#efe8db";ctx.font="900 17px system-ui";ctx.textAlign="center";ctx.fillText("360 RESTAURANT",480,365);
+      // Chef's pass, wildly expensive menu, velvet rope, candles, and rotating-floor seams.
+      ctx.fillStyle="#17191d";roundedRect(704,286,205,58,5);ctx.fill();ctx.strokeStyle="#c09a62";ctx.lineWidth=3;ctx.stroke();ctx.fillStyle="#e6d8c7";ctx.font="900 10px system-ui";ctx.fillText("CHEF'S PASS · ORDER UP",806,310);ctx.fillStyle="#f7e8b0";for(const x of [746,790,834])ctx.fillRect(x,320,25,5);
+      ctx.fillStyle="#202a25";roundedRect(48,92,110,88,5);ctx.fill();ctx.strokeStyle="#d5bc7d";ctx.stroke();ctx.fillStyle="#f1dfaa";ctx.font="900 10px system-ui";ctx.fillText("TASTING MENU",103,113);ctx.font="8px system-ui";ctx.fillText("CHEESE  $47",103,134);ctx.fillText("ONE GRAPE  $19",103,150);ctx.fillText("AIR  MARKET",103,166);
+      ctx.strokeStyle="#bb984c";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(826,405);ctx.lineTo(826,459);ctx.moveTo(912,405);ctx.lineTo(912,459);ctx.stroke();ctx.strokeStyle="#7d2438";ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(826,415);ctx.quadraticCurveTo(869,445,912,415);ctx.stroke();
+      for(const x of [175,455,745]){ctx.fillStyle="#f4d66e";ctx.beginPath();ctx.ellipse(x,374,3,7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#efe7dc";ctx.fillRect(x-2,379,4,10);}
+      ctx.save();ctx.translate(480,468);ctx.strokeStyle="rgba(245,220,172,.2)";ctx.lineWidth=2;for(let a=0;a<Math.PI*2;a+=Math.PI/8){ctx.beginPath();ctx.moveTo(Math.cos(a)*45,Math.sin(a)*7);ctx.lineTo(Math.cos(a)*520,Math.sin(a)*78);ctx.stroke();}ctx.restore();
     } else if (level.decor === "parachute") {
       const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,"#4c9fd2");sky.addColorStop(.65,"#cce9ed");sky.addColorStop(1,"#6f9daa");ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
       ctx.fillStyle="rgba(255,255,255,.78)";for(const [x,y,s] of [[115,215,1],[385,125,.72],[620,285,1.05],[835,175,.82]]){ctx.beginPath();ctx.ellipse(x,y,52*s,16*s,0,0,Math.PI*2);ctx.ellipse(x+38*s,y-7*s,38*s,20*s,0,0,Math.PI*2);ctx.ellipse(x-35*s,y-3*s,32*s,17*s,0,0,Math.PI*2);ctx.fill();}
@@ -1202,6 +1220,16 @@
       ctx.fillStyle="#a4adb2";ctx.beginPath();ctx.moveTo(50,500);ctx.lineTo(76,70);ctx.lineTo(98,70);ctx.lineTo(124,500);ctx.closePath();ctx.fill();ctx.fillStyle="#727e84";ctx.beginPath();ctx.ellipse(87,105,64,26,0,0,Math.PI*2);ctx.fill();
       const airTime=performance.now();ctx.strokeStyle="rgba(255,255,255,.46)";ctx.lineWidth=2;for(let i=0;i<11;i++){const x=((airTime*.1+i*121)%1080)-90,y=80+(i*47)%350;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+28,y-7,x+64,y);ctx.stroke();}
       ctx.strokeStyle="#f5d247";ctx.lineWidth=6;ctx.beginPath();ctx.arc(895,474,42,Math.PI,Math.PI*2);ctx.stroke();ctx.fillStyle="#f5d247";ctx.font="900 12px system-ui";ctx.textAlign="center";ctx.fillText("LAND HERE",895,455);
+      // Islands and beaches sit in the lake beneath the falling raccoon.
+      ctx.fillStyle="#608d61";ctx.beginPath();ctx.ellipse(570,487,125,8,-.03,0,Math.PI*2);ctx.ellipse(765,491,72,5,.04,0,Math.PI*2);ctx.fill();ctx.fillStyle="#d7c58a";ctx.fillRect(520,489,170,3);
+      // A distant Porter plane stays safely outside the raccoon's flight plan.
+      const planeX=730-(airTime*.012%220);ctx.fillStyle="#e7edef";ctx.beginPath();ctx.moveTo(planeX,72);ctx.lineTo(planeX+54,76);ctx.lineTo(planeX+18,80);ctx.lineTo(planeX+3,94);ctx.lineTo(planeX+8,79);ctx.lineTo(planeX-12,77);ctx.closePath();ctx.fill();
+      // Rooftop antennae and dishes give the city a proper jagged silhouette.
+      ctx.strokeStyle="#27363d";ctx.lineWidth=3;for(const x of [240,346,672]){ctx.beginPath();ctx.moveTo(x,455);ctx.lineTo(x,405-(x%37));ctx.stroke();ctx.beginPath();ctx.arc(x+7,420-(x%37),10,.7,2.7);ctx.stroke();}
+      // A slower parallax cloud layer adds depth without becoming another platform.
+      ctx.fillStyle="rgba(236,248,250,.35)";for(let i=0;i<5;i++){const x=((airTime*.018+i*230)%1160)-100,y=52+(i%3)*115;ctx.beginPath();ctx.ellipse(x,y,70,10,0,0,Math.PI*2);ctx.fill();}
+      // Pulsing landing beacon and windsock make the destination readable in motion.
+      ctx.strokeStyle=`rgba(255,226,83,${.35+.35*Math.abs(Math.sin(airTime*.006))})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(895,474,50+Math.sin(airTime*.006)*8,Math.PI,Math.PI*2);ctx.stroke();ctx.strokeStyle="#dde6e7";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(830,475);ctx.lineTo(830,432);ctx.stroke();ctx.fillStyle="#e15043";ctx.beginPath();ctx.moveTo(830,434);ctx.lineTo(858,442);ctx.lineTo(830,450);ctx.closePath();ctx.fill();
     } else if (level.decor === "kitchen") {
       ctx.fillStyle="#aebfbb";ctx.fillRect(0,70,W,430);
       ctx.strokeStyle="rgba(70,88,86,.22)";ctx.lineWidth=1;
@@ -1419,10 +1447,20 @@
       ctx.strokeStyle="rgba(109,199,159,.48)";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(70,155);ctx.quadraticCurveTo(125,125,176,158);ctx.quadraticCurveTo(130,190,78,172);ctx.stroke();
       const alleyTime=performance.now();ctx.strokeStyle="rgba(168,202,214,.28)";ctx.lineWidth=2;for(let i=0;i<18;i++){const x=35+(i*83)%880,y=70+((alleyTime*.06+i*47)%330);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-4,y+12);ctx.stroke();}
       ctx.fillStyle="rgba(247,211,112,.18)";ctx.beginPath();ctx.arc(805,92,55+Math.sin(alleyTime*.006)*5,0,Math.PI*2);ctx.fill();
-      // A distant TTC streetcar, a steaming grate, and yesterday's municipal prophecy.
-      const streetcarX=520+Math.sin(alleyTime*.00035)*55;ctx.fillStyle="#b52f36";roundedRect(streetcarX,205,178,58,8);ctx.fill();ctx.fillStyle="#d9edf1";for(let x=streetcarX+12;x<streetcarX+164;x+=31)ctx.fillRect(x,214,23,18);ctx.fillStyle="#20272b";ctx.beginPath();ctx.arc(streetcarX+35,263,9,0,Math.PI*2);ctx.arc(streetcarX+143,263,9,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#1e2326";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(streetcarX+89,205);ctx.lineTo(streetcarX+106,183);ctx.lineTo(streetcarX+122,205);ctx.stroke();
+      // The bus is now safely printed on a battered transit sign, nowhere near the dumpster roof.
+      ctx.save();ctx.translate(500,78);ctx.rotate(.025);ctx.fillStyle="#ece7d9";roundedRect(0,0,165,86,5);ctx.fill();ctx.strokeStyle="#303a40";ctx.lineWidth=4;ctx.stroke();ctx.fillStyle="#d83b42";roundedRect(20,18,104,37,5);ctx.fill();ctx.fillStyle="#dcebf0";for(let x=29;x<111;x+=22)ctx.fillRect(x,24,16,12);ctx.fillStyle="#24292c";ctx.beginPath();ctx.arc(40,57,6,0,Math.PI*2);ctx.arc(104,57,6,0,Math.PI*2);ctx.fill();ctx.fillStyle="#252b2e";ctx.font="900 10px system-ui";ctx.textAlign="center";ctx.fillText("TTC NIGHT BUS",82,75);ctx.restore();
       ctx.fillStyle="#31383c";for(let x=735;x<835;x+=9)ctx.fillRect(x,475,5,18);ctx.fillStyle="rgba(210,224,226,.18)";for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(755+i*17,455-((alleyTime*.018+i*19)%65),10+i*2,0,Math.PI*2);ctx.fill();}
       ctx.save();ctx.translate(300,462);ctx.rotate(-.08);ctx.fillStyle="#d2cab4";ctx.fillRect(0,0,86,25);ctx.fillStyle="#3f4546";ctx.font="900 8px system-ui";ctx.fillText("TORONTO SUN",43,10);ctx.font="7px system-ui";ctx.fillText("RACCOON STILL AT LARGE",43,20);ctx.restore();
+      // Rooftop water tower silhouette.
+      ctx.fillStyle="#24292d";ctx.beginPath();ctx.moveTo(335,70);ctx.lineTo(405,70);ctx.lineTo(394,126);ctx.lineTo(346,126);ctx.closePath();ctx.fill();ctx.strokeStyle="#24292d";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(350,126);ctx.lineTo(340,170);ctx.moveTo(390,126);ctx.lineTo(400,170);ctx.stroke();
+      // Flickering convenience-store neon, rated for approximately one more winter.
+      ctx.save();ctx.globalAlpha=Math.floor(alleyTime/370)%5===0?.35:.95;ctx.shadowColor="#ff5b89";ctx.shadowBlur=12;ctx.strokeStyle="#ff5b89";ctx.lineWidth=3;ctx.strokeRect(72,205,112,38);ctx.fillStyle="#ffd4e1";ctx.font="900 15px system-ui";ctx.fillText("OPEN 24H",128,230);ctx.restore();
+      // Compost bin with a suspiciously active lid.
+      ctx.fillStyle="#345b42";roundedRect(518,419,66,77,6);ctx.fill();ctx.fillStyle="#1f3829";ctx.fillRect(512,417,78,10);ctx.fillStyle="#cce0b4";ctx.font="900 9px system-ui";ctx.fillText("GREEN BIN",551,458);
+      // Clothesline and grim little socks make the alley feel inhabited.
+      ctx.strokeStyle="#b6aaa0";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(285,188);ctx.quadraticCurveTo(385,216,488,181);ctx.stroke();for(const [x,y,c] of [[325,197,"#7e8f9b"],[370,201,"#c65b55"],[420,195,"#d3c277"]]){ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+18,y+2);ctx.lineTo(x+15,y+27);ctx.lineTo(x+4,y+25);ctx.closePath();ctx.fill();}
+      // Rain reflections sit on the pavement instead of floating over the trash.
+      ctx.globalAlpha=.25;for(const [x,w,c] of [[80,75,"#ff5b89"],[505,105,"#e8e1c8"],[700,85,"#58a0be"]]){ctx.fillStyle=c;ctx.fillRect(x,485,w,3);ctx.fillRect(x+15,491,w*.55,2);}ctx.globalAlpha=.7;
     }else if(level.habitat==="opossum"){
       // Mesh rehabilitation pen with nest boxes, natural logs, leaf litter, and a water pan.
       const daylight=ctx.createLinearGradient(0,50,0,496);daylight.addColorStop(0,"#87a98b");daylight.addColorStop(1,"#344638");ctx.fillStyle=daylight;ctx.fillRect(20,50,920,446);
@@ -1616,6 +1654,7 @@
       }else if(level.habitat==="raccoon"&&p[4]!=="alley"){
         if(level.decor==="torontoTower"){
           ctx.fillStyle=p[4]==="observation"?"#9d3d3a":p[4]==="antenna"?"#d8dee0":"#758086";roundedRect(p[0],p[1],p[2],p[3],4);ctx.fill();ctx.strokeStyle="#d9e0e2";ctx.lineWidth=2;ctx.stroke();ctx.fillStyle="rgba(255,255,255,.32)";ctx.fillRect(p[0]+7,p[1]+3,p[2]-14,3);
+          ctx.fillStyle="#2f3b40";for(let x=p[0]+12;x<p[0]+p[2]-6;x+=26){ctx.beginPath();ctx.arc(x,p[1]+p[3]-5,2.2,0,Math.PI*2);ctx.fill();}
           if(p[4]==="observation"){ctx.fillStyle="#b9dce7";for(let x=p[0]+10;x<p[0]+p[2]-8;x+=24)ctx.fillRect(x,p[1]+5,15,8);}
         }else if(level.decor==="towerRestaurant"){
           if(p[4]==="table"||p[4]==="chandelier"){ctx.fillStyle="#eee5d8";ctx.beginPath();ctx.ellipse(p[0]+p[2]/2,p[1]+6,p[2]/2,p[3]/2,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#b99b69";ctx.lineWidth=3;ctx.stroke();}
@@ -2121,28 +2160,47 @@
     const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;if(flash)ctx.globalAlpha=.4;
     const climbingPose=player.climbing&&!player.ceilingClimbing;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);if(climbingPose)ctx.rotate(-Math.PI/2);else ctx.rotate(Math.max(-.08,Math.min(.08,player.vx*.00032)));ctx.scale(climbingPose?1:player.facing,1);
-    const moving=Math.min(1,(Math.abs(player.vx)+Math.abs(player.vy)*.72)/95);const step=Math.sin(now*.018)*moving*5;const airborne=!player.grounded&&!climbingPose;
-    const scamperBob=player.grounded?Math.abs(Math.sin(now*.018))*moving*3:0;ctx.translate(0,scamperBob);
+    const moving=Math.min(1,(Math.abs(player.vx)+Math.abs(player.vy)*.72)/95);const stride=Math.sin(now*.018);const step=stride*moving*6;const airborne=!player.grounded&&!climbingPose;
+    const scamperBob=player.grounded?Math.abs(stride)*moving*2.4:0;
+    const landing=raccoonLandingUntil>now?Math.sin((raccoonLandingUntil-now)/190*Math.PI):0;
+    const breath=player.grounded&&!moving?Math.sin(now*.0045)*.6:0;
+    ctx.translate(0,scamperBob+landing*2);ctx.scale(1+landing*.08,1-landing*.12);
     if(levels[levelIndex]?.decor==="parachute"&&airborne){
       const sway=Math.sin(now*.004)*3;ctx.strokeStyle="#e8dfd2";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-18,-5);ctx.lineTo(-35+sway,-48);ctx.moveTo(18,-5);ctx.lineTo(35+sway,-48);ctx.stroke();
       ctx.fillStyle="#d83f43";ctx.beginPath();ctx.moveTo(-48+sway,-48);ctx.quadraticCurveTo(sway,-82,48+sway,-48);ctx.quadraticCurveTo(25+sway,-58,sway,-47);ctx.quadraticCurveTo(-25+sway,-58,-48+sway,-48);ctx.fill();
       ctx.strokeStyle="#f5d568";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(sway,-72);ctx.lineTo(sway,-48);ctx.stroke();
     }
-    const tailSwing=(Math.sin(now*.012)*moving*7)+(airborne?Math.max(-8,Math.min(9,-player.vy*.025)):0)+(climbingPose?Math.sin(now*.01)*5:0);
-    // Plush and tapered instead of a uniform pipe-cleaner tail.
-    ctx.strokeStyle="#777b7d";ctx.lineWidth=16;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-20,1);ctx.bezierCurveTo(-32,-10-tailSwing*.25,-46,-7+tailSwing,-61,-15+tailSwing*.42);ctx.stroke();
-    ctx.strokeStyle="#8d9090";ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(-23,-2);ctx.bezierCurveTo(-36,-11-tailSwing*.2,-48,-8+tailSwing,-62,-15+tailSwing*.42);ctx.stroke();
-    ctx.strokeStyle="#2c2f31";ctx.lineWidth=5;for(const [x,y] of [[-28,-4],[-36,-6],[-44,-8],[-52,-11],[-59,-14]]){ctx.beginPath();ctx.moveTo(x,y-5+tailSwing*.18);ctx.lineTo(x-1,y+6+tailSwing*.18);ctx.stroke();}
-    const raccoonLeg=(hip,phase,front)=>{const tuck=airborne?Math.max(-7,Math.min(8,player.vy*.018)):0;const kneeX=hip+(airborne?(front?8:-10):phase);const kneeY=airborne?8-tuck*.25:climbingPose?(front?phase:-phase):13;const pawX=kneeX+(airborne?(front?10:-8):climbingPose?10:7);const pawY=airborne?12+tuck*.35:climbingPose?kneeY+(front?8:-8):18;ctx.strokeStyle="#4f5356";ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(hip,7);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();ctx.fillStyle="#25282a";ctx.beginPath();ctx.ellipse(pawX+3,pawY,8,3.5,0,0,Math.PI*2);ctx.fill();};
-    raccoonLeg(-13,step,false);raccoonLeg(10,-step,true);
-    ctx.fillStyle="#73777a";ctx.beginPath();ctx.ellipse(-3,1,31,18,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#5d6265";ctx.beginPath();ctx.ellipse(12,1,18,17,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#8b8e8e";ctx.beginPath();ctx.ellipse(-7,-8,22,9,0,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle="#73777a";ctx.beginPath();ctx.ellipse(25,-3,18,15,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#36393c";ctx.beginPath();ctx.arc(17,-13,7,0,Math.PI*2);ctx.arc(30,-13,7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#b58a82";ctx.beginPath();ctx.arc(17,-13,3.5,0,Math.PI*2);ctx.arc(30,-13,3.5,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#232528";ctx.beginPath();ctx.moveTo(10,-10);ctx.quadraticCurveTo(25,-17,39,-7);ctx.lineTo(37,2);ctx.quadraticCurveTo(24,7,11,0);ctx.closePath();ctx.fill();
-    ctx.fillStyle="#d4d0c5";ctx.beginPath();ctx.ellipse(20,-5,5,3,0,0,Math.PI*2);ctx.ellipse(30,-5,5,3,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#a6a39b";ctx.beginPath();ctx.ellipse(37,1,10,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#0d0e0f";ctx.beginPath();ctx.arc(21,-5,2,0,Math.PI*2);ctx.arc(31,-5,2,0,Math.PI*2);ctx.arc(43,0,3,0,Math.PI*2);ctx.fill();
+    const tailSwing=Math.sin(now*.011)*(3+moving*6)+(airborne?Math.max(-8,Math.min(9,-player.vy*.025)):0)+(climbingPose?Math.sin(now*.01)*5:0);
+    // A layered, counterbalancing tail with softer fur and rings that bend with the curve.
+    ctx.strokeStyle="#6f7476";ctx.lineWidth=17;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-20,0);ctx.bezierCurveTo(-33,-12-tailSwing*.22,-48,-8+tailSwing,-64,-15+tailSwing*.42);ctx.stroke();
+    ctx.strokeStyle="#929596";ctx.lineWidth=10;ctx.beginPath();ctx.moveTo(-23,-3);ctx.bezierCurveTo(-37,-12-tailSwing*.18,-50,-9+tailSwing,-65,-15+tailSwing*.42);ctx.stroke();
+    ctx.strokeStyle="#292d2f";ctx.lineWidth=5;for(const [x,y] of [[-29,-5],[-38,-7],[-47,-9],[-56,-12],[-63,-14]]){ctx.beginPath();ctx.moveTo(x,y-5+tailSwing*.18);ctx.lineTo(x-1,y+6+tailSwing*.18);ctx.stroke();}
+    ctx.strokeStyle="rgba(215,220,220,.35)";ctx.lineWidth=1.2;for(let i=0;i<8;i++){const x=-28-i*5;ctx.beginPath();ctx.moveTo(x,-12+tailSwing*.12);ctx.lineTo(x-4,-16+tailSwing*.12);ctx.stroke();}
+    // Four articulated legs: two shaded far legs, then two clear foreground legs.
+    const raccoonLeg=(hip,phase,front,far=false)=>{
+      const rise=Math.max(-1,Math.min(1,-player.vy/430));
+      const kneeX=hip+(airborne?(front?7+rise*5:-8-rise*4):climbingPose?(front?7:-7):phase*.72);
+      const kneeY=airborne?7-Math.abs(rise)*2:climbingPose?(front?phase:-phase):12;
+      const pawX=kneeX+(airborne?(front?9:-7):climbingPose?(front?11:-10):7+phase*.28);
+      const pawY=airborne?11+Math.abs(rise)*3:climbingPose?kneeY+(front?9:-9):22;
+      ctx.globalAlpha=far?.58:1;ctx.strokeStyle=far?"#404548":"#565b5e";ctx.lineWidth=far?6:8;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(hip,5);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();
+      ctx.fillStyle="#24282a";ctx.beginPath();ctx.ellipse(pawX+3,pawY,8,3.6,front?.08:-.08,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="#111416";ctx.lineWidth=1;const toeSpread=airborne?1.8:1;for(let toe=-1;toe<=1;toe++){ctx.beginPath();ctx.moveTo(pawX+6,pawY+toe);ctx.lineTo(pawX+11+toe*toeSpread,pawY+toe*2);ctx.stroke();}ctx.globalAlpha=1;
+    };
+    raccoonLeg(-17,-step*.8,false,true);raccoonLeg(7,step*.8,true,true);raccoonLeg(-11,step,false);raccoonLeg(14,-step,true,false);
+    // Breathing subtly expands the chest when the Trash Tank is idle.
+    ctx.fillStyle="#73777a";ctx.beginPath();ctx.ellipse(-3,-1,31+breath,17.5+breath*.5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#5d6265";ctx.beginPath();ctx.ellipse(12,-1,18+breath*.4,17+breath*.4,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#8b8e8e";ctx.beginPath();ctx.ellipse(-7,-9,22,9,0,Math.PI,Math.PI*2);ctx.fill();
+    const headBob=(airborne?Math.max(-2,Math.min(2,player.vy*.006)):stride*moving*.9);const earTwitch=Math.max(0,Math.sin(now*.019+1.4))*((now%2400)>2180?2.2:0);const blinking=(now%3100)>2960;
+    ctx.save();ctx.translate(0,headBob);
+    ctx.fillStyle="#73777a";ctx.beginPath();ctx.ellipse(25,-4,18,15,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#36393c";ctx.beginPath();ctx.arc(17,-14-earTwitch,7,0,Math.PI*2);ctx.arc(30,-14+earTwitch*.4,7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#b58a82";ctx.beginPath();ctx.arc(17,-14-earTwitch,3.5,0,Math.PI*2);ctx.arc(30,-14+earTwitch*.4,3.5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#232528";ctx.beginPath();ctx.moveTo(10,-11);ctx.quadraticCurveTo(25,-18,39,-8);ctx.lineTo(37,1);ctx.quadraticCurveTo(24,6,11,-1);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#d4d0c5";ctx.beginPath();ctx.ellipse(20,-6,5,blinking?.7:3,0,0,Math.PI*2);ctx.ellipse(30,-6,5,blinking?.7:3,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#a6a39b";ctx.beginPath();ctx.ellipse(37,0,10,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#0d0e0f";ctx.beginPath();if(blinking){ctx.fillRect(17,-6,6,1);ctx.fillRect(27,-6,6,1);}else{ctx.arc(21,-6,2,0,Math.PI*2);ctx.arc(31,-6,2,0,Math.PI*2);}ctx.arc(43,-1,3,0,Math.PI*2);ctx.fill();
     // Short, curved muzzle whiskers. The previous antenna array has been euthanized.
-    ctx.fillStyle="#5f6160";for(const [dx,dy] of [[35,-1],[37,2],[35,5]]){ctx.beginPath();ctx.arc(dx,dy,1,0,Math.PI*2);ctx.fill();}
-    ctx.strokeStyle="rgba(226,220,207,.78)";ctx.lineWidth=.8;for(const [sy,curve,ey] of [[-1,-3,-4],[2,0,1],[5,3,6]]){ctx.beginPath();ctx.moveTo(40,sy);ctx.quadraticCurveTo(48,sy+curve*.35,54,ey);ctx.stroke();}
+    ctx.fillStyle="#5f6160";for(const [dx,dy] of [[35,-2],[37,1],[35,4]]){ctx.beginPath();ctx.arc(dx,dy,1,0,Math.PI*2);ctx.fill();}
+    ctx.strokeStyle="rgba(226,220,207,.78)";ctx.lineWidth=.8;for(const [sy,curve,ey] of [[-2,-3,-5],[1,0,0],[4,3,5]]){ctx.beginPath();ctx.moveTo(40,sy);ctx.quadraticCurveTo(48,sy+curve*.35,54,ey);ctx.stroke();}
     if(now<biteActiveUntil){const snap=Math.sin(Math.min(1,(now-(biteActiveUntil-280))/280)*Math.PI);ctx.fillStyle="#171719";ctx.beginPath();ctx.moveTo(34,1);ctx.lineTo(49+snap*13,5);ctx.lineTo(35,10);ctx.closePath();ctx.fill();ctx.fillStyle="#f0e5cd";for(let x=39;x<49+snap*8;x+=5){ctx.beginPath();ctx.moveTo(x,4);ctx.lineTo(x+2,8);ctx.lineTo(x+4,4);ctx.fill();}}
+    ctx.restore();
     if(now<raccoonImpactUntil){ctx.save();ctx.translate(62,4);ctx.rotate(now*.03);ctx.fillStyle="#f4d85b";ctx.beginPath();for(let n=0;n<16;n++){const radius=n%2?7:16,angle=n*Math.PI/8;ctx.lineTo(Math.cos(angle)*radius,Math.sin(angle)*radius);}ctx.closePath();ctx.fill();ctx.restore();}
     if(now<trashShieldUntil){ctx.save();ctx.translate(1,-7);ctx.rotate(-.12+Math.sin(now*.035)*.08);ctx.fillStyle="#256b91";ctx.beginPath();ctx.ellipse(0,0,40,20,0,Math.PI,Math.PI*2);ctx.lineTo(40,5);ctx.lineTo(-40,5);ctx.closePath();ctx.fill();ctx.strokeStyle="#b8c5c9";ctx.lineWidth=3;ctx.stroke();ctx.fillStyle="#34494f";roundedRect(-11,-21,22,6,3);ctx.fill();ctx.fillStyle="#d9e0df";for(const x of [-29,29]){ctx.beginPath();ctx.arc(x,-2,2,0,Math.PI*2);ctx.fill();}ctx.fillStyle="#e8edf0";ctx.beginPath();ctx.moveTo(0,-14);ctx.lineTo(4,-7);ctx.lineTo(10,-9);ctx.lineTo(7,-2);ctx.lineTo(13,1);ctx.lineTo(4,2);ctx.lineTo(3,9);ctx.lineTo(-1,4);ctx.lineTo(-7,8);ctx.lineTo(-5,1);ctx.lineTo(-13,-1);ctx.lineTo(-7,-5);ctx.lineTo(-9,-11);ctx.lineTo(-3,-8);ctx.closePath();ctx.fill();ctx.strokeStyle="#17475f";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-20,-8);ctx.lineTo(-5,-2);ctx.moveTo(15,-6);ctx.lineTo(26,-12);ctx.moveTo(9,3);ctx.lineTo(25,0);ctx.stroke();ctx.restore();}
     ctx.restore();ctx.globalAlpha=1;
