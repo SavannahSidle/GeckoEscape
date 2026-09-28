@@ -935,7 +935,7 @@
     const character = characters[selectedCharacter];
     const left = keys.ArrowLeft || keys.KeyA || keys.touchLeft;
     const right = keys.ArrowRight || keys.KeyD || keys.touchRight;
-    const up = keys.ArrowUp || keys.KeyW || keys.touchJump;
+    const up = keys.ArrowUp || keys.KeyW || keys.Space || keys.touchJump;
     const down = keys.ArrowDown || keys.KeyS;
     if(batStartHanging){player.x=batHangX;player.y=batHangY;player.vx=0;player.vy=0;player.ceilingClimbing=true;return;}
     const raccoonMovement=selectedCharacter==="raccoon"||selectedCharacter==="devilfox";
