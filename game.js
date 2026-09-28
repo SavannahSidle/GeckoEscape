@@ -54,6 +54,8 @@
   let biteCooldownUntil = 0;
   let trashShieldUntil = 0;
   let trashShieldCooldownUntil = 0;
+  let raccoonImpactUntil = 0;
+  let parachuteBoostCooldownUntil = 0;
   let hissActiveUntil = 0;
   let hissCooldownUntil = 0;
   let playDeadUntil = 0;
@@ -96,7 +98,7 @@
   };
 
   const singleLevelCharacters=new Set(["opossum","bat","goat","highland","devilfox"]);
-  const storyLevelCount=()=>singleLevelCharacters.has(selectedCharacter)?1:levels.length;
+  const storyLevelCount=()=>selectedCharacter==="raccoon"?4:singleLevelCharacters.has(selectedCharacter)?1:levels.length;
 
   const player = {
     x: 0, y: 0, w: 38, h: 24,
@@ -240,7 +242,7 @@
     {
       label:"LEVEL 4 · GRAVITY DISPUTE",title:"Parachute Escape",
       intro:"There is no approved raccoon exit from the CN Tower. Deploy the stolen emergency parachute, catch the airborne snacks, and land somewhere that cannot issue a bill.",
-      completeTitle:"A majestic garbage meteor lands.",completeText:"Toronto survives. Several pigeons file formal complaints. The Trash Tank continues toward the highway.",
+      completeTitle:"A majestic garbage meteor lands.",completeText:"Toronto survives. Several pigeons file formal complaints. The Trash Tank disappears into the city with a parachute and twelve thousand dollars in cheese.",
       palette:["#5aa9d6","#dff3f4","#506c79","#ff5b4f"],start:[38,92],exit:[872,400,58,92],
       platforms:[[18,130,155,20,"towerRoof"],[205,198,125,18,"cloud"],[385,270,130,18,"cloud"],[560,205,110,18,"cloud"],[700,330,125,18,"rooftop"],[835,470,125,30,"rooftop"],[470,405,115,18,"rooftop"],[260,380,105,18,"cloud"]],
       vines:[],insects:[[110,92],[265,160],[445,232],[615,168],[755,292],[525,367],[315,342],[865,430]],
@@ -320,7 +322,8 @@
       title:"The Dumpster Den",habitat:"raccoon",palette:["#101418","#283037","#765b3f","#f2c14e"],
       intro:"The dumpster lid has fallen shut. Rummage through the good stuff, climb the trash corral, and escape before collection day.",
       start:[62,438],exit:[870,390,55,110],
-      platforms:[[0,500,960,40,"alley"],[35,463,190,24,"trash"],[85,350,155,22,"cardboard"],[245,292,120,20,"cardboard"],[280,414,175,24,"dumpster"],[405,242,120,20,"trash"],[500,342,170,22,"dumpster"],[575,185,125,20,"cardboard"],[700,270,190,22,"fence"],[790,160,145,22,"dumpster"]],
+      platforms:[[0,500,960,40,"alley"],[35,463,190,24,"trash"],[85,350,155,22,"cardboard"],[245,292,120,20,"cardboard"],[280,414,175,24,"dumpster"],[405,242,120,20,"trash"],[500,342,170,22,"dumpster"],[575,185,125,20,"cardboard"],[700,270,190,22,"fence"],[790,160,145,22,"dumpster"],[625,438,85,20,"recycling"],[32,235,105,18,"awning"]],
+      angledPlatforms:[[150,380,245,292,16],[650,320,760,270,16]],
       vines:[[716,272,18,178],[370,240,18,175]],insects:[[105,430],[145,318],[300,258],[350,380],[465,208],[575,308],[635,151],[775,236],[850,126],[675,445]],
       hazards:[{x:420,y:430,w:92,h:70,type:"grab",axis:"x",min:330,max:610,speed:82}]
     },
@@ -513,6 +516,8 @@
     biteCooldownUntil = 0;
     trashShieldUntil = 0;
     trashShieldCooldownUntil = 0;
+    raccoonImpactUntil = 0;
+    parachuteBoostCooldownUntil = 0;
     hissActiveUntil = 0;
     hissCooldownUntil = 0;
     playDeadUntil = 0;
@@ -594,7 +599,8 @@
     } else if (selectedCharacter === "chameleon") {
       abilityLabel.textContent = `TONGUE · ${performance.now() >= camouflageCooldownUntil ? "CAMOUFLAGE READY" : "CAMOUFLAGE RECHARGING"}`;
     } else if (selectedCharacter === "raccoon") {
-      abilityLabel.textContent = `${performance.now() >= biteCooldownUntil ? "BITE READY" : "BITE RECHARGING"} · ${performance.now() >= trashShieldCooldownUntil ? "SHIELD READY" : "SHIELD RECHARGING"}`;
+      const parachuteState=levels[levelIndex].decor==="parachute"?` · ${performance.now()>=parachuteBoostCooldownUntil?"AIR BRAKE READY":"AIR BRAKE RECHARGING"}`:"";
+      abilityLabel.textContent = `${performance.now() >= biteCooldownUntil ? "BITE READY" : "BITE RECHARGING"} · ${performance.now() >= trashShieldCooldownUntil ? "SHIELD READY" : "SHIELD RECHARGING"}${parachuteState}`;
     } else if (selectedCharacter === "opossum") {
       const recovery=performance.now()>playDeadUntil&&performance.now()<opossumRecoveryUntil?" · PANIC SPRINT":"";
       abilityLabel.textContent = `${performance.now() >= hissCooldownUntil ? "HISS READY" : "HISS RECHARGING"} · ${performance.now() >= playDeadCooldownUntil ? "PLAY DEAD READY" : "PLAY DEAD RECHARGING"}${recovery}`;
@@ -734,7 +740,7 @@
   function useBite(){
     const now=performance.now();
     if(state!=="playing"||selectedCharacter!=="raccoon"||now<biteCooldownUntil)return;
-    biteActiveUntil=now+280;biteCooldownUntil=now+720;
+    biteActiveUntil=now+280;biteCooldownUntil=now+720;raccoonImpactUntil=now+190;
     player.vx+=player.facing*95;
     const biteBox={x:player.facing>0?player.x+player.w-8:player.x-46,y:player.y-5,w:54,h:player.h+10};
     const livingTypes=new Set(["cat","dalmatian","frenchie","fish","spider","bird","server","drone"]);
@@ -1086,6 +1092,10 @@
     if(selectedCharacter==="opossum"&&performance.now()<playDeadUntil)return;
     if(player.ceilingClimbing){player.ceilingClimbing=false;player.climbing=false;player.y+=8;player.vy=135;tone(185,.05,"triangle");return;}
     const level=levels[levelIndex];
+    if(selectedCharacter==="raccoon"&&level.decor==="parachute"&&!player.grounded){
+      const now=performance.now();if(now<parachuteBoostCooldownUntil)return;
+      parachuteBoostCooldownUntil=now+650;player.vy=Math.min(player.vy,-145);player.vx+=player.facing*36;updateHud();tone(315,.07,"triangle");return;
+    }
     const inHabitatWater=level.habitat==="newt"&&player.x<520&&player.y+player.h/2>270;
     if(inHabitatWater){
       const nearSurface=player.y+player.h/2<330;
@@ -1171,6 +1181,9 @@
       ctx.fillStyle="#7b858a";ctx.beginPath();ctx.moveTo(414,188);ctx.quadraticCurveTo(480,155,546,188);ctx.lineTo(530,225);ctx.lineTo(430,225);ctx.closePath();ctx.fill();
       ctx.fillStyle="#dfe5e6";ctx.fillRect(474,63,12,112);ctx.fillStyle="#c33d3d";ctx.fillRect(477,42,6,28);
       ctx.fillStyle="#183e61";roundedRect(38,74,190,39,5);ctx.fill();ctx.strokeStyle="#f4f7f7";ctx.lineWidth=2;ctx.stroke();ctx.fillStyle="#fff";ctx.font="900 18px system-ui";ctx.textAlign="center";ctx.fillText("TORONTO",133,100);
+      const towerTime=performance.now();ctx.strokeStyle="rgba(255,255,255,.42)";ctx.lineWidth=2;for(let i=0;i<12;i++){const x=((towerTime*.08+i*103)%1080)-80,y=125+(i*41)%300;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+38+(i%3)*12,y-3);ctx.stroke();}
+      if(Math.floor(towerTime/420)%2===0){ctx.fillStyle="#ff3f43";for(const [x,y] of [[480,43],[438,185],[522,185]]){ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();}}
+      ctx.strokeStyle="rgba(211,241,248,.75)";ctx.lineWidth=4;ctx.beginPath();ctx.ellipse(480,190,62,17,0,0,Math.PI*2);ctx.stroke();
     } else if (level.decor === "towerRestaurant") {
       ctx.fillStyle="#201b25";ctx.fillRect(0,55,W,H-55);ctx.fillStyle="#c6a16f";ctx.fillRect(0,468,W,32);
       const windowSky=ctx.createLinearGradient(0,70,0,330);windowSky.addColorStop(0,"#5aa4cc");windowSky.addColorStop(1,"#dfddd3");ctx.fillStyle=windowSky;roundedRect(30,75,900,260,18);ctx.fill();
@@ -1178,6 +1191,8 @@
       ctx.strokeStyle="#332830";ctx.lineWidth=12;for(let x=185;x<900;x+=190){ctx.beginPath();ctx.moveTo(x,76);ctx.lineTo(x,335);ctx.stroke();}
       ctx.fillStyle="#7b2637";roundedRect(18,365,925,105,16);ctx.fill();ctx.fillStyle="#e8ded0";for(const x of [175,455,745]){ctx.beginPath();ctx.ellipse(x,395,75,14,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#b99b69";ctx.fillRect(x-5,395,10,58);ctx.fillStyle="#e8ded0";}
       ctx.strokeStyle="#cfae63";ctx.lineWidth=4;for(const x of [355,600]){ctx.beginPath();ctx.moveTo(x,55);ctx.lineTo(x,120);ctx.stroke();ctx.fillStyle="#f2d789";ctx.beginPath();ctx.arc(x,132,25,0,Math.PI*2);ctx.fill();}
+      for(const x of [175,455,745]){ctx.strokeStyle="#d8c6ac";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-25,386);ctx.lineTo(x-20,370);ctx.lineTo(x-15,386);ctx.stroke();ctx.fillStyle="#e9e2d7";ctx.beginPath();ctx.ellipse(x+18,384,16,5,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#bca071";ctx.stroke();}
+      ctx.fillStyle="#a78b5e";roundedRect(510,405,92,48,6);ctx.fill();ctx.fillStyle="#eee3d4";ctx.fillRect(521,413,70,5);ctx.fillStyle="#702a39";ctx.font="900 9px system-ui";ctx.fillText("RESERVED",556,439);
       ctx.fillStyle="#efe8db";ctx.font="900 17px system-ui";ctx.textAlign="center";ctx.fillText("360 RESTAURANT",480,365);
     } else if (level.decor === "parachute") {
       const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,"#4c9fd2");sky.addColorStop(.65,"#cce9ed");sky.addColorStop(1,"#6f9daa");ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
@@ -1185,6 +1200,8 @@
       ctx.fillStyle="#4f6671";for(let x=0;x<W;x+=64){const bh=40+(x*11)%145;ctx.fillRect(x,H-bh,54,bh);ctx.fillStyle="#d4c57b";for(let wy=H-bh+14;wy<H-12;wy+=19)ctx.fillRect(x+10,wy,5,7);ctx.fillStyle="#4f6671";}
       ctx.fillStyle="#507f94";ctx.fillRect(0,485,W,15);ctx.strokeStyle="rgba(255,255,255,.32)";ctx.lineWidth=2;for(let x=0;x<W;x+=70){ctx.beginPath();ctx.arc(x,489,26,Math.PI,Math.PI*2);ctx.stroke();}
       ctx.fillStyle="#a4adb2";ctx.beginPath();ctx.moveTo(50,500);ctx.lineTo(76,70);ctx.lineTo(98,70);ctx.lineTo(124,500);ctx.closePath();ctx.fill();ctx.fillStyle="#727e84";ctx.beginPath();ctx.ellipse(87,105,64,26,0,0,Math.PI*2);ctx.fill();
+      const airTime=performance.now();ctx.strokeStyle="rgba(255,255,255,.46)";ctx.lineWidth=2;for(let i=0;i<11;i++){const x=((airTime*.1+i*121)%1080)-90,y=80+(i*47)%350;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+28,y-7,x+64,y);ctx.stroke();}
+      ctx.strokeStyle="#f5d247";ctx.lineWidth=6;ctx.beginPath();ctx.arc(895,474,42,Math.PI,Math.PI*2);ctx.stroke();ctx.fillStyle="#f5d247";ctx.font="900 12px system-ui";ctx.textAlign="center";ctx.fillText("LAND HERE",895,455);
     } else if (level.decor === "kitchen") {
       ctx.fillStyle="#aebfbb";ctx.fillRect(0,70,W,430);
       ctx.strokeStyle="rgba(70,88,86,.22)";ctx.lineWidth=1;
@@ -1402,6 +1419,10 @@
       ctx.strokeStyle="rgba(109,199,159,.48)";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(70,155);ctx.quadraticCurveTo(125,125,176,158);ctx.quadraticCurveTo(130,190,78,172);ctx.stroke();
       const alleyTime=performance.now();ctx.strokeStyle="rgba(168,202,214,.28)";ctx.lineWidth=2;for(let i=0;i<18;i++){const x=35+(i*83)%880,y=70+((alleyTime*.06+i*47)%330);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-4,y+12);ctx.stroke();}
       ctx.fillStyle="rgba(247,211,112,.18)";ctx.beginPath();ctx.arc(805,92,55+Math.sin(alleyTime*.006)*5,0,Math.PI*2);ctx.fill();
+      // A distant TTC streetcar, a steaming grate, and yesterday's municipal prophecy.
+      const streetcarX=520+Math.sin(alleyTime*.00035)*55;ctx.fillStyle="#b52f36";roundedRect(streetcarX,205,178,58,8);ctx.fill();ctx.fillStyle="#d9edf1";for(let x=streetcarX+12;x<streetcarX+164;x+=31)ctx.fillRect(x,214,23,18);ctx.fillStyle="#20272b";ctx.beginPath();ctx.arc(streetcarX+35,263,9,0,Math.PI*2);ctx.arc(streetcarX+143,263,9,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#1e2326";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(streetcarX+89,205);ctx.lineTo(streetcarX+106,183);ctx.lineTo(streetcarX+122,205);ctx.stroke();
+      ctx.fillStyle="#31383c";for(let x=735;x<835;x+=9)ctx.fillRect(x,475,5,18);ctx.fillStyle="rgba(210,224,226,.18)";for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(755+i*17,455-((alleyTime*.018+i*19)%65),10+i*2,0,Math.PI*2);ctx.fill();}
+      ctx.save();ctx.translate(300,462);ctx.rotate(-.08);ctx.fillStyle="#d2cab4";ctx.fillRect(0,0,86,25);ctx.fillStyle="#3f4546";ctx.font="900 8px system-ui";ctx.fillText("TORONTO SUN",43,10);ctx.font="7px system-ui";ctx.fillText("RACCOON STILL AT LARGE",43,20);ctx.restore();
     }else if(level.habitat==="opossum"){
       // Mesh rehabilitation pen with nest boxes, natural logs, leaf litter, and a water pan.
       const daylight=ctx.createLinearGradient(0,50,0,496);daylight.addColorStop(0,"#87a98b");daylight.addColorStop(1,"#344638");ctx.fillStyle=daylight;ctx.fillRect(20,50,920,446);
@@ -1606,6 +1627,8 @@
           if(p[4]==="trash")ctx.fillStyle="#25292b";
           else if(p[4]==="cardboard")ctx.fillStyle="#9a724a";
           else if(p[4]==="fence")ctx.fillStyle="#667078";
+          else if(p[4]==="recycling")ctx.fillStyle="#356579";
+          else if(p[4]==="awning")ctx.fillStyle="#8e3036";
           else ctx.fillStyle="#3c484c";
           roundedRect(p[0],p[1],p[2],p[3],5);ctx.fill();ctx.strokeStyle="#8c9698";ctx.lineWidth=2;ctx.stroke();
           if(p[4]==="dumpster"){ctx.fillStyle="#172024";ctx.fillRect(p[0]+8,p[1]+5,p[2]-16,5);ctx.fillStyle="#9aa3a5";for(const x of [p[0]+15,p[0]+p[2]-15]){ctx.beginPath();ctx.arc(x,p[1]+p[3]/2,2,0,Math.PI*2);ctx.fill();}}
@@ -1669,7 +1692,9 @@
     }
     for (const v of level.vines) drawClimbablePlant(v,level);
     for (const p of level.angledPlatforms||[]) {
-      if(level.decor==="kitchen"){
+      if(level.habitat==="raccoon"&&level.decor==="enclosure"){
+        const [x1,y1,x2,y2,width]=p;ctx.save();ctx.lineCap="round";ctx.strokeStyle="#596267";ctx.lineWidth=width||16;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.strokeStyle="#aab2b4";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x1,y1-2);ctx.lineTo(x2,y2-2);ctx.stroke();for(let t=.12;t<1;t+=.16){const x=x1+(x2-x1)*t,y=y1+(y2-y1)*t;ctx.beginPath();ctx.moveTo(x-5,y-5);ctx.lineTo(x+5,y+5);ctx.stroke();}ctx.restore();
+      }else if(level.decor==="kitchen"){
         const [x1,y1,x2,y2,width]=p;
         ctx.save();ctx.lineCap="round";ctx.strokeStyle="#8d7358";ctx.lineWidth=width||18;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.strokeStyle="#d8c5a4";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x1,y1-3);ctx.lineTo(x2,y2-3);ctx.stroke();ctx.restore();
       }else drawAngledPlatform(p,level);
@@ -2094,22 +2119,23 @@
 
   function drawRaccoon(now){
     const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;if(flash)ctx.globalAlpha=.4;
-    ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
-    const moving=Math.min(1,Math.abs(player.vx)/95);const step=Math.sin(now*.018)*moving*5;const airborne=!player.grounded;
+    const climbingPose=player.climbing&&!player.ceilingClimbing;
+    ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);if(climbingPose)ctx.rotate(-Math.PI/2);else ctx.rotate(Math.max(-.08,Math.min(.08,player.vx*.00032)));ctx.scale(climbingPose?1:player.facing,1);
+    const moving=Math.min(1,(Math.abs(player.vx)+Math.abs(player.vy)*.72)/95);const step=Math.sin(now*.018)*moving*5;const airborne=!player.grounded&&!climbingPose;
     const scamperBob=player.grounded?Math.abs(Math.sin(now*.018))*moving*3:0;ctx.translate(0,scamperBob);
     if(levels[levelIndex]?.decor==="parachute"&&airborne){
       const sway=Math.sin(now*.004)*3;ctx.strokeStyle="#e8dfd2";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-18,-5);ctx.lineTo(-35+sway,-48);ctx.moveTo(18,-5);ctx.lineTo(35+sway,-48);ctx.stroke();
       ctx.fillStyle="#d83f43";ctx.beginPath();ctx.moveTo(-48+sway,-48);ctx.quadraticCurveTo(sway,-82,48+sway,-48);ctx.quadraticCurveTo(25+sway,-58,sway,-47);ctx.quadraticCurveTo(-25+sway,-58,-48+sway,-48);ctx.fill();
       ctx.strokeStyle="#f5d568";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(sway,-72);ctx.lineTo(sway,-48);ctx.stroke();
     }
-    const tailSwing=(Math.sin(now*.012)*moving*7)+(airborne?Math.max(-8,Math.min(9,-player.vy*.025)):0);
+    const tailSwing=(Math.sin(now*.012)*moving*7)+(airborne?Math.max(-8,Math.min(9,-player.vy*.025)):0)+(climbingPose?Math.sin(now*.01)*5:0);
     // Plush and tapered instead of a uniform pipe-cleaner tail.
     ctx.strokeStyle="#777b7d";ctx.lineWidth=16;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-20,1);ctx.bezierCurveTo(-32,-10-tailSwing*.25,-46,-7+tailSwing,-61,-15+tailSwing*.42);ctx.stroke();
     ctx.strokeStyle="#8d9090";ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(-23,-2);ctx.bezierCurveTo(-36,-11-tailSwing*.2,-48,-8+tailSwing,-62,-15+tailSwing*.42);ctx.stroke();
     ctx.strokeStyle="#2c2f31";ctx.lineWidth=5;for(const [x,y] of [[-28,-4],[-36,-6],[-44,-8],[-52,-11],[-59,-14]]){ctx.beginPath();ctx.moveTo(x,y-5+tailSwing*.18);ctx.lineTo(x-1,y+6+tailSwing*.18);ctx.stroke();}
-    const raccoonLeg=(hip,phase,front)=>{const tuck=airborne?Math.max(-7,Math.min(8,player.vy*.018)):0;const kneeX=hip+(airborne?(front?8:-10):phase);const kneeY=airborne?8-tuck*.25:13;const pawX=kneeX+(airborne?(front?10:-8):7);const pawY=airborne?12+tuck*.35:18;ctx.strokeStyle="#4f5356";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(hip,7);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();ctx.fillStyle="#25282a";ctx.beginPath();ctx.ellipse(pawX+3,pawY,7,3,0,0,Math.PI*2);ctx.fill();};
+    const raccoonLeg=(hip,phase,front)=>{const tuck=airborne?Math.max(-7,Math.min(8,player.vy*.018)):0;const kneeX=hip+(airborne?(front?8:-10):phase);const kneeY=airborne?8-tuck*.25:climbingPose?(front?phase:-phase):13;const pawX=kneeX+(airborne?(front?10:-8):climbingPose?10:7);const pawY=airborne?12+tuck*.35:climbingPose?kneeY+(front?8:-8):18;ctx.strokeStyle="#4f5356";ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(hip,7);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();ctx.fillStyle="#25282a";ctx.beginPath();ctx.ellipse(pawX+3,pawY,8,3.5,0,0,Math.PI*2);ctx.fill();};
     raccoonLeg(-13,step,false);raccoonLeg(10,-step,true);
-    ctx.fillStyle="#73777a";ctx.beginPath();ctx.ellipse(-2,1,27,16,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#8b8e8e";ctx.beginPath();ctx.ellipse(-5,-7,20,8,0,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle="#73777a";ctx.beginPath();ctx.ellipse(24,-3,17,14,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#73777a";ctx.beginPath();ctx.ellipse(-3,1,31,18,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#5d6265";ctx.beginPath();ctx.ellipse(12,1,18,17,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#8b8e8e";ctx.beginPath();ctx.ellipse(-7,-8,22,9,0,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle="#73777a";ctx.beginPath();ctx.ellipse(25,-3,18,15,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#36393c";ctx.beginPath();ctx.arc(17,-13,7,0,Math.PI*2);ctx.arc(30,-13,7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#b58a82";ctx.beginPath();ctx.arc(17,-13,3.5,0,Math.PI*2);ctx.arc(30,-13,3.5,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#232528";ctx.beginPath();ctx.moveTo(10,-10);ctx.quadraticCurveTo(25,-17,39,-7);ctx.lineTo(37,2);ctx.quadraticCurveTo(24,7,11,0);ctx.closePath();ctx.fill();
     ctx.fillStyle="#d4d0c5";ctx.beginPath();ctx.ellipse(20,-5,5,3,0,0,Math.PI*2);ctx.ellipse(30,-5,5,3,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#a6a39b";ctx.beginPath();ctx.ellipse(37,1,10,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#0d0e0f";ctx.beginPath();ctx.arc(21,-5,2,0,Math.PI*2);ctx.arc(31,-5,2,0,Math.PI*2);ctx.arc(43,0,3,0,Math.PI*2);ctx.fill();
@@ -2117,7 +2143,8 @@
     ctx.fillStyle="#5f6160";for(const [dx,dy] of [[35,-1],[37,2],[35,5]]){ctx.beginPath();ctx.arc(dx,dy,1,0,Math.PI*2);ctx.fill();}
     ctx.strokeStyle="rgba(226,220,207,.78)";ctx.lineWidth=.8;for(const [sy,curve,ey] of [[-1,-3,-4],[2,0,1],[5,3,6]]){ctx.beginPath();ctx.moveTo(40,sy);ctx.quadraticCurveTo(48,sy+curve*.35,54,ey);ctx.stroke();}
     if(now<biteActiveUntil){const snap=Math.sin(Math.min(1,(now-(biteActiveUntil-280))/280)*Math.PI);ctx.fillStyle="#171719";ctx.beginPath();ctx.moveTo(34,1);ctx.lineTo(49+snap*13,5);ctx.lineTo(35,10);ctx.closePath();ctx.fill();ctx.fillStyle="#f0e5cd";for(let x=39;x<49+snap*8;x+=5){ctx.beginPath();ctx.moveTo(x,4);ctx.lineTo(x+2,8);ctx.lineTo(x+4,4);ctx.fill();}}
-    if(now<trashShieldUntil){ctx.save();ctx.translate(1,-7);ctx.rotate(-.12+Math.sin(now*.035)*.08);ctx.fillStyle="#667178";ctx.beginPath();ctx.ellipse(0,0,38,19,0,Math.PI,Math.PI*2);ctx.lineTo(38,4);ctx.lineTo(-38,4);ctx.closePath();ctx.fill();ctx.strokeStyle="#adb4b6";ctx.lineWidth=3;ctx.stroke();ctx.fillStyle="#3d464b";roundedRect(-11,-20,22,6,3);ctx.fill();ctx.fillStyle="#c5cbcb";for(const x of [-27,27]){ctx.beginPath();ctx.arc(x,-2,2,0,Math.PI*2);ctx.fill();}ctx.strokeStyle="#4f5a60";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-16,-5);ctx.lineTo(11,1);ctx.stroke();ctx.restore();}
+    if(now<raccoonImpactUntil){ctx.save();ctx.translate(62,4);ctx.rotate(now*.03);ctx.fillStyle="#f4d85b";ctx.beginPath();for(let n=0;n<16;n++){const radius=n%2?7:16,angle=n*Math.PI/8;ctx.lineTo(Math.cos(angle)*radius,Math.sin(angle)*radius);}ctx.closePath();ctx.fill();ctx.restore();}
+    if(now<trashShieldUntil){ctx.save();ctx.translate(1,-7);ctx.rotate(-.12+Math.sin(now*.035)*.08);ctx.fillStyle="#256b91";ctx.beginPath();ctx.ellipse(0,0,40,20,0,Math.PI,Math.PI*2);ctx.lineTo(40,5);ctx.lineTo(-40,5);ctx.closePath();ctx.fill();ctx.strokeStyle="#b8c5c9";ctx.lineWidth=3;ctx.stroke();ctx.fillStyle="#34494f";roundedRect(-11,-21,22,6,3);ctx.fill();ctx.fillStyle="#d9e0df";for(const x of [-29,29]){ctx.beginPath();ctx.arc(x,-2,2,0,Math.PI*2);ctx.fill();}ctx.fillStyle="#e8edf0";ctx.beginPath();ctx.moveTo(0,-14);ctx.lineTo(4,-7);ctx.lineTo(10,-9);ctx.lineTo(7,-2);ctx.lineTo(13,1);ctx.lineTo(4,2);ctx.lineTo(3,9);ctx.lineTo(-1,4);ctx.lineTo(-7,8);ctx.lineTo(-5,1);ctx.lineTo(-13,-1);ctx.lineTo(-7,-5);ctx.lineTo(-9,-11);ctx.lineTo(-3,-8);ctx.closePath();ctx.fill();ctx.strokeStyle="#17475f";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-20,-8);ctx.lineTo(-5,-2);ctx.moveTo(15,-6);ctx.lineTo(26,-12);ctx.moveTo(9,3);ctx.lineTo(25,0);ctx.stroke();ctx.restore();}
     ctx.restore();ctx.globalAlpha=1;
   }
 
