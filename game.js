@@ -112,10 +112,11 @@
     goat: { name: "GOAT", ability: "HEADBUTT", secondary: "MOUNTAIN SCRAMBLE", collectible: "FORAGE", color: "#d9d0bb", climbSpeed: 165, swimSpeed: 130, w: 62, h: 38 },
     highland: { name: "HIGHLAND COW", ability: "HORN TOSS", secondary: "HIGHLAND CHARGE", collectible: "MEADOW BITES", color: "#b85f2e", climbSpeed: 105, swimSpeed: 115, w: 82, h: 48 },
     devilfox: { name: "FOX", ability: "POUNCE", secondary: "MISCHIEF BLINK", collectible: "SOUL BERRIES", color: "#b74766", climbSpeed: 180, swimSpeed: 155, w: 60, h: 36 },
-    foxLab: { name: "EXPERIMENTAL FOX", ability: "RUN", secondary: "JUMP", collectible: "NONE", color: "#c85e2c", climbSpeed: 0, swimSpeed: 0, w: 120, h: 100 }
+    foxLab: { name: "EXPERIMENTAL FOX", ability: "RUN", secondary: "JUMP", collectible: "NONE", color: "#c85e2c", climbSpeed: 0, swimSpeed: 0, w: 120, h: 100 },
+    foxAlt: { name: "ALT FOX", ability: "RUN", secondary: "JUMP", collectible: "NONE", color: "#c85e2c", climbSpeed: 0, swimSpeed: 0, w: 120, h: 100 }
   };
 
-  const singleLevelCharacters=new Set(["opossum","bat","goat","highland","devilfox","foxLab"]);
+  const singleLevelCharacters=new Set(["opossum","bat","goat","highland","devilfox","foxLab","foxAlt"]);
   const storyLevelCount=()=>backstageMode?levels.length:selectedCharacter==="raccoon"?6:singleLevelCharacters.has(selectedCharacter)?1:standardStoryLevels.length+1;
   let foxLabStridePhase=0;
   const foxLabTailAngles=[0,0,0,0,0],foxLabTailVelocities=[0,0,0,0,0];
@@ -430,6 +431,11 @@
       title:"Fox Movement Lab",habitat:"foxLab",palette:["#202a30","#202a30","#39443d","#39443d"],
       intro:"Move with A/D or the arrow keys. Jump with Space or Up.",start:[150,404],exit:[2000,0,1,1],
       platforms:[[0,480,960,40,"foxLabGround"]],angledPlatforms:[],vines:[],ceilingVines:[],diagonalVines:[],insects:[],mice:[],hazards:[],decor:"foxMovementLab"
+    },
+    foxAlt: {
+      title:"Alt Fox Lab",habitat:"foxLab",palette:["#202a30","#202a30","#39443d","#39443d"],
+      intro:"Saved fox movement version. Move with A/D or the arrow keys. Jump with Space or Up.",start:[150,404],exit:[2000,0,1,1],
+      platforms:[[0,480,960,40,"foxLabGround"]],angledPlatforms:[],vines:[],ceilingVines:[],diagonalVines:[],insects:[],mice:[],hazards:[],decor:"foxMovementLab"
     }
   };
 
@@ -509,7 +515,7 @@
     primaryButton.classList.add("hidden");
     secondaryButton.classList.add("hidden");
     levelSelect.classList.add("hidden");
-    characterSelect.querySelector('[data-character="foxLab"]')?.classList.toggle("hidden",!backstageMode);
+    ["foxLab","foxAlt"].forEach(id=>characterSelect.querySelector(`[data-character="${id}"]`)?.classList.toggle("hidden",!backstageMode));
     characterSelect.classList.remove("hidden");
     characterSelect.querySelector("button")?.focus();
   }
@@ -525,7 +531,7 @@
     levelSelect.querySelectorAll("[data-level]").forEach(button=>{
       const index=Number(button.dataset.level);const level=levels[index];
       const labLevel=index===FOX_LAB_LEVEL;
-      button.classList.toggle("hidden",selectedCharacter==="foxLab"?!labLevel:labLevel||!level||index>=storyLevelCount());
+      button.classList.toggle("hidden",["foxLab","foxAlt"].includes(selectedCharacter)?!labLevel:labLevel||!level||index>=storyLevelCount());
       const label=button.querySelector("small");
       if(level&&label)label.textContent=level.title.replace(/^The\s+/i,"");
     });
@@ -1028,15 +1034,18 @@
     foxLabLandingImpact*=Math.exp(-8.5*dt);
 
     const acceleration=((player.vx-oldVx)/Math.max(dt,.001))*player.facing;
+    const useAltFox=selectedCharacter==="foxAlt";
     // The pelvis turns first; each tail segment receives that impulse later and loses energy as it travels outward.
-    const tailTarget=Math.max(-.56,Math.min(.66,.15+acceleration*.00038-player.vy*.00042+foxLabInvestigation*.17+(currentSpeed<12?.05:0)));
+    const tailTarget=useAltFox
+      ?Math.max(-.72,Math.min(.72,-player.vy*.00055+acceleration*.00024+foxLabInvestigation*.2+(currentSpeed<12?.075:0)))
+      :Math.max(-.56,Math.min(.66,.15+acceleration*.00038-player.vy*.00042+foxLabInvestigation*.17+(currentSpeed<12?.05:0)));
     for(let i=0;i<foxLabTailAngles.length;i++){
       const prior=i?foxLabTailAngles[i-1]:tailTarget;
-      const bend=i>1?(foxLabTailAngles[i-1]-foxLabTailAngles[i-2])*.28:0;
-      const target=i?prior+bend+.018*i:tailTarget;
-      foxLabTailVelocities[i]+=(target-foxLabTailAngles[i])*(i?25-i*1.35:35)*dt;
-      foxLabTailVelocities[i]*=Math.exp(-(i?5.35:7.3)*dt);
-      foxLabTailAngles[i]=Math.max(-.78,Math.min(.88,foxLabTailAngles[i]+foxLabTailVelocities[i]*dt));
+      const bend=i>1?(foxLabTailAngles[i-1]-foxLabTailAngles[i-2])*(useAltFox?.34:.28):0;
+      const target=i?prior+bend+(useAltFox?0:.018*i):tailTarget;
+      foxLabTailVelocities[i]+=(target-foxLabTailAngles[i])*(useAltFox?(i?31-i*2:42):(i?25-i*1.35:35))*dt;
+      foxLabTailVelocities[i]*=Math.exp(-(useAltFox?(i?6.6:8.2):(i?5.35:7.3))*dt);
+      foxLabTailAngles[i]=Math.max(useAltFox?-.9:-.78,Math.min(useAltFox?.9:.88,foxLabTailAngles[i]+foxLabTailVelocities[i]*dt));
     }
   }
 
@@ -1048,7 +1057,7 @@
     const right = keys.ArrowRight || keys.KeyD || keys.touchRight;
     const up = keys.ArrowUp || keys.KeyW || keys.Space || keys.touchJump;
     const down = keys.ArrowDown || keys.KeyS;
-    if(selectedCharacter==="foxLab"&&level.decor==="foxMovementLab"){
+    if(["foxLab","foxAlt"].includes(selectedCharacter)&&level.decor==="foxMovementLab"){
       updateFoxLab(dt,now,left,right,up,keys.KeyI||keys.touchInvestigate);
       return;
     }
@@ -1281,7 +1290,7 @@
     if (state !== "playing") return;
     const now=performance.now();
     if(levels[levelIndex]?.decor==="boatEscape")return;
-    if(selectedCharacter==="foxLab"){
+    if(["foxLab","foxAlt"].includes(selectedCharacter)){
       if(player.grounded){player.vy=-545;player.grounded=false;foxLabTakeoffUntil=now+145;tone(245,.05,"triangle");}
       return;
     }
@@ -2577,12 +2586,13 @@
     else if (selectedCharacter === "goat") drawGoat(now);
     else if (selectedCharacter === "highland") drawHighland(now);
     else if (selectedCharacter === "devilfox") drawDevilFox(now);
-    else if (selectedCharacter === "foxLab") drawExperimentalFox(now);
+    else if (["foxLab","foxAlt"].includes(selectedCharacter)) drawExperimentalFox(now);
     else drawCrestedGecko(now);
     ctx.restore();
   }
 
   function drawExperimentalFox(now){
+    const isAlt=selectedCharacter==="foxAlt";
     const speed=Math.abs(player.vx),move=Math.max(0,Math.min(1,speed/54)),run=Math.max(0,Math.min(1,(speed-118)/150));
     const airborne=!player.grounded,phase=foxLabStridePhase,impact=foxLabLandingImpact,investigate=foxLabInvestigation;
     const launch=airborne?Math.max(0,Math.min(1,(now-(foxLabTakeoffUntil-145))/145)):0;
@@ -2598,9 +2608,9 @@
     ctx.scale(fwd*(1-turnCompress),1-impact*.035+launch*.018);ctx.rotate(pitch);
 
     // A weighted brush tail whose bend travels from pelvis to tip.
-    const tailPts=[[-39,0]],tailLens=[16,19,20,19,16];let tx=-39,ty=0;
+    const tailPts=[[-39,0]],tailLens=isAlt?[18,19,19,18,16]:[16,19,20,19,16];let tx=-39,ty=0;
     for(let i=0;i<tailLens.length;i++){const a=foxLabTailAngles[i];tx-=Math.cos(a)*tailLens[i];ty+=Math.sin(a)*tailLens[i];tailPts.push([tx,ty]);}
-    const widths=[4,10,14,15,12,7],upper=[],lower=[];
+    const widths=isAlt?[3,8,12,14,11,4]:[4,10,14,15,12,7],upper=[],lower=[];
     for(let i=0;i<tailPts.length;i++){const p=tailPts[i],before=tailPts[Math.max(0,i-1)],after=tailPts[Math.min(tailPts.length-1,i+1)],dx=after[0]-before[0],dy=after[1]-before[1],len=Math.hypot(dx,dy)||1,nx=-dy/len,ny=dx/len;upper.push([p[0]+nx*widths[i],p[1]+ny*widths[i]]);lower.push([p[0]-nx*widths[i],p[1]-ny*widths[i]]);}
     ctx.fillStyle="#a84727";ctx.beginPath();upper.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));for(let i=lower.length-1;i>=0;i--)ctx.lineTo(...lower[i]);ctx.closePath();ctx.fill();
     ctx.strokeStyle="rgba(255,218,178,.48)";ctx.lineWidth=2;ctx.beginPath();tailPts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]-2):ctx.moveTo(p[0],p[1]-2));ctx.stroke();
@@ -2609,6 +2619,20 @@
     // Muscled, three-part limbs: shoulder/hip, elbow/knee, wrist/hock, then a small planted paw.
     const gait=(walkOffset,runOffset)=>walkBeat+walkOffset+Math.atan2(Math.sin(runBeat+runOffset-walkBeat-walkOffset),Math.cos(runBeat+runOffset-walkBeat-walkOffset))*run;
     const limb=(hip,off,front,far)=>{
+      if(isAlt){
+        const p=((off%(Math.PI*2))+Math.PI*2)%(Math.PI*2),stance=p<Math.PI*1.2;
+        const t=stance?p/(Math.PI*1.2):(p-Math.PI*1.2)/(.8*Math.PI),travel=stance?.6-1.2*t:-.6+1.2*t,lift=stance?0:Math.sin(t*Math.PI);
+        let pawX=hip+travel*stride*move,pawY=footLine-lift*(4+run*11)*move,kneeX=hip+(pawX-hip)*.43+(front?5:-5),kneeY=27+lift*5;
+        const tuck=airborne?Math.max(launch,.25)*.55:impact*.58;
+        if(airborne){const descending=Math.max(0,Math.min(1,(player.vy+40)/360));pawX=hip+(front?1:-1)*(10+descending*9);pawY=footLine-(1-descending)*12;kneeX=hip+(front?8:-8);kneeY=24-tuck*4;}
+        if(impact&&!airborne){pawY=footLine-impact*2;kneeY+=impact*5;}
+        const color=far?"#87402c":"#a34b2c",alpha=far?.56:1;ctx.globalAlpha=alpha;ctx.lineCap="round";ctx.lineJoin="round";
+        ctx.strokeStyle=color;ctx.lineWidth=far?3.5:4.2;ctx.beginPath();ctx.moveTo(hip,2);ctx.quadraticCurveTo(hip+(kneeX-hip)*.35,kneeY-8,kneeX,kneeY);ctx.stroke();
+        const ankleX=pawX+(kneeX-pawX)*.18,ankleY=pawY-5;
+        ctx.lineWidth=far?2.5:3;ctx.beginPath();ctx.moveTo(kneeX,kneeY);ctx.quadraticCurveTo(kneeX+(ankleX-kneeX)*.55,ankleY-4,ankleX,ankleY);ctx.lineTo(pawX,pawY-2);ctx.stroke();
+        ctx.fillStyle=color;ctx.beginPath();ctx.arc(kneeX,kneeY,1.8,0,Math.PI*2);ctx.arc(ankleX,ankleY,1.25,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="#302622";ctx.lineWidth=2.8;ctx.beginPath();ctx.moveTo(pawX-2,pawY-1);ctx.quadraticCurveTo(pawX+2,pawY+1,pawX+6.3,pawY);ctx.stroke();ctx.globalAlpha=1;return;
+      }
       const p=((off%(Math.PI*2))+Math.PI*2)%(Math.PI*2),stance=p<Math.PI*1.2;
       const t=stance?p/(Math.PI*1.2):(p-Math.PI*1.2)/(.8*Math.PI);
       const travel=stance?.6-1.2*t:-.6+1.2*t,lift=stance?0:Math.sin(t*Math.PI);
