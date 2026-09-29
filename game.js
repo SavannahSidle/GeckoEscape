@@ -121,7 +121,6 @@
   const foxLabTailAngles=[0,0,0,0,0],foxLabTailVelocities=[0,0,0,0,0];
   let foxLabLandingImpact=0;
   let foxLabTakeoffUntil=0;
-  let foxLabTurnUntil=0;
   let foxLabTurnTo=1,foxLabTurnProgress=1,foxLabFacingVisual=1,foxLabTurnDuration=.21;
   let foxLabInvestigation=0,foxLabIdleTime=0,foxLabJumpHoldBlend=0;
   const foxLabSurfaces=[
@@ -618,7 +617,7 @@
     foxPounceCooldownUntil = 0;
     foxBlinkUntil = 0;
     foxBlinkCooldownUntil = 0;
-    foxLabStridePhase=0;foxLabTailAngles.fill(0);foxLabTailVelocities.fill(0);foxLabLandingImpact=0;foxLabTakeoffUntil=0;foxLabTurnUntil=0;foxLabTurnTo=foxLabFacingVisual=player.facing;foxLabTurnProgress=1;foxLabTurnDuration=.21;foxLabInvestigation=0;foxLabIdleTime=0;foxLabJumpHoldBlend=0;
+    foxLabStridePhase=0;foxLabTailAngles.fill(0);foxLabTailVelocities.fill(0);foxLabLandingImpact=0;foxLabTakeoffUntil=0;foxLabTurnTo=foxLabFacingVisual=player.facing;foxLabTurnProgress=1;foxLabTurnDuration=.21;foxLabInvestigation=0;foxLabIdleTime=0;foxLabJumpHoldBlend=0;
     miceCollected = 0;
     (level.mice||[]).forEach(mouse=>mouse[2]=false);
     tongueActiveUntil = 0;
@@ -992,11 +991,9 @@
   function updateFoxLab(dt,now,left,right,up,investigate){
     const input=(left?-1:0)+(right?1:0),oldVx=player.vx;
     const speed=Math.abs(player.vx),reversing=input&&speed>8&&Math.sign(player.vx)!==input;
-    if(input&&input!==player.facing){
-      foxLabTurnTo=input;foxLabTurnProgress=0;foxLabTurnDuration=.21+Math.min(speed,285)*.00032;
-      player.facing=input;foxLabTurnUntil=now+210+Math.min(speed,285)*.32;
-    }
-    if(foxLabTurnProgress<1){foxLabTurnProgress=Math.min(1,foxLabTurnProgress+dt/foxLabTurnDuration);if(foxLabTurnProgress>=.5)foxLabFacingVisual=foxLabTurnTo;}
+    if(input&&input!==foxLabTurnTo){foxLabTurnTo=input;foxLabTurnProgress=0;foxLabTurnDuration=.21+Math.min(speed,285)*.00032;}
+    if(foxLabTurnProgress<1)foxLabTurnProgress=Math.min(1,foxLabTurnProgress+dt/foxLabTurnDuration);
+    if(foxLabTurnProgress>=.52&&(Math.abs(player.vx)<34||Math.sign(player.vx)===foxLabTurnTo))foxLabFacingVisual=player.facing=foxLabTurnTo;
 
     if(input){
       const accel=player.grounded?(reversing?1040:690):(reversing?410:280);
@@ -1031,7 +1028,7 @@
     foxLabLandingImpact*=Math.exp(-8.5*dt);
 
     const acceleration=((player.vx-oldVx)/Math.max(dt,.001))*player.facing;
-    const tailTarget=Math.max(-.72,Math.min(.72,-player.vy*.00055+acceleration*.00024+foxLabInvestigation*.2));
+    const tailTarget=Math.max(-.72,Math.min(.72,-player.vy*.00055+acceleration*.00024+foxLabInvestigation*.2+(currentSpeed<12?.075:0)));
     for(let i=0;i<foxLabTailAngles.length;i++){
       const prior=i?foxLabTailAngles[i-1]:tailTarget;
       const bend=i>1?(foxLabTailAngles[i-1]-foxLabTailAngles[i-2])*.34:0;
@@ -2592,16 +2589,17 @@
     const bodyWave=Math.sin(phase*.5-.4),compress=Math.max(0,bodyWave)*run;
     const bounce=player.grounded?(Math.sin(phase)*run*2.1+Math.abs(Math.sin(phase))*move*.65):0;
     const pitch=airborne?Math.max(-.16,Math.min(.16,player.vy*.00022)):(-.035*run+bodyWave*.025*run-impact*.07+investigate*.025);
-    const rise=8+compress*1.7+launch*1.8+impact*5+investigate*2;
+    const breathe=player.grounded&&speed<9?Math.sin(now*.0021)*.7:0;
+    const rise=8+compress*1.7+launch*1.8-investigate*1.5+breathe;
     const footLine=player.h/2-2+rise-bounce-impact*5;
     const fwd=foxLabFacingVisual,turnCompress=Math.sin(foxLabTurnProgress*Math.PI)*.09;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2+bounce+impact*5-rise);
-    ctx.scale(fwd*(1-turnCompress),1);ctx.rotate(pitch);
+    ctx.scale(fwd*(1-turnCompress),1-impact*.035+launch*.018);ctx.rotate(pitch);
 
     // A weighted brush tail whose bend travels from pelvis to tip.
     const tailPts=[[-39,0]],tailLens=[18,19,19,18,16];let tx=-39,ty=0;
     for(let i=0;i<tailLens.length;i++){const a=foxLabTailAngles[i];tx-=Math.cos(a)*tailLens[i];ty+=Math.sin(a)*tailLens[i];tailPts.push([tx,ty]);}
-    const widths=[5,10,13,14,13,8],upper=[],lower=[];
+    const widths=[3,8,12,14,11,4],upper=[],lower=[];
     for(let i=0;i<tailPts.length;i++){const p=tailPts[i],before=tailPts[Math.max(0,i-1)],after=tailPts[Math.min(tailPts.length-1,i+1)],dx=after[0]-before[0],dy=after[1]-before[1],len=Math.hypot(dx,dy)||1,nx=-dy/len,ny=dx/len;upper.push([p[0]+nx*widths[i],p[1]+ny*widths[i]]);lower.push([p[0]-nx*widths[i],p[1]-ny*widths[i]]);}
     ctx.fillStyle="#a84727";ctx.beginPath();upper.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));for(let i=lower.length-1;i>=0;i--)ctx.lineTo(...lower[i]);ctx.closePath();ctx.fill();
     ctx.strokeStyle="rgba(255,218,178,.48)";ctx.lineWidth=2;ctx.beginPath();tailPts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]-2):ctx.moveTo(p[0],p[1]-2));ctx.stroke();
@@ -2620,8 +2618,9 @@
       if(impact&&!airborne){pawY=footLine-impact*2;kneeY+=impact*5;}
       const color=far?"#87402c":"#a34b2c",alpha=far?.56:1;ctx.globalAlpha=alpha;ctx.lineCap="round";ctx.lineJoin="round";
       ctx.strokeStyle=color;ctx.lineWidth=far?3.5:4.2;ctx.beginPath();ctx.moveTo(hip,2);ctx.quadraticCurveTo(hip+(kneeX-hip)*.35,kneeY-8,kneeX,kneeY);ctx.stroke();
-      ctx.lineWidth=far?2.5:3;ctx.beginPath();ctx.moveTo(kneeX,kneeY);ctx.quadraticCurveTo(kneeX+(pawX-kneeX)*.7,pawY-5,pawX,pawY-2);ctx.stroke();
-      ctx.fillStyle=color;ctx.beginPath();ctx.arc(kneeX,kneeY,1.8,0,Math.PI*2);ctx.fill();
+      const ankleX=pawX+(kneeX-pawX)*.18,ankleY=pawY-5;
+      ctx.lineWidth=far?2.5:3;ctx.beginPath();ctx.moveTo(kneeX,kneeY);ctx.quadraticCurveTo(kneeX+(ankleX-kneeX)*.55,ankleY-4,ankleX,ankleY);ctx.lineTo(pawX,pawY-2);ctx.stroke();
+      ctx.fillStyle=color;ctx.beginPath();ctx.arc(kneeX,kneeY,1.8,0,Math.PI*2);ctx.arc(ankleX,ankleY,1.25,0,Math.PI*2);ctx.fill();
       ctx.strokeStyle="#302622";ctx.lineWidth=2.8;ctx.beginPath();ctx.moveTo(pawX-2,pawY-1);ctx.quadraticCurveTo(pawX+2,pawY+1,pawX+6.3,pawY);ctx.stroke();ctx.globalAlpha=1;
     };
     limb(-31,gait(Math.PI,Math.PI+.12),false,true);limb(24,gait(Math.PI/2,.1),true,true);
@@ -2634,7 +2633,7 @@
     limb(-32,gait(0,Math.PI),false,false);limb(23,gait(Math.PI*1.5,0),true,false);
 
     // Stable narrow head on a long neck; sniffing lowers the nose and folds ears back.
-    ctx.save();ctx.translate(31,-15);ctx.rotate(-pitch*.58+investigate*.18+Math.max(0,player.vy)*.000045);ctx.translate(-31,15);
+    ctx.save();ctx.translate(31,-15);ctx.rotate(-pitch*.82+investigate*.18+Math.max(0,player.vy)*.000045);ctx.translate(-31,15);
     ctx.fillStyle="#c76131";ctx.beginPath();ctx.moveTo(19,-14);ctx.quadraticCurveTo(28,-28,40,-27);ctx.lineTo(51,-16);ctx.lineTo(48,-8);ctx.lineTo(32,-3);ctx.quadraticCurveTo(21,-4,19,-14);ctx.fill();
     const idleTwitch=foxLabIdleTime>2.5&&Math.sin(foxLabIdleTime*2.1)>.975?1:0,earBack=investigate*.43+run*.045+idleTwitch*.07;
     const ear=(x,len,angle)=>{ctx.save();ctx.translate(x,-24);ctx.rotate(angle);ctx.fillStyle="#b84d2a";ctx.beginPath();ctx.moveTo(-6,3);ctx.quadraticCurveTo(-8,-len*.58,-1,-len);ctx.quadraticCurveTo(7,-len*.68,8,3);ctx.closePath();ctx.fill();ctx.fillStyle="#61352b";ctx.beginPath();ctx.moveTo(-2,0);ctx.lineTo(-1,-len*.72);ctx.lineTo(4,1);ctx.closePath();ctx.fill();ctx.restore();};
@@ -2744,6 +2743,7 @@
     document.title="Fox Movement Lab | Gecko Escape";
     document.querySelector(".eyebrow").textContent="EXPERIMENTAL CHARACTER LAB";
     document.querySelector("h1").textContent="FOX MOVEMENT LAB";
+    canvas.setAttribute("aria-label","Experimental fox movement lab. Use A/D or arrows to move, Space to jump, and hold I to investigate.");
     soundButton.classList.add("hidden");
     document.querySelector(".keyboard-help").innerHTML="<strong>MOVE</strong> A / D OR ARROWS &nbsp; <strong>JUMP</strong> SPACE / ↑ &nbsp; <strong>INVESTIGATE</strong> HOLD I";
     document.querySelector('[data-control="investigate"]').classList.remove("hidden");
