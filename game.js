@@ -25,6 +25,7 @@
   const keys = Object.create(null);
   const routeParams = new URLSearchParams(window.location.search);
   const backstageMode = routeParams.get("tour") === "arboreal-backstage-27";
+  const gameEdition = routeParams.get("edition") === "2" ? 2 : 1;
   const directFoxRoute = routeParams.get("foxLab") === "1";
   let state = "menu";
   let levelIndex = 0;
@@ -117,6 +118,10 @@
   };
 
   const singleLevelCharacters=new Set(["opossum","bat","goat","highland","devilfox","foxLab","foxAlt"]);
+  const editionCharacters = {
+    1: new Set(["chameleon","crested","newt","frog","boa"]),
+    2: new Set(["raccoon","opossum","bat","goat","highland","devilfox"])
+  };
   const storyLevelCount=()=>backstageMode?levels.length:selectedCharacter==="raccoon"?6:singleLevelCharacters.has(selectedCharacter)?1:standardStoryLevels.length+1;
   let foxLabStridePhase=0;
   const foxLabTailAngles=[0,0,0,0,0],foxLabTailVelocities=[0,0,0,0,0];
@@ -510,14 +515,18 @@
   function showCharacterSelect() {
     state = "character-select";
     panelKicker.textContent = "CHOOSE YOUR ESCAPE ARTIST";
-    panelTitle.textContent = "Eleven animals. Catastrophic judgment.";
-    panelText.textContent = "Each character has a different enclosure and two abilities. Some crimes become significantly longer road trips.";
+    panelTitle.textContent = gameEdition===1 ? "Five reptiles and amphibians. Five escapes." : "Six mammals. A truly suspicious getaway.";
+    panelText.textContent = gameEdition===1 ? "Choose a reptile or amphibian and escape its enclosure." : "Choose your animal. The crime gets bigger from here.";
     primaryButton.classList.add("hidden");
     secondaryButton.classList.add("hidden");
     levelSelect.classList.add("hidden");
-    ["foxLab","foxAlt"].forEach(id=>characterSelect.querySelector(`[data-character="${id}"]`)?.classList.toggle("hidden",!backstageMode));
+    characterSelect.querySelectorAll("[data-character]").forEach(button=>{
+      const id=button.dataset.character;
+      const developerFox=id==="foxLab"||id==="foxAlt";
+      button.classList.toggle("hidden",developerFox?!backstageMode:!editionCharacters[gameEdition].has(id));
+    });
     characterSelect.classList.remove("hidden");
-    characterSelect.querySelector("button")?.focus();
+    characterSelect.querySelector("button:not(.hidden)")?.focus();
   }
 
   function showLevelSelect(){
@@ -1036,16 +1045,15 @@
     const acceleration=((player.vx-oldVx)/Math.max(dt,.001))*player.facing;
     const useAltFox=selectedCharacter==="foxAlt";
     // The pelvis turns first; each tail segment receives that impulse later and loses energy as it travels outward.
-    const tailTarget=useAltFox
-      ?Math.max(-.72,Math.min(.72,-player.vy*.00055+acceleration*.00024+foxLabInvestigation*.2+(currentSpeed<12?.075:0)))
-      :Math.max(-.56,Math.min(.66,.15+acceleration*.00038-player.vy*.00042+foxLabInvestigation*.17+(currentSpeed<12?.05:0)));
+    const baselineFoxTail=Math.max(-.56,Math.min(.66,.15+acceleration*.00038-player.vy*.00042+foxLabInvestigation*.17+(currentSpeed<12?.05:0)));
+    const tailTarget=useAltFox?baselineFoxTail:Math.max(-.72,Math.min(.78,.13+acceleration*.00048-player.vy*.0005+foxLabInvestigation*.2+(currentSpeed<12?.07:0)));
     for(let i=0;i<foxLabTailAngles.length;i++){
       const prior=i?foxLabTailAngles[i-1]:tailTarget;
-      const bend=i>1?(foxLabTailAngles[i-1]-foxLabTailAngles[i-2])*(useAltFox?.34:.28):0;
-      const target=i?prior+bend+(useAltFox?0:.018*i):tailTarget;
-      foxLabTailVelocities[i]+=(target-foxLabTailAngles[i])*(useAltFox?(i?31-i*2:42):(i?25-i*1.35:35))*dt;
-      foxLabTailVelocities[i]*=Math.exp(-(useAltFox?(i?6.6:8.2):(i?5.35:7.3))*dt);
-      foxLabTailAngles[i]=Math.max(useAltFox?-.9:-.78,Math.min(useAltFox?.9:.88,foxLabTailAngles[i]+foxLabTailVelocities[i]*dt));
+      const bend=i>1?(foxLabTailAngles[i-1]-foxLabTailAngles[i-2])*(useAltFox?.28:.36):0;
+      const target=i?prior+bend+(useAltFox?.018*i:.025*i):tailTarget;
+      foxLabTailVelocities[i]+=(target-foxLabTailAngles[i])*(useAltFox?(i?25-i*1.35:35):(i?23-i*1.15:32))*dt;
+      foxLabTailVelocities[i]*=Math.exp(-(useAltFox?(i?5.35:7.3):(i?4.9:6.8))*dt);
+      foxLabTailAngles[i]=Math.max(useAltFox?-.78:-.9,Math.min(useAltFox?.88:.96,foxLabTailAngles[i]+foxLabTailVelocities[i]*dt));
     }
   }
 
@@ -2592,7 +2600,6 @@
   }
 
   function drawExperimentalFox(now){
-    const isAlt=selectedCharacter==="foxAlt";
     const speed=Math.abs(player.vx),move=Math.max(0,Math.min(1,speed/54)),run=Math.max(0,Math.min(1,(speed-118)/150));
     const airborne=!player.grounded,phase=foxLabStridePhase,impact=foxLabLandingImpact,investigate=foxLabInvestigation;
     const launch=airborne?Math.max(0,Math.min(1,(now-(foxLabTakeoffUntil-145))/145)):0;
@@ -2608,9 +2615,9 @@
     ctx.scale(fwd*(1-turnCompress),1-impact*.035+launch*.018);ctx.rotate(pitch);
 
     // A weighted brush tail whose bend travels from pelvis to tip.
-    const tailPts=[[-39,0]],tailLens=isAlt?[18,19,19,18,16]:[16,19,20,19,16];let tx=-39,ty=0;
+    const tailPts=[[-39,0]],tailLens=[16,19,20,19,16];let tx=-39,ty=0;
     for(let i=0;i<tailLens.length;i++){const a=foxLabTailAngles[i];tx-=Math.cos(a)*tailLens[i];ty+=Math.sin(a)*tailLens[i];tailPts.push([tx,ty]);}
-    const widths=isAlt?[3,8,12,14,11,4]:[4,10,14,15,12,7],upper=[],lower=[];
+    const widths=[4,10,14,15,12,7],upper=[],lower=[];
     for(let i=0;i<tailPts.length;i++){const p=tailPts[i],before=tailPts[Math.max(0,i-1)],after=tailPts[Math.min(tailPts.length-1,i+1)],dx=after[0]-before[0],dy=after[1]-before[1],len=Math.hypot(dx,dy)||1,nx=-dy/len,ny=dx/len;upper.push([p[0]+nx*widths[i],p[1]+ny*widths[i]]);lower.push([p[0]-nx*widths[i],p[1]-ny*widths[i]]);}
     ctx.fillStyle="#a84727";ctx.beginPath();upper.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));for(let i=lower.length-1;i>=0;i--)ctx.lineTo(...lower[i]);ctx.closePath();ctx.fill();
     ctx.strokeStyle="rgba(255,218,178,.48)";ctx.lineWidth=2;ctx.beginPath();tailPts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]-2):ctx.moveTo(p[0],p[1]-2));ctx.stroke();
@@ -2619,20 +2626,6 @@
     // Muscled, three-part limbs: shoulder/hip, elbow/knee, wrist/hock, then a small planted paw.
     const gait=(walkOffset,runOffset)=>walkBeat+walkOffset+Math.atan2(Math.sin(runBeat+runOffset-walkBeat-walkOffset),Math.cos(runBeat+runOffset-walkBeat-walkOffset))*run;
     const limb=(hip,off,front,far)=>{
-      if(isAlt){
-        const p=((off%(Math.PI*2))+Math.PI*2)%(Math.PI*2),stance=p<Math.PI*1.2;
-        const t=stance?p/(Math.PI*1.2):(p-Math.PI*1.2)/(.8*Math.PI),travel=stance?.6-1.2*t:-.6+1.2*t,lift=stance?0:Math.sin(t*Math.PI);
-        let pawX=hip+travel*stride*move,pawY=footLine-lift*(4+run*11)*move,kneeX=hip+(pawX-hip)*.43+(front?5:-5),kneeY=27+lift*5;
-        const tuck=airborne?Math.max(launch,.25)*.55:impact*.58;
-        if(airborne){const descending=Math.max(0,Math.min(1,(player.vy+40)/360));pawX=hip+(front?1:-1)*(10+descending*9);pawY=footLine-(1-descending)*12;kneeX=hip+(front?8:-8);kneeY=24-tuck*4;}
-        if(impact&&!airborne){pawY=footLine-impact*2;kneeY+=impact*5;}
-        const color=far?"#87402c":"#a34b2c",alpha=far?.56:1;ctx.globalAlpha=alpha;ctx.lineCap="round";ctx.lineJoin="round";
-        ctx.strokeStyle=color;ctx.lineWidth=far?3.5:4.2;ctx.beginPath();ctx.moveTo(hip,2);ctx.quadraticCurveTo(hip+(kneeX-hip)*.35,kneeY-8,kneeX,kneeY);ctx.stroke();
-        const ankleX=pawX+(kneeX-pawX)*.18,ankleY=pawY-5;
-        ctx.lineWidth=far?2.5:3;ctx.beginPath();ctx.moveTo(kneeX,kneeY);ctx.quadraticCurveTo(kneeX+(ankleX-kneeX)*.55,ankleY-4,ankleX,ankleY);ctx.lineTo(pawX,pawY-2);ctx.stroke();
-        ctx.fillStyle=color;ctx.beginPath();ctx.arc(kneeX,kneeY,1.8,0,Math.PI*2);ctx.arc(ankleX,ankleY,1.25,0,Math.PI*2);ctx.fill();
-        ctx.strokeStyle="#302622";ctx.lineWidth=2.8;ctx.beginPath();ctx.moveTo(pawX-2,pawY-1);ctx.quadraticCurveTo(pawX+2,pawY+1,pawX+6.3,pawY);ctx.stroke();ctx.globalAlpha=1;return;
-      }
       const p=((off%(Math.PI*2))+Math.PI*2)%(Math.PI*2),stance=p<Math.PI*1.2;
       const t=stance?p/(Math.PI*1.2):(p-Math.PI*1.2)/(.8*Math.PI);
       const travel=stance?.6-1.2*t:-.6+1.2*t,lift=stance?0:Math.sin(t*Math.PI);
@@ -2790,5 +2783,10 @@
     }
     startLevel(FOX_LAB_LEVEL);
   }else showMenu();
+  if(!directFoxRoute){
+    document.title=gameEdition===1?"Gecko Escape 1":"Gecko Escape 2";
+    document.querySelector("h1").textContent=gameEdition===1?"GECKO ESCAPE 1":"GECKO ESCAPE 2";
+    document.querySelector(".eyebrow").textContent=gameEdition===1?"THE ORIGINAL CREATURE ESCAPES":"THE ANIMAL GETAWAY EXPANDS";
+  }
   requestAnimationFrame(frame);
 })();

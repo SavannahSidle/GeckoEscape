@@ -59,6 +59,10 @@ h1 {
   letter-spacing: -.055em;
 }
 
+.edition-links { display: flex; gap: 12px; margin-top: 9px; }
+.edition-links a { color: var(--muted); font-size: .68rem; font-weight: 850; letter-spacing: .08em; text-decoration: none; }
+.edition-links a:hover, .edition-links a:focus-visible { color: var(--acid); }
+
 .icon-button,
 .secondary-button {
   border: 1px solid var(--line);
