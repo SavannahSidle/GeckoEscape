@@ -2658,3 +2658,52 @@
     draw(time);
     requestAnimationFrame(frame);
   }
+
+  window.addEventListener("keydown", event => {
+    if (["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Space"].includes(event.code)) event.preventDefault();
+    if (!keys[event.code] && (event.code === "Space" || event.code === "ArrowUp" || event.code === "KeyW")) jump();
+    if (!keys[event.code] && event.code === "KeyE") useAbility();
+    if (!keys[event.code] && event.code === "KeyR") useSecondaryAbility();
+    keys[event.code] = true;
+  });
+  window.addEventListener("keyup", event => keys[event.code] = false);
+
+  document.querySelectorAll("[data-control]").forEach(button => {
+    const control = button.dataset.control;
+    const key = control === "left" ? "touchLeft" : control === "right" ? "touchRight" : "touchJump";
+    const press = event => {
+      event.preventDefault();
+      if (control === "secondary") return useSecondaryAbility();
+      if (control === "primary") return useAbility();
+      if (control === "jump" && !keys[key]) jump();
+      keys[key] = true;
+    };
+    const release = event => { event.preventDefault(); keys[key] = false; };
+    button.addEventListener("pointerdown", press);
+    button.addEventListener("pointerup", release);
+    button.addEventListener("pointercancel", release);
+    button.addEventListener("pointerleave", release);
+  });
+
+  characterSelect.querySelectorAll("[data-character]").forEach(button => {
+    button.addEventListener("click", () => {
+      selectedCharacter = button.dataset.character;
+      applyCharacterHabitat();
+      abilityButton.textContent = characters[selectedCharacter].ability;
+      if(backstageMode)showLevelSelect();else showIntro(0);
+    });
+  });
+  levelSelect.querySelectorAll("[data-level]").forEach(button=>{
+    button.addEventListener("click",()=>showIntro(Number(button.dataset.level)));
+  });
+  soundButton.addEventListener("click", () => {
+    soundOn = !soundOn;
+    soundButton.textContent = `SOUND: ${soundOn ? "ON" : "OFF"}`;
+    soundButton.setAttribute("aria-pressed", String(soundOn));
+    soundButton.setAttribute("aria-label", `Turn sound ${soundOn ? "off" : "on"}`);
+    if (soundOn) tone(440);
+  });
+
+  showMenu();
+  requestAnimationFrame(frame);
+})();
