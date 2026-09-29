@@ -2558,7 +2558,7 @@
   function drawExperimentalFox(now){
     const speed=Math.abs(player.vx),run=Math.max(0,Math.min(1,(speed-85)/200)),walk=Math.max(0,Math.min(1,speed/105))*(1-run);
     const airborne=!player.grounded,phase=foxLabStridePhase,launch=Math.max(0,(foxLabTakeoffUntil-now)/145),impact=foxLabLandingImpact;
-    const bounce=player.grounded?Math.sin(phase*2)*run*2.2+Math.abs(Math.sin(phase))*walk*.8:0;
+    const bounce=player.grounded?Math.sin(phase)*run*2.2+Math.abs(Math.sin(phase))*walk*.8:0;
     const spine=Math.sin(phase)*run,turn=Math.max(0,(foxLabTurnUntil-now)/170);
     const bodyPitch=airborne?Math.max(-.12,Math.min(.13,player.vy*.00025)):spine*.035-impact*.06;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2+bounce+launch*2+impact*5);
@@ -2585,7 +2585,9 @@
         kneeX=hip+(pawX-hip)*.48+(front?3:-3);
       }
       ctx.globalAlpha=far?.48:1;ctx.lineCap="round";ctx.lineJoin="round";
-      ctx.strokeStyle=far?"#873e28":"#9e4829";ctx.lineWidth=far?3.6:4.5;ctx.beginPath();ctx.moveTo(hip,1);ctx.quadraticCurveTo((hip+kneeX)/2,kneeY-3,kneeX,kneeY);ctx.lineTo(pawX,pawY-3);ctx.stroke();
+      ctx.strokeStyle=far?"#873e28":"#9e4829";ctx.lineWidth=far?4:5.2;ctx.beginPath();ctx.moveTo(hip,1);ctx.quadraticCurveTo((hip+kneeX)/2,kneeY-3,kneeX,kneeY);ctx.stroke();
+      ctx.lineWidth=far?2.8:3.6;ctx.beginPath();ctx.moveTo(kneeX,kneeY);ctx.lineTo(pawX,pawY-3);ctx.stroke();
+      ctx.fillStyle=far?"#873e28":"#9e4829";ctx.beginPath();ctx.arc(kneeX,kneeY,far?1.7:2.1,0,Math.PI*2);ctx.fill();
       ctx.strokeStyle="#332723";ctx.lineWidth=3.6;ctx.beginPath();ctx.moveTo(pawX-1,pawY-2);ctx.quadraticCurveTo(pawX+4,pawY+1,pawX+10,pawY);ctx.stroke();
       ctx.globalAlpha=1;return {hip,kneeX,kneeY,pawX,pawY};
     };
@@ -2707,3 +2709,4 @@
 
   showMenu();
   requestAnimationFrame(frame);
+})();
