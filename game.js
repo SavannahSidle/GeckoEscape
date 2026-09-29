@@ -1003,7 +1003,7 @@
     }
     if(player.y<54){player.y=54;player.vy=Math.max(0,player.vy);}
 
-    const speed=Math.abs(player.vx),strideLength=18+speed*.105;
+    const speed=Math.abs(player.vx),run=Math.max(0,Math.min(1,(speed-85)/200)),walk=Math.max(0,Math.min(1,speed/105))*(1-run),strideLength=15+run*23+walk*5;
     if(player.grounded&&speed>1)foxLabStridePhase+=speed*dt*Math.PI/strideLength;
     foxLabLandingImpact*=Math.exp(-9*dt);
     const localAcceleration=((player.vx-oldVx)/Math.max(dt,.001))*player.facing;
@@ -2560,9 +2560,9 @@
     const airborne=!player.grounded,phase=foxLabStridePhase,launch=Math.max(0,(foxLabTakeoffUntil-now)/145),impact=foxLabLandingImpact;
     const bounce=player.grounded?Math.sin(phase*2)*run*2.2+Math.abs(Math.sin(phase))*walk*.8:0;
     const spine=Math.sin(phase)*run,turn=Math.max(0,(foxLabTurnUntil-now)/170);
-    const bodyPitch=airborne?Math.max(-.12,Math.min(.13,player.vy*.00025)):spine*.035-impact*.06;
+    const bodyPitch=airborne?Math.max(-.12,Math.min(.13,player.vy*.00025)):spine*.035+Math.sin(phase)*walk*.008-impact*.06;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2+bounce+launch*2+impact*5);
-    ctx.scale(player.facing*(1-turn*.14),1+turn*.04);ctx.rotate(bodyPitch);
+    ctx.translate(0,-(player.h/2-2)*.1);ctx.scale(player.facing*(1-turn*.14),1.1+turn*.04);ctx.rotate(bodyPitch);
 
     // Spring-driven, brush-shaped tail: acceleration leads, the tail follows.
     const ty=foxLabTailY;
@@ -2585,8 +2585,8 @@
         kneeX=hip+(pawX-hip)*.48+(front?3:-3);
       }
       ctx.globalAlpha=far?.48:1;ctx.lineCap="round";ctx.lineJoin="round";
-      ctx.strokeStyle=far?"#873e28":"#9e4829";ctx.lineWidth=far?6:7.5;ctx.beginPath();ctx.moveTo(hip,1);ctx.quadraticCurveTo((hip+kneeX)/2,kneeY-3,kneeX,kneeY);ctx.lineTo(pawX,pawY-3);ctx.stroke();
-      ctx.strokeStyle="#332723";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(pawX-1,pawY-2);ctx.quadraticCurveTo(pawX+4,pawY+1,pawX+10,pawY);ctx.stroke();
+      ctx.strokeStyle=far?"#873e28":"#9e4829";ctx.lineWidth=far?3.6:4.5;ctx.beginPath();ctx.moveTo(hip,1);ctx.quadraticCurveTo((hip+kneeX)/2,kneeY-3,kneeX,kneeY);ctx.lineTo(pawX,pawY-3);ctx.stroke();
+      ctx.strokeStyle="#332723";ctx.lineWidth=3.6;ctx.beginPath();ctx.moveTo(pawX-1,pawY-2);ctx.quadraticCurveTo(pawX+4,pawY+1,pawX+10,pawY);ctx.stroke();
       ctx.globalAlpha=1;return {hip,kneeX,kneeY,pawX,pawY};
     };
     const rearFar=legPose(-25,Math.PI+.14,false,true),frontFar=legPose(17,.14,true,true);
