@@ -109,11 +109,18 @@
     bat: { name: "EGYPTIAN FRUIT BAT", ability: "HANG", secondary: "ECHO PULSE", collectible: "FRUIT", color: "#806956", climbSpeed: 190, swimSpeed: 145, w: 54, h: 30 },
     goat: { name: "GOAT", ability: "HEADBUTT", secondary: "MOUNTAIN SCRAMBLE", collectible: "FORAGE", color: "#d9d0bb", climbSpeed: 165, swimSpeed: 130, w: 62, h: 38 },
     highland: { name: "HIGHLAND COW", ability: "HORN TOSS", secondary: "HIGHLAND CHARGE", collectible: "MEADOW BITES", color: "#b85f2e", climbSpeed: 105, swimSpeed: 115, w: 82, h: 48 },
-    devilfox: { name: "FOX", ability: "POUNCE", secondary: "MISCHIEF BLINK", collectible: "SOUL BERRIES", color: "#b74766", climbSpeed: 180, swimSpeed: 155, w: 60, h: 36 }
+    devilfox: { name: "FOX", ability: "POUNCE", secondary: "MISCHIEF BLINK", collectible: "SOUL BERRIES", color: "#b74766", climbSpeed: 180, swimSpeed: 155, w: 60, h: 36 },
+    foxLab: { name: "EXPERIMENTAL FOX", ability: "RUN", secondary: "JUMP", collectible: "NONE", color: "#c85e2c", climbSpeed: 0, swimSpeed: 0, w: 96, h: 76 }
   };
 
-  const singleLevelCharacters=new Set(["opossum","bat","goat","highland","devilfox"]);
-  const storyLevelCount=()=>backstageMode?levels.length:selectedCharacter==="raccoon"?6:singleLevelCharacters.has(selectedCharacter)?1:levels.length;
+  const singleLevelCharacters=new Set(["opossum","bat","goat","highland","devilfox","foxLab"]);
+  const storyLevelCount=()=>backstageMode?levels.length:selectedCharacter==="raccoon"?6:singleLevelCharacters.has(selectedCharacter)?1:standardStoryLevels.length+1;
+  let foxLabStridePhase=0;
+  let foxLabTailY=0;
+  let foxLabTailVelocity=0;
+  let foxLabLandingImpact=0;
+  let foxLabTakeoffUntil=0;
+  let foxLabTurnUntil=0;
 
   const player = {
     x: 0, y: 0, w: 38, h: 24,
@@ -284,6 +291,14 @@
     }
   ];
 
+  const FOX_LAB_LEVEL=6;
+  while(levels.length<FOX_LAB_LEVEL)levels.push(null);
+  levels[FOX_LAB_LEVEL]={
+    label:"EXPERIMENTAL ZONE",title:"Fox Movement Lab",intro:"Move with A/D or the arrow keys. Jump with Space or Up.",
+    completeTitle:"",completeText:"",palette:["#202a30","#202a30","#39443d","#39443d"],start:[150,404],exit:[2000,0,1,1],
+    platforms:[[0,480,960,40,"foxLabGround"]],vines:[],insects:[],hazards:[],decor:"foxMovementLab",habitat:"foxLab"
+  };
+
   const frogLevelExtras={
     kitchen:{
       platforms:[[108,310,135,18],[690,225,125,18]],
@@ -402,6 +417,11 @@
       platforms:[[0,500,960,40,"velvetFloor"],[35,454,185,22,"obsidian"],[82,340,145,20,"mushroom"],[270,405,175,22,"root"],[485,330,175,22,"crystal"],[685,255,180,22,"root"],[790,150,145,22,"obsidian"]],
       vines:[[445,250,18,160],[735,140,18,118]],ceilingVines:[[150,78,650,16,"infernalChain"]],insects:[[145,305],[345,370],[560,295],[760,220],[850,115]],
       hazards:[{x:430,y:430,w:92,h:70,type:"grab",axis:"x",min:340,max:625,speed:88}]
+    },
+    foxLab: {
+      title:"Fox Movement Lab",habitat:"foxLab",palette:["#202a30","#202a30","#39443d","#39443d"],
+      intro:"Move with A/D or the arrow keys. Jump with Space or Up.",start:[150,404],exit:[2000,0,1,1],
+      platforms:[[0,480,960,40,"foxLabGround"]],angledPlatforms:[],vines:[],ceilingVines:[],diagonalVines:[],insects:[],mice:[],hazards:[],decor:"foxMovementLab"
     }
   };
 
@@ -481,6 +501,7 @@
     primaryButton.classList.add("hidden");
     secondaryButton.classList.add("hidden");
     levelSelect.classList.add("hidden");
+    characterSelect.querySelector('[data-character="foxLab"]')?.classList.toggle("hidden",!backstageMode);
     characterSelect.classList.remove("hidden");
     characterSelect.querySelector("button")?.focus();
   }
@@ -495,7 +516,8 @@
     levelSelect.classList.remove("hidden");
     levelSelect.querySelectorAll("[data-level]").forEach(button=>{
       const index=Number(button.dataset.level);const level=levels[index];
-      button.classList.toggle("hidden",index>=storyLevelCount());
+      const labLevel=index===FOX_LAB_LEVEL;
+      button.classList.toggle("hidden",selectedCharacter==="foxLab"?!labLevel:labLevel||!level||index>=storyLevelCount());
       const label=button.querySelector("small");
       if(level&&label)label.textContent=level.title.replace(/^The\s+/i,"");
     });
@@ -587,6 +609,7 @@
     foxPounceCooldownUntil = 0;
     foxBlinkUntil = 0;
     foxBlinkCooldownUntil = 0;
+    foxLabStridePhase=0;foxLabTailY=0;foxLabTailVelocity=0;foxLabLandingImpact=0;foxLabTakeoffUntil=0;foxLabTurnUntil=0;
     miceCollected = 0;
     (level.mice||[]).forEach(mouse=>mouse[2]=false);
     tongueActiveUntil = 0;
@@ -598,7 +621,7 @@
     levelLabel.textContent = `${level.label}${backstageMode?" · BACKSTAGE":""}`;
     updateHud();
     overlay.classList.add("hidden");
-    hud.classList.remove("hidden");
+    hud.classList.toggle("hidden",level.decor==="foxMovementLab");
     state = "playing";
     canvas.focus();
     tone(330, .08, "triangle");
@@ -957,6 +980,39 @@
     }
   }
 
+  function updateFoxLab(dt,now,left,right,up){
+    const input=(left?-1:0)+(right?1:0),oldVx=player.vx;
+    if(input&&input!==player.facing){player.facing=input;foxLabTurnUntil=now+170;}
+    if(input){
+      const reversing=player.vx&&Math.sign(player.vx)!==input;
+      player.vx+=input*(reversing?1820:1120)*dt;
+    }else player.vx*=Math.exp(-5.6*dt);
+    player.vx=Math.max(-285,Math.min(285,player.vx));
+    if(Math.abs(player.vx)<1.8&&!input)player.vx=0;
+
+    const floorY=480,oldBottom=player.y+player.h,fallSpeed=player.vy;
+    player.vy+=((up&&player.vy<0)?1030:1500)*dt;
+    player.vy=Math.min(900,player.vy);
+    player.x+=player.vx*dt;
+    player.x=Math.max(100,Math.min(W-player.w-100,player.x));
+    player.y+=player.vy*dt;
+    player.grounded=false;
+    if(player.vy>=0&&oldBottom<=floorY&&player.y+player.h>=floorY){
+      player.y=floorY-player.h;player.vy=0;player.grounded=true;
+      if(fallSpeed>35){foxLabLandingImpact=Math.min(1,fallSpeed/720);foxLabTailVelocity+=Math.min(115,fallSpeed*.2);}
+    }
+    if(player.y<54){player.y=54;player.vy=Math.max(0,player.vy);}
+
+    const speed=Math.abs(player.vx),strideLength=18+speed*.105;
+    if(player.grounded&&speed>1)foxLabStridePhase+=speed*dt*Math.PI/strideLength;
+    foxLabLandingImpact*=Math.exp(-9*dt);
+    const localAcceleration=((player.vx-oldVx)/Math.max(dt,.001))*player.facing;
+    const tailTarget=Math.max(-18,Math.min(18,localAcceleration*.004+player.vy*.012));
+    foxLabTailVelocity+=(tailTarget-foxLabTailY)*32*dt;
+    foxLabTailVelocity*=Math.exp(-5.2*dt);
+    foxLabTailY+=foxLabTailVelocity*dt;
+  }
+
   function update(dt, now) {
     if (state !== "playing") return;
     const level = levels[levelIndex];
@@ -965,6 +1021,10 @@
     const right = keys.ArrowRight || keys.KeyD || keys.touchRight;
     const up = keys.ArrowUp || keys.KeyW || keys.Space || keys.touchJump;
     const down = keys.ArrowDown || keys.KeyS;
+    if(selectedCharacter==="foxLab"&&level.decor==="foxMovementLab"){
+      updateFoxLab(dt,now,left,right,up);
+      return;
+    }
     if(level.decor==="boatEscape"){
       const wave=Math.sin(now*.0034)+Math.sin(now*.0067+1.8)*.55;
       const waveStrength=1+boatDistance/120,targetY=342+wave*34*waveStrength;
@@ -1194,6 +1254,10 @@
     if (state !== "playing") return;
     const now=performance.now();
     if(levels[levelIndex]?.decor==="boatEscape")return;
+    if(selectedCharacter==="foxLab"){
+      if(player.grounded){player.vy=-545;player.grounded=false;foxLabTakeoffUntil=now+145;tone(245,.05,"triangle");}
+      return;
+    }
     if(selectedCharacter==="opossum"&&performance.now()<playDeadUntil)return;
     if(batStartHanging){batStartHanging=false;player.ceilingClimbing=false;batReleaseUntil=now+260;player.y+=8;player.vy=65;tone(185,.05,"triangle");return;}
     if(player.ceilingClimbing){player.ceilingClimbing=false;player.climbing=false;player.y+=8;player.vy=135;tone(185,.05,"triangle");return;}
@@ -2486,8 +2550,73 @@
     else if (selectedCharacter === "goat") drawGoat(now);
     else if (selectedCharacter === "highland") drawHighland(now);
     else if (selectedCharacter === "devilfox") drawDevilFox(now);
+    else if (selectedCharacter === "foxLab") drawExperimentalFox(now);
     else drawCrestedGecko(now);
     ctx.restore();
+  }
+
+  function drawExperimentalFox(now){
+    const speed=Math.abs(player.vx),run=Math.max(0,Math.min(1,(speed-85)/200)),walk=Math.max(0,Math.min(1,speed/105))*(1-run);
+    const airborne=!player.grounded,phase=foxLabStridePhase,launch=Math.max(0,(foxLabTakeoffUntil-now)/145),impact=foxLabLandingImpact;
+    const bounce=player.grounded?Math.sin(phase*2)*run*2.2+Math.abs(Math.sin(phase))*walk*.8:0;
+    const spine=Math.sin(phase)*run,turn=Math.max(0,(foxLabTurnUntil-now)/170);
+    const bodyPitch=airborne?Math.max(-.12,Math.min(.13,player.vy*.00025)):spine*.035-impact*.06;
+    ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2+bounce+launch*2+impact*5);
+    ctx.scale(player.facing*(1-turn*.14),1+turn*.04);ctx.rotate(bodyPitch);
+
+    // Spring-driven, brush-shaped tail: acceleration leads, the tail follows.
+    const ty=foxLabTailY;
+    ctx.fillStyle="#a84727";ctx.beginPath();ctx.moveTo(-31,-3);ctx.bezierCurveTo(-49,-18-ty*.12,-68,-19+ty*.35,-88,-11+ty*.72);ctx.quadraticCurveTo(-102,-5+ty,-111,-2+ty*.9);ctx.quadraticCurveTo(-99,12+ty*.65,-81,12+ty*.42);ctx.quadraticCurveTo(-54,12+ty*.12,-34,5);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#f0dfc5";ctx.beginPath();ctx.moveTo(-91,-8+ty*.78);ctx.quadraticCurveTo(-103,-4+ty,-111,-2+ty*.9);ctx.quadraticCurveTo(-101,7+ty*.75,-91,9+ty*.55);ctx.closePath();ctx.fill();
+    ctx.strokeStyle="rgba(255,214,175,.42)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-40,-4);ctx.quadraticCurveTo(-70,-18+ty*.3,-96,-8+ty*.8);ctx.stroke();
+
+    const footLine=player.h/2-2,stride=15+run*23+walk*5;
+    const legPose=(hip,phaseOffset,front,far)=>{
+      let kneeX=hip,pawX=hip,pawY=footLine,kneeY=13;
+      if(airborne){
+        const descending=player.vy>70;
+        if(launch&&!front){kneeX=hip-7;kneeY=17;pawX=hip-1;pawY=footLine-1;}
+        else if(front){kneeX=hip+8;kneeY=12;pawX=hip+(descending?20:14);pawY=footLine-(descending?0:10);}
+        else{kneeX=hip-7;kneeY=12;pawX=hip+(descending?-13:-5);pawY=footLine-8;}
+      }else{
+        const p=((phase+phaseOffset)%(Math.PI*2)+Math.PI*2)%(Math.PI*2),half=stride*.5;
+        if(p<Math.PI){const t=p/Math.PI;pawX=hip+half-t*stride;pawY=footLine;kneeY=14+Math.sin(t*Math.PI)*2;}
+        else{const t=(p-Math.PI)/Math.PI;pawX=hip-half+t*stride;pawY=footLine-Math.sin(t*Math.PI)*(5+run*8);kneeY=12-Math.sin(t*Math.PI)*3;}
+        kneeX=hip+(pawX-hip)*.48+(front?3:-3);
+      }
+      ctx.globalAlpha=far?.48:1;ctx.lineCap="round";ctx.lineJoin="round";
+      ctx.strokeStyle=far?"#873e28":"#9e4829";ctx.lineWidth=far?6:7.5;ctx.beginPath();ctx.moveTo(hip,1);ctx.quadraticCurveTo((hip+kneeX)/2,kneeY-3,kneeX,kneeY);ctx.lineTo(pawX,pawY-3);ctx.stroke();
+      ctx.strokeStyle="#332723";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(pawX-1,pawY-2);ctx.quadraticCurveTo(pawX+4,pawY+1,pawX+10,pawY);ctx.stroke();
+      ctx.globalAlpha=1;return {hip,kneeX,kneeY,pawX,pawY};
+    };
+    const rearFar=legPose(-25,Math.PI+.14,false,true),frontFar=legPose(17,.14,true,true);
+
+    // Narrow waist, low torso, natural chest, and pale underside.
+    const flex=spine*2.4;
+    ctx.fillStyle="#bb552d";ctx.beginPath();ctx.moveTo(-43,-2);ctx.quadraticCurveTo(-37,-15,-18,-15-flex*.25);ctx.lineTo(8,-13-flex*.35);ctx.quadraticCurveTo(26,-13,34,-2);ctx.quadraticCurveTo(26,11,7,12+flex*.2);ctx.lineTo(-19,11+flex*.25);ctx.quadraticCurveTo(-38,11,-43,-2);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#d16a36";ctx.beginPath();ctx.ellipse(-23,-4,19,10,-.04,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#f0dfc5";ctx.beginPath();ctx.moveTo(7,-12);ctx.quadraticCurveTo(25,-13,31,-1);ctx.quadraticCurveTo(25,8,12,11);ctx.quadraticCurveTo(7,3,7,-12);ctx.fill();
+
+    const rearNear=legPose(-26,0,false,false),frontNear=legPose(16,0,true,false);
+    // Long neck, fox wedge head, pointed muzzle, and unmistakable ears.
+    ctx.fillStyle="#c76131";ctx.beginPath();ctx.moveTo(17,-11);ctx.quadraticCurveTo(28,-23,38,-23);ctx.lineTo(48,-14);ctx.lineTo(43,-5);ctx.lineTo(27,1);ctx.quadraticCurveTo(18,-2,17,-11);ctx.fill();
+    const earTwitch=(now%6100>5550)?Math.sin((now%6100-5550)/550*Math.PI)*2.5:Math.sin(now*.0015)*.45;
+    ctx.fillStyle="#b84d2a";ctx.beginPath();ctx.moveTo(25,-19);ctx.lineTo(22,-43-earTwitch);ctx.lineTo(39,-23);ctx.moveTo(37,-20);ctx.lineTo(47,-41+earTwitch*.5);ctx.lineTo(49,-14);ctx.fill();
+    ctx.fillStyle="#402820";ctx.beginPath();ctx.moveTo(27,-22);ctx.lineTo(25,-36-earTwitch*.7);ctx.lineTo(35,-23);ctx.moveTo(40,-21);ctx.lineTo(45,-34);ctx.lineTo(46,-18);ctx.fill();
+    ctx.fillStyle="#c76131";ctx.beginPath();ctx.moveTo(36,-17);ctx.quadraticCurveTo(47,-15,61,-7);ctx.lineTo(75,-2);ctx.lineTo(68,2);ctx.lineTo(48,1);ctx.quadraticCurveTo(38,-2,36,-17);ctx.fill();
+    ctx.fillStyle="#f0dfc5";ctx.beginPath();ctx.moveTo(44,-5);ctx.quadraticCurveTo(57,-5,72,-1);ctx.lineTo(66,2);ctx.lineTo(48,1);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#2a1b19";ctx.beginPath();ctx.ellipse(48,-13,2.2,2.6,0,0,Math.PI*2);ctx.arc(75,-2,2.7,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#e3ad47";ctx.beginPath();ctx.ellipse(48,-13,1,1.6,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#5a3024";ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(61,2);ctx.quadraticCurveTo(66,5,71,2);ctx.stroke();
+    if(!speed&&player.grounded){ctx.strokeStyle="#f0dfc5";ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(44,-19);ctx.lineTo(48,-18);ctx.stroke();}
+    ctx.restore();
+  }
+
+  function drawFoxLabArena(){
+    ctx.fillStyle="#202a30";ctx.fillRect(0,0,W,H);
+    ctx.fillStyle="#39443d";ctx.fillRect(0,480,W,40);
+    ctx.fillStyle="#657260";ctx.fillRect(0,478,W,2);
+    ctx.fillStyle="rgba(233,237,228,.55)";ctx.font="700 12px system-ui";ctx.textAlign="left";ctx.fillText("FOX MOVEMENT LAB  ·  A / D OR ← →   SPACE TO JUMP",22,30);
   }
 
   function drawBoatEscape(now){
@@ -2506,6 +2635,9 @@
 
   function draw(time = 0) {
     const level = levels[levelIndex] || levels[0];
+    if(selectedCharacter==="foxLab"&&level.decor==="foxMovementLab"){
+      drawFoxLabArena();drawExperimentalFox(time);return;
+    }
     drawBackdrop(level);
     if(level.decor==="boatEscape"){drawBoatEscape(time);return;}
     drawPlatforms(level);
@@ -2526,52 +2658,3 @@
     draw(time);
     requestAnimationFrame(frame);
   }
-
-  window.addEventListener("keydown", event => {
-    if (["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Space"].includes(event.code)) event.preventDefault();
-    if (!keys[event.code] && (event.code === "Space" || event.code === "ArrowUp" || event.code === "KeyW")) jump();
-    if (!keys[event.code] && event.code === "KeyE") useAbility();
-    if (!keys[event.code] && event.code === "KeyR") useSecondaryAbility();
-    keys[event.code] = true;
-  });
-  window.addEventListener("keyup", event => keys[event.code] = false);
-
-  document.querySelectorAll("[data-control]").forEach(button => {
-    const control = button.dataset.control;
-    const key = control === "left" ? "touchLeft" : control === "right" ? "touchRight" : "touchJump";
-    const press = event => {
-      event.preventDefault();
-      if (control === "secondary") return useSecondaryAbility();
-      if (control === "primary") return useAbility();
-      if (control === "jump" && !keys[key]) jump();
-      keys[key] = true;
-    };
-    const release = event => { event.preventDefault(); keys[key] = false; };
-    button.addEventListener("pointerdown", press);
-    button.addEventListener("pointerup", release);
-    button.addEventListener("pointercancel", release);
-    button.addEventListener("pointerleave", release);
-  });
-
-  characterSelect.querySelectorAll("[data-character]").forEach(button => {
-    button.addEventListener("click", () => {
-      selectedCharacter = button.dataset.character;
-      applyCharacterHabitat();
-      abilityButton.textContent = characters[selectedCharacter].ability;
-      if(backstageMode)showLevelSelect();else showIntro(0);
-    });
-  });
-  levelSelect.querySelectorAll("[data-level]").forEach(button=>{
-    button.addEventListener("click",()=>showIntro(Number(button.dataset.level)));
-  });
-  soundButton.addEventListener("click", () => {
-    soundOn = !soundOn;
-    soundButton.textContent = `SOUND: ${soundOn ? "ON" : "OFF"}`;
-    soundButton.setAttribute("aria-pressed", String(soundOn));
-    soundButton.setAttribute("aria-label", `Turn sound ${soundOn ? "off" : "on"}`);
-    if (soundOn) tone(440);
-  });
-
-  showMenu();
-  requestAnimationFrame(frame);
-})();
