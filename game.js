@@ -1006,7 +1006,7 @@
     const jumpHeld=up&&player.vy<0?1:0;
     foxLabJumpHoldBlend+=(jumpHeld-foxLabJumpHoldBlend)*(1-Math.exp(-14*dt));
     player.vy=Math.min(920,player.vy+(1650-foxLabJumpHoldBlend*500)*dt);
-    player.x=Math.max(36,Math.min(W-player.w-36,player.x+player.vx*dt));
+    player.x=Math.max(90,Math.min(W-player.w-36,player.x+player.vx*dt));
     player.y+=player.vy*dt;player.grounded=false;
     let landing=null;
     if(player.vy>=0){
@@ -2627,9 +2627,12 @@
 
     const flex=Math.sin(runBeat-.5)*run*3.1-compress*1.2+launch*2-impact*2;
     // Lean torso, raised chest and tucked abdomen.
+    const spineExtend=1+run*.025+Math.sin(runBeat)*run*.025+launch*.02-impact*.02;
+    ctx.save();ctx.translate(1,0);ctx.scale(spineExtend,1);ctx.translate(-1,0);
     ctx.fillStyle="#bb552d";ctx.beginPath();ctx.moveTo(-49,-4);ctx.quadraticCurveTo(-44,-17,-24,-18-flex*.22);ctx.quadraticCurveTo(-4,-21-flex*.2,15,-17);ctx.quadraticCurveTo(37,-14,43,-2);ctx.quadraticCurveTo(33,9,13,12+flex*.16);ctx.lineTo(-18,10+flex*.2);ctx.quadraticCurveTo(-43,10,-49,-4);ctx.closePath();ctx.fill();
     ctx.fillStyle="#d16a36";ctx.beginPath();ctx.ellipse(-28,-7,18,9,-.04,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#f0dfc5";ctx.beginPath();ctx.moveTo(12,-14);ctx.quadraticCurveTo(33,-13,39,-2);ctx.quadraticCurveTo(29,9,14,11);ctx.quadraticCurveTo(8,2,12,-14);ctx.fill();
+    ctx.restore();
     limb(-32,gait(0,Math.PI),false,false);limb(23,gait(Math.PI*1.5,0),true,false);
 
     // Stable narrow head on a long neck; sniffing lowers the nose and folds ears back.
