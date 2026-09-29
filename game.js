@@ -113,7 +113,7 @@
   };
 
   const singleLevelCharacters=new Set(["opossum","bat","goat","highland","devilfox"]);
-  const storyLevelCount=()=>selectedCharacter==="raccoon"?6:singleLevelCharacters.has(selectedCharacter)?1:levels.length;
+  const storyLevelCount=()=>backstageMode?levels.length:selectedCharacter==="raccoon"?6:singleLevelCharacters.has(selectedCharacter)?1:levels.length;
 
   const player = {
     x: 0, y: 0, w: 38, h: 24,
@@ -1223,7 +1223,7 @@
     const raccoonMovement=selectedCharacter==="raccoon"||selectedCharacter==="devilfox";
     if (player.grounded || player.climbing || (raccoonMovement&&now<raccoonCoyoteUntil) || (selectedCharacter === "frog" && frogAutoHopping)) {
       player.vy = selectedCharacter === "frog" ? -535 : -455;
-      if(selectedCharacter==="raccoon")raccoonLaunchUntil=now+130;
+      if(raccoonMovement)raccoonLaunchUntil=now+130;
       player.grounded = false;
       if(raccoonMovement){raccoonCoyoteUntil=0;raccoonJumpBufferUntil=0;}
       if(selectedCharacter==="frog")frogAutoHopping=false;
@@ -2433,15 +2433,41 @@
   function drawDevilFox(now){
     const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;if(flash)ctx.globalAlpha=.4;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
-    const motion=livelyMotion(now,.022),airborne=motion.airborne,pouncing=now<foxPounceUntil,walk=motion.stride*motion.moving*7,tailWave=Math.sin(now*.008)*(5+motion.moving*5)+(airborne?-player.vy*.02:0);ctx.translate(0,Math.abs(motion.stride)*motion.moving*1.8+motion.landing*1.6);ctx.scale(1+motion.landing*.07,1-motion.landing*.11);
+    const motion=livelyMotion(now,.015+Math.min(.013,Math.abs(player.vx)*.000055)),airborne=motion.airborne,pouncing=now<foxPounceUntil;
+    const speed=Math.min(1,Math.abs(player.vx)/220),running=Math.max(0,(speed-.38)/.62),walking=Math.min(1,speed/.48)*(1-running);
+    const stride=motion.stride,launch=Math.max(0,(raccoonLaunchUntil-now)/130),rise=Math.max(-1,Math.min(1,-player.vy/455));
+    const gather=Math.max(0,-stride)*running,extension=Math.max(0,stride)*running;
+    const idleLook=!speed&&player.grounded&&(now%7600)>7050?Math.sin((now%7600-7050)/550*Math.PI)*2.4:0;
+    const bodyLength=1+extension*.055-gather*.045+airborne*.035,bodyDrop=gather*1.2+motion.landing*2.8+launch*2.2;
+    ctx.translate(0,bodyDrop+Math.abs(stride)*walking*.55-extension*.7);ctx.scale(bodyLength,1-motion.landing*.12-launch*.08+airborne*.025);
     if(now<foxBlinkUntil){ctx.globalAlpha=.24;for(let g=1;g<=3;g++){ctx.save();ctx.translate(-g*18,Math.sin(g)*5);ctx.fillStyle="#dc68b3";ctx.beginPath();ctx.ellipse(0,0,28,13,0,0,Math.PI*2);ctx.fill();ctx.restore();}ctx.globalAlpha=1;}
-    const foxLeg=(hip,phase,front,far=false)=>{const kneeX=hip+(airborne?(front?12:-12):phase*.7),kneeY=airborne?(pouncing?1:8):12,footX=kneeX+(airborne?(front?14:-10):8),footY=airborne?(pouncing?5:14):20;ctx.globalAlpha=far?.52:1;ctx.strokeStyle=far?"#69203f":"#8f284f";ctx.lineWidth=far?4.5:6;ctx.beginPath();ctx.moveTo(hip,7);ctx.lineTo(kneeX,kneeY);ctx.lineTo(footX,footY);ctx.stroke();ctx.fillStyle="#2a1027";ctx.beginPath();ctx.ellipse(footX+3,footY,7,3,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#160a15";ctx.lineWidth=1;for(let toe=-1;toe<=1;toe++){ctx.beginPath();ctx.moveTo(footX+5,footY);ctx.lineTo(footX+10,footY+toe*2);ctx.stroke();}ctx.globalAlpha=1;};
-    ctx.strokeStyle="#b74766";ctx.lineWidth=18;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-20,0);ctx.bezierCurveTo(-39,-13,-53,-2,-64,-19+tailWave*.35);ctx.stroke();ctx.strokeStyle="#f39abb";ctx.lineWidth=10;ctx.beginPath();ctx.moveTo(-30,-4);ctx.bezierCurveTo(-45,-12,-54,-5,-64,-19+tailWave*.35);ctx.stroke();ctx.fillStyle="#fff0f5";ctx.beginPath();ctx.arc(-65,-19+tailWave*.35,6,0,Math.PI*2);ctx.fill();
-    foxLeg(-16,-walk*.8,false,true);foxLeg(7,walk*.8,true,true);foxLeg(-11,walk,false);foxLeg(12,-walk,true,false);
-    ctx.fillStyle="#b74766";ctx.beginPath();ctx.ellipse(-2,0,28+motion.breath*.4,14+motion.breath*.25,0,0,Math.PI*2);ctx.fill();ctx.save();ctx.translate(0,motion.headBob);ctx.fillStyle="#d95b82";ctx.beginPath();ctx.ellipse(24,-4,19,15,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#651d48";ctx.beginPath();ctx.moveTo(14,-14-motion.earTwitch);ctx.lineTo(14,-34-motion.earTwitch);ctx.lineTo(28,-17);ctx.moveTo(30,-17);ctx.lineTo(43,-34+motion.earTwitch*.4);ctx.lineTo(43,-10);ctx.fill();
-    ctx.fillStyle="#2a1027";ctx.beginPath();ctx.moveTo(20,-16);ctx.quadraticCurveTo(18,-31,27,-32);ctx.lineTo(30,-16);ctx.moveTo(33,-17);ctx.quadraticCurveTo(38,-32,46,-28);ctx.lineTo(42,-12);ctx.fill();
-    ctx.fillStyle="#f3d8e5";ctx.beginPath();ctx.ellipse(35,0,12,8,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#171018";ctx.beginPath();ctx.ellipse(26,-7,2.8,motion.blink?.5:2.8,0,0,Math.PI*2);ctx.arc(44,0,2.5,0,Math.PI*2);ctx.fill();ctx.fillStyle="#ffd468";ctx.beginPath();ctx.arc(27,-8,1,0,Math.PI*2);ctx.fill();
+    // Long, tapered tail follows speed and trajectory without constantly wagging.
+    const tailLift=airborne?Math.max(-9,Math.min(8,-player.vy*.021)):motion.landing*7;
+    const tailLag=-stride*(walking*1.5+running*4)+(speed<.05?Math.sin(now*.0021)*1.2:0);
+    ctx.lineCap="round";ctx.strokeStyle="#a93459";ctx.lineWidth=15;ctx.beginPath();ctx.moveTo(-25,-1);ctx.bezierCurveTo(-43,-6-tailLift*.15,-57,3+tailLag,-76,-5+tailLift+tailLag);ctx.stroke();
+    ctx.strokeStyle="#d95b82";ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(-29,-3);ctx.bezierCurveTo(-46,-8-tailLift*.15,-60,1+tailLag,-77,-5+tailLift+tailLag);ctx.stroke();
+    ctx.strokeStyle="#f4d7e3";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(-69,-2+tailLift+tailLag);ctx.lineTo(-78,-5+tailLift+tailLag);ctx.stroke();
+    // Two-segment legs show reach, gathering, propulsion, and landing preparation.
+    const foxLeg=(hip,phase,front,far=false)=>{
+      const cycle=Math.sin(Math.asin(Math.max(-1,Math.min(1,stride)))+phase),strideReach=(walking*6+running*13)*cycle;
+      let kneeX=hip+strideReach*.52+(front?2:-2),kneeY=9+Math.max(0,-cycle)*(3+running*3),pawX=hip+strideReach,pawY=20;
+      if(airborne){const descending=player.vy>45;kneeX=hip+(front?8+rise*5:-8-rise*4);kneeY=pouncing?2:8;pawX=kneeX+(front?(descending?10:14):-10);pawY=pouncing?5:descending&&front?18:12;}
+      if(launch&&!front){kneeX=hip-5;kneeY=14;pawX=hip+2;pawY=20;}
+      ctx.globalAlpha=far?.5:1;ctx.strokeStyle=far?"#6d2141":"#9e3156";ctx.lineWidth=far?4:5.2;ctx.lineJoin="round";ctx.beginPath();ctx.moveTo(hip,4);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();ctx.fillStyle="#28121f";ctx.beginPath();ctx.ellipse(pawX+3,pawY,6.5,2.5,.04,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+    };
+    foxLeg(-18,Math.PI,false,true);foxLeg(11,0,true,true);foxLeg(-13,0,false);foxLeg(16,Math.PI,true);
+    // Lean torso, tucked waist, and defined chest form a canine silhouette.
+    ctx.fillStyle="#a93459";ctx.beginPath();ctx.ellipse(-8,-2,29+motion.breath*.3,11.5+motion.breath*.18,-.03,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#c8476d";ctx.beginPath();ctx.ellipse(14,-2,15,14,-.08,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(-24,0,11,9,0,0,Math.PI*2);ctx.fill();
+    const headPitch=airborne?Math.max(-.08,Math.min(.1,player.vy*.00035)):motion.landing*.08-idleLook*.015;
+    ctx.save();ctx.translate(3+running*1.5,-1+motion.headBob*.35+motion.landing*1.2-idleLook);ctx.rotate(headPitch);
+    ctx.fillStyle="#d95b82";ctx.beginPath();ctx.moveTo(10,-12);ctx.quadraticCurveTo(24,-19,37,-10);ctx.quadraticCurveTo(42,-5,39,1);ctx.lineTo(22,7);ctx.quadraticCurveTo(10,3,10,-12);ctx.fill();
+    // Tall triangular ears, with restrained idle twitch.
+    ctx.fillStyle="#a93459";ctx.beginPath();ctx.moveTo(14,-13);ctx.lineTo(15,-33-motion.earTwitch);ctx.lineTo(27,-16);ctx.moveTo(27,-16);ctx.lineTo(38,-32+motion.earTwitch*.35);ctx.lineTo(39,-10);ctx.fill();
+    ctx.fillStyle="#42162f";ctx.beginPath();ctx.moveTo(18,-17);ctx.lineTo(18,-27-motion.earTwitch*.7);ctx.lineTo(24,-17);ctx.moveTo(31,-17);ctx.lineTo(37,-27);ctx.lineTo(37,-14);ctx.fill();
+    // Narrow cheek and long pointed muzzle.
+    ctx.fillStyle="#f0c5d6";ctx.beginPath();ctx.moveTo(26,-4);ctx.quadraticCurveTo(42,-6,54,1);ctx.lineTo(40,7);ctx.quadraticCurveTo(29,7,26,-4);ctx.fill();
+    ctx.fillStyle="#171018";ctx.beginPath();ctx.ellipse(27,-8,2.5,motion.blink?.45:2.4,0,0,Math.PI*2);ctx.arc(54,1,2.8,0,Math.PI*2);ctx.fill();ctx.fillStyle="#ffd468";ctx.beginPath();ctx.arc(27.5,-8.5,.8,0,Math.PI*2);ctx.fill();
     if(pouncing){ctx.strokeStyle="rgba(255,111,183,.7)";ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,44,-1.1,1.1);ctx.stroke();}
     ctx.restore();
     ctx.restore();ctx.globalAlpha=1;
