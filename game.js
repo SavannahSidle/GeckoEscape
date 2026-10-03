@@ -212,6 +212,7 @@
       hazards: [
         {x:270,y:392,w:86,h:34,type:"fish",axis:"x",min:245,max:500,speed:112},
         {x:620,y:238,w:92,h:38,type:"fish",axis:"x",min:560,max:800,speed:145},
+        {x:352,y:126,w:126,h:48,type:"shark",axis:"x",min:250,max:765,speed:92},
         {x:805,y:457,w:70,h:43,type:"filter",axis:"none"}
       ],
       decor: "underwater",
@@ -826,7 +827,7 @@
     if(state!=="playing"||selectedCharacter!=="boa"||now<strikeCooldownUntil)return;
     strikeActiveUntil=now+300;strikeCooldownUntil=now+1150;
     const strikeBox={x:player.facing>0?player.x+player.w-12:player.x-92,y:player.y-7,w:104,h:player.h+14};
-    const livingTypes=new Set(["cat","dalmatian","frenchie","fish","spider","bird","server","drone"]);
+    const livingTypes=new Set(["cat","dalmatian","frenchie","fish","shark","spider","bird","server","drone"]);
     for(const hazard of levels[levelIndex].hazards){
       if(hazard.defeated||!intersects(strikeBox,hazard))continue;
       if(hazard.type==="grab"||hazard.type==="hand"){
@@ -844,7 +845,7 @@
     biteActiveUntil=now+280;biteCooldownUntil=now+720;raccoonImpactUntil=now+190;
     player.vx+=player.facing*95;
     const biteBox={x:player.facing>0?player.x+player.w-8:player.x-46,y:player.y-5,w:54,h:player.h+10};
-    const livingTypes=new Set(["cat","dalmatian","frenchie","fish","spider","bird","server","drone"]);
+    const livingTypes=new Set(["cat","dalmatian","frenchie","fish","shark","spider","bird","server","drone"]);
     let hitSomething=false;
     for(const hazard of levels[levelIndex].hazards){
       if(hazard.defeated||!intersects(biteBox,hazard))continue;
@@ -873,7 +874,7 @@
     if(state!=="playing"||selectedCharacter!=="opossum"||now<hissCooldownUntil)return;
     hissActiveUntil=now+420;hissCooldownUntil=now+1800;
     const px=player.x+player.w/2,py=player.y+player.h/2;
-    const livingTypes=new Set(["cat","dalmatian","frenchie","fish","spider","grab","hand"]);
+    const livingTypes=new Set(["cat","dalmatian","frenchie","fish","shark","spider","grab","hand"]);
     for(const hazard of levels[levelIndex].hazards){
       if(!livingTypes.has(hazard.type)||hazard.defeated)continue;
       if(Math.hypot(px-hazard.x-hazard.w/2,py-hazard.y-hazard.h/2)<155)hazard.stunnedUntil=now+1700;
@@ -905,7 +906,7 @@
   function strikeNearby(activeUntilKey, cooldownKey, duration, cooldown, reach, toneFrequency){
     const now=performance.now();
     const attackBox={x:player.facing>0?player.x+player.w-8:player.x-reach+8,y:player.y-8,w:reach,h:player.h+16};
-    const livingTypes=new Set(["cat","dalmatian","frenchie","fish","spider"]);
+    const livingTypes=new Set(["cat","dalmatian","frenchie","fish","shark","spider"]);
     for(const hazard of levels[levelIndex].hazards){
       if(hazard.defeated||!intersects(attackBox,hazard))continue;
       if(hazard.type==="grab"||hazard.type==="hand"){hazard.stunnedUntil=now+1100;hazard.dir*=-1;}
@@ -1528,10 +1529,20 @@
       ctx.fillStyle="#466d43";ctx.fillRect(815,430,145,18);
     } else if (level.decor === "underwater") {
       const water = ctx.createLinearGradient(0,55,0,H);
-      water.addColorStop(0,"rgba(51,194,211,.18)");water.addColorStop(1,"rgba(0,35,58,.76)");
+      water.addColorStop(0,"#218a9a");water.addColorStop(.42,"#126274");water.addColorStop(1,"#082b40");
       ctx.fillStyle=water;ctx.fillRect(0,55,W,H-55);
-      ctx.strokeStyle="rgba(166,247,238,.22)";ctx.lineWidth=4;
+      // Soft light shafts and distant reef silhouettes give the tank real depth.
+      ctx.save();ctx.globalAlpha=.14;ctx.fillStyle="#b8f3dc";
+      for(const [x,w] of [[78,56],[310,42],[596,70],[830,48]]){ctx.beginPath();ctx.moveTo(x,55);ctx.lineTo(x+w,55);ctx.lineTo(x+w+92,420);ctx.lineTo(x+42,420);ctx.closePath();ctx.fill();}
+      ctx.globalAlpha=.42;ctx.fillStyle="#174956";ctx.beginPath();ctx.moveTo(0,375);ctx.lineTo(0,260);ctx.lineTo(88,294);ctx.lineTo(145,246);ctx.lineTo(214,325);ctx.lineTo(290,282);ctx.lineTo(340,370);ctx.lineTo(340,500);ctx.lineTo(0,500);ctx.fill();
+      ctx.beginPath();ctx.moveTo(960,370);ctx.lineTo(960,248);ctx.lineTo(878,287);ctx.lineTo(822,238);ctx.lineTo(758,323);ctx.lineTo(700,281);ctx.lineTo(645,390);ctx.lineTo(645,500);ctx.lineTo(960,500);ctx.fill();ctx.restore();
+      ctx.strokeStyle="rgba(196,255,245,.42)";ctx.lineWidth=3;
       for(let x=30;x<W;x+=120){ctx.beginPath();ctx.moveTo(x,75);ctx.quadraticCurveTo(x+50,95,x+100,75);ctx.stroke();}
+      ctx.fillStyle="rgba(211,247,239,.45)";for(const [x,y,r] of [[74,186,4],[220,235,3],[345,96,3],[565,185,5],[742,130,3],[878,211,4]]){const drift=(performance.now()*.012+x)%28;ctx.beginPath();ctx.arc(x+Math.sin(performance.now()*.001+x)*4,y-drift,r,0,Math.PI*2);ctx.fill();}
+      // Midwater coral and broad-leaf plants keep the playable route readable.
+      drawUnderwaterPlant(247,498,136,"#28744e");drawUnderwaterPlant(748,498,120,"#36895a");
+      ctx.fillStyle="#b76554";for(const [x,y] of [[164,402],[184,390],[202,408],[848,416],[870,399]]){ctx.beginPath();ctx.arc(x,y,9,Math.PI,Math.PI*2);ctx.fill();ctx.fillRect(x-9,y,18,8);}
+      ctx.fillStyle="#dd9970";for(const [x,y] of [[135,445],[222,459],[785,454],[900,452]]){ctx.beginPath();ctx.arc(x,y,7,Math.PI,Math.PI*2);ctx.fill();ctx.fillRect(x-7,y,14,7);}
       ctx.fillStyle="#253e3b";ctx.fillRect(0,500,W,40);
       // Rounded aquarium gravel in mixed natural tones.
       const gravelColors=["#6d806c","#465e58","#8d735a","#b79a72","#38505a"];
@@ -1650,8 +1661,17 @@
       ctx.fillStyle="#52635c";for(const [x,y,r] of [[490,450,34],[555,465,24],[620,444,38]]){ctx.beginPath();ctx.arc(x,y,r,Math.PI,Math.PI*2);ctx.fill();}
       drawUnderwaterPlant(72,492,110,"#3f8357");drawUnderwaterPlant(176,492,82,"#579b64");drawUnderwaterPlant(340,492,125,"#397950");drawMossFloor(496);
     }else if(level.habitat==="frog"){
-      ctx.fillStyle="#4d3924";ctx.fillRect(20,458,920,38);for(let x=30;x<930;x+=34){ctx.fillStyle=x%68?"#765133":"#3b592f";ctx.beginPath();ctx.ellipse(x,462,28,8,-.25,0,Math.PI*2);ctx.fill();}
-      ctx.fillStyle="#27643b";for(const x of [130,520,820]){for(let i=0;i<6;i++){ctx.save();ctx.translate(x,405);ctx.rotate(i*Math.PI/3);ctx.beginPath();ctx.ellipse(0,-25,9,30,0,0,Math.PI*2);ctx.fill();ctx.restore();}}
+      // A dense but legible bioactive vivarium: leaf litter, cork, moss, bromeliads, and trailing growth.
+      ctx.fillStyle="#3b2d22";ctx.fillRect(20,448,920,48);ctx.fillStyle="#6c4b31";
+      for(let i=0;i<50;i++){const x=26+(i*97)%906,y=452+(i*31)%34;ctx.save();ctx.translate(x,y);ctx.rotate((i%7)*.34-.8);ctx.fillStyle=i%3===0?"#9a7544":i%3===1?"#684a31":"#aa8450";ctx.beginPath();ctx.ellipse(0,0,8+(i%4),3+(i%2),0,0,Math.PI*2);ctx.fill();ctx.restore();}
+      drawMossFloor(477);drawCorkBark(55,267,64,192,.9);drawCorkBark(835,228,70,230,.82);drawCorkBark(415,326,48,144,.48);
+      for(const [x,y,color] of [[120,403,"#36834b"],[310,436,"#4a9b52"],[612,424,"#397e45"],[782,420,"#559b4f"],[904,404,"#337447"]]){
+        ctx.fillStyle=color;for(let i=0;i<7;i++){ctx.save();ctx.translate(x,y);ctx.rotate(i*Math.PI/3);ctx.beginPath();ctx.ellipse(0,-22,10,30,0,0,Math.PI*2);ctx.fill();ctx.restore();}
+        ctx.fillStyle="#e1b94f";ctx.beginPath();ctx.ellipse(x,y-5,8,5,0,0,Math.PI*2);ctx.fill();
+      }
+      drawLeaves(-20,195,"#286b3b");drawLeaves(288,154,"#347b43");drawLeaves(552,206,"#286b3b");drawLeaves(790,166,"#3a8245");
+      ctx.strokeStyle="#4b8a48";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(220,55);ctx.bezierCurveTo(260,135,185,185,232,263);ctx.moveTo(700,55);ctx.bezierCurveTo(655,130,744,173,708,252);ctx.stroke();
+      for(const [x,y] of [[180,315],[355,272],[642,335],[765,290]])drawPlantLeaf(x,y,-.5,"#4a9c4b",34,12);
     }else if(level.habitat==="boa"){
       ctx.fillStyle="#4b3524";ctx.fillRect(20,462,920,34);ctx.fillStyle="#6b4a2e";for(let x=25;x<940;x+=19){ctx.beginPath();ctx.ellipse(x,470+(x%5)*4,13,6,.2,0,Math.PI*2);ctx.fill();}
       ctx.fillStyle="#29231b";roundedRect(695,390,175,106,22);ctx.fill();roundedRect(92,390,168,106,22);ctx.fill();
@@ -2165,11 +2185,28 @@
       ctx.fillStyle="#242026";ctx.beginPath();ctx.ellipse(h.w/2,17,8,11,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(h.w/2,7,6,0,Math.PI*2);ctx.fill();
       ctx.fillStyle="#d66c48";ctx.beginPath();ctx.arc(h.w/2-2,5,1.3,0,Math.PI*2);ctx.arc(h.w/2+2,5,1.3,0,Math.PI*2);ctx.fill();
     } else if (h.type === "fish") {
-      ctx.fillStyle="#d4a04d";ctx.beginPath();ctx.ellipse(h.w*.48,h.h*.52,h.w*.34,h.h*.34,0,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.moveTo(h.w*.76,h.h*.52);ctx.lineTo(h.w,h.h*.18);ctx.lineTo(h.w,h.h*.84);ctx.closePath();ctx.fill();
-      ctx.fillStyle="#785427";ctx.beginPath();ctx.moveTo(h.w*.4,h.h*.3);ctx.lineTo(h.w*.57,1);ctx.lineTo(h.w*.62,h.h*.34);ctx.fill();
-      ctx.fillStyle="#0c1820";ctx.beginPath();ctx.arc(h.w*.26,h.h*.42,3,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle="#6f4721";ctx.lineWidth=2;ctx.beginPath();ctx.arc(h.w*.12,h.h*.58,7,-.8,.8);ctx.stroke();
+      ctx.save();ctx.translate(h.w/2,h.h/2+Math.sin(now*.009+h.x*.03)*1.5);ctx.scale(h.dir<0?-1:1,1);
+      const kick=Math.sin(now*.025+h.x*.045);
+      ctx.fillStyle="#c99443";ctx.beginPath();ctx.ellipse(-3,0,h.w*.34,h.h*.32,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#e0b85f";ctx.beginPath();ctx.ellipse(0,5,h.w*.24,h.h*.13,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#b88338";ctx.beginPath();ctx.moveTo(-h.w*.28,0);ctx.lineTo(-h.w*.48,-h.h*.35+kick*3);ctx.lineTo(-h.w*.46,h.h*.35+kick*3);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#91652f";ctx.beginPath();ctx.moveTo(-8,-h.h*.2);ctx.lineTo(1,-h.h*.49);ctx.lineTo(8,-h.h*.18);ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.moveTo(-4,h.h*.19);ctx.lineTo(8,h.h*.46+kick);ctx.lineTo(15,h.h*.15);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#101a1b";ctx.beginPath();ctx.arc(h.w*.2,-h.h*.1,2.6,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="#8a632e";ctx.lineWidth=1.6;for(let g=0;g<3;g++){ctx.beginPath();ctx.moveTo(8+g*4,-5);ctx.lineTo(7+g*4,6);ctx.stroke();}
+      ctx.restore();
+    } else if (h.type === "shark") {
+      ctx.save();ctx.translate(h.w/2,h.h/2+Math.sin(now*.006+h.x*.02)*2);ctx.scale(h.dir<0?-1:1,1);
+      const kick=Math.sin(now*.018+h.x*.025)*4;
+      ctx.fillStyle="#596f78";ctx.beginPath();ctx.ellipse(-3,1,h.w*.39,h.h*.31,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#d6e0d8";ctx.beginPath();ctx.ellipse(4,9,h.w*.29,h.h*.12,.02,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#435962";ctx.beginPath();ctx.moveTo(-h.w*.27,-6);ctx.lineTo(-h.w*.49,-h.h*.48+kick);ctx.lineTo(-h.w*.45,h.h*.48+kick);ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.moveTo(-h.w*.08,-h.h*.23);ctx.lineTo(h.w*.02,-h.h*.6);ctx.lineTo(h.w*.16,-h.h*.2);ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.moveTo(h.w*.08,5);ctx.lineTo(h.w*.25,h.h*.48);ctx.lineTo(h.w*.3,6);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#182127";ctx.beginPath();ctx.arc(h.w*.23,-4,2.4,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="#34474d";ctx.lineWidth=1.5;for(let g=0;g<4;g++){ctx.beginPath();ctx.moveTo(h.w*.27+g*2,-2);ctx.lineTo(h.w*.26+g*2,8);ctx.stroke();}
+      ctx.strokeStyle="#26363d";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(h.w*.37,5);ctx.quadraticCurveTo(h.w*.42,8,h.w*.46,5);ctx.stroke();
+      ctx.restore();
     } else if (h.type === "filter") {
       ctx.fillStyle="#17242a";roundedRect(4,0,h.w-8,h.h,8);ctx.fill();
       ctx.strokeStyle="#7ec5cf";ctx.lineWidth=2;roundedRect(4,0,h.w-8,h.h,8);ctx.stroke();
@@ -2268,12 +2305,27 @@
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
     const chameleonColors=["#79a94d","#d8aa45","#43a4a0","#a565bd","#cf654f"];
     const green=now<camouflageUntil?chameleonColors[Math.floor(now/170)%chameleonColors.length]:chameleonColors[chameleonColorIndex];
+    const speed=Math.min(1,Math.max(Math.abs(player.vx),Math.abs(player.vy))/150),crawlDirection=player.climbing&&player.vy>0?-1:1,phase=now*(.004+speed*.018)*crawlDirection;
+    const chameleonLeg=(hipX,hipY,front,far)=>{
+      const phaseOffset=front===far?0:Math.PI,step=Math.sin(phase+phaseOffset)*speed*7;
+      const lift=Math.max(0,Math.cos(phase+phaseOffset))*speed*3.5;
+      const kneeX=hipX+(front?5:-4)+step*.48,kneeY=hipY+5+lift;
+      const footX=kneeX+(front?6:-5)+step*.52,footY=hipY+12-lift;
+      ctx.globalAlpha=far?.52:1;ctx.strokeStyle=green;ctx.lineCap="round";
+      // Angular upper arm, bent forearm, and paired grasping toes form the climbing foot.
+      ctx.lineWidth=far?4:5;ctx.beginPath();ctx.moveTo(hipX,hipY);ctx.lineTo(kneeX,kneeY);ctx.lineTo(footX,footY);ctx.stroke();
+      ctx.fillStyle=green;ctx.beginPath();ctx.arc(kneeX,kneeY,far?2.2:2.8,0,Math.PI*2);ctx.fill();
+      ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(footX,footY);ctx.quadraticCurveTo(footX+3,footY+3,footX+7,footY+1);ctx.moveTo(footX+2,footY+1);ctx.quadraticCurveTo(footX+4,footY+5,footX+7,footY+4);ctx.stroke();ctx.globalAlpha=1;
+    };
+    // Far-side limbs first; the shoulder and haunch stay connected to the moving joints.
+    chameleonLeg(-9,-3,false,true);chameleonLeg(9,4,true,true);
     ctx.strokeStyle=green;ctx.lineWidth=6;ctx.lineCap="round";
     ctx.beginPath();ctx.moveTo(-13,3);ctx.bezierCurveTo(-37,12,-47,-3,-34,-14);ctx.bezierCurveTo(-23,-22,-18,-9,-29,-5);ctx.stroke();
-    ctx.fillStyle=green;ctx.beginPath();ctx.ellipse(-1,0,20,11,-.08,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=green;ctx.beginPath();ctx.ellipse(-1,Math.sin(phase)*speed*1.2,20,11,-.08,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.moveTo(12,-9);ctx.lineTo(25,-15);ctx.lineTo(31,-4);ctx.lineTo(27,8);ctx.lineTo(12,8);ctx.closePath();ctx.fill();
-    ctx.strokeStyle=green;ctx.lineWidth=4;
-    [[-8,7,-18,15],[8,7,18,15],[-7,-5,-17,-10],[8,-5,18,-10]].forEach(([x,y,x2,y2])=>{ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.lineTo(x2+5,y2-2);ctx.stroke();});
+    // Near-side shoulder and hip muscles overlap the articulated legs naturally.
+    ctx.globalAlpha=.8;ctx.beginPath();ctx.ellipse(8,4,7,5,-.35,0,Math.PI*2);ctx.ellipse(-9,5,7,5,.3,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+    chameleonLeg(-9,4,false,false);chameleonLeg(9,4,true,false);
     ctx.fillStyle="#d9ef76";ctx.beginPath();ctx.arc(23,-5,6,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#13190d";ctx.beginPath();ctx.arc(25,-5,2.5,0,Math.PI*2);ctx.fill();
     if(now<tongueActiveUntil){const progress=Math.min(1,Math.max(0,(now-(tongueActiveUntil-230))/230));const extension=Math.sin(progress*Math.PI)*106;ctx.strokeStyle="#ff86a8";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(29,2);ctx.lineTo(29+extension,2);ctx.stroke();ctx.fillStyle="#ff9bb7";ctx.beginPath();ctx.ellipse(31+extension,2,6,4,0,0,Math.PI*2);ctx.fill();}
