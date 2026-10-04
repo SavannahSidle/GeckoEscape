@@ -2865,14 +2865,16 @@
   }
 
   window.addEventListener("keydown", event => {
-    if(event.shiftKey&&event.code==="KeyU"){
+    const shiftHeld=event.shiftKey||keys.ShiftLeft||keys.ShiftRight||event.code==="ShiftLeft"||event.code==="ShiftRight";
+    const keyName=event.key?.toLowerCase();
+    if((shiftHeld&&(event.code==="KeyU"||keyName==="u"))||((event.code==="ShiftLeft"||event.code==="ShiftRight")&&keys.KeyU)){
       event.preventDefault();
       if(!devDoorsUnlocked){devDoorsUnlocked=true;levelLabel.textContent+=" · EXITS UNLOCKED";updateHud();tone(660,.12,"triangle");}
       return;
     }
-    if(event.shiftKey&&event.code==="KeyL"){
+    if(event.code==="KeyL"){
       event.preventDefault();
-      if(!event.repeat&&state==="playing")showLevelSelect(true);
+      if(!event.repeat&&state!=="level-select")showLevelSelect(state==="playing",true);
       return;
     }
     if (["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Space"].includes(event.code)) event.preventDefault();
