@@ -716,7 +716,7 @@
     } else if (selectedCharacter === "chameleon") {
       abilityLabel.textContent = `TONGUE · ${performance.now() >= camouflageCooldownUntil ? "CAMOUFLAGE READY" : "CAMOUFLAGE RECHARGING"}`;
     } else if (selectedCharacter === "raccoon"&&levels[levelIndex].decor==="boatEscape") {
-      abilityLabel.textContent=`BOAT STABILITY ${Math.ceil(boatStability)}% · ESCAPE ${Math.floor(boatDistance)}%`;
+      abilityLabel.textContent=`BOAT STABILITY ${Math.ceil(boatStability)}% · ESCAPE ${Math.floor(boatDistance/3)}%`;
     } else if (selectedCharacter === "raccoon") {
       const parachuteState=levels[levelIndex].decor==="parachute"?` · ${performance.now()>=parachuteBoostCooldownUntil?"AIR BRAKE READY":"AIR BRAKE RECHARGING"}`:"";
       const comboState=performance.now()<raccoonComboUntil&&raccoonCombo>1?` · TRASH COMBO ×${raccoonCombo}`:"";
@@ -1091,7 +1091,7 @@
     }
     if(level.decor==="boatEscape"){
       const wave=Math.sin(now*.0034)+Math.sin(now*.0067+1.8)*.55;
-      const waveStrength=1+boatDistance/120,targetY=342+wave*34*waveStrength;
+      const waveStrength=1+boatDistance/360,targetY=342+wave*34*waveStrength;
       if(left)player.vx-=620*dt;if(right)player.vx+=620*dt;if(up)player.vy-=300*dt;if(down)player.vy+=300*dt;
       player.vx*=Math.pow(.11,dt);player.vy+=(targetY-player.y)*3.1*dt;player.vy*=Math.pow(.2,dt);
       player.x=Math.max(95,Math.min(760,player.x+player.vx*dt));player.y=Math.max(245,Math.min(420,player.y+player.vy*dt));
