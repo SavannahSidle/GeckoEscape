@@ -1502,9 +1502,18 @@
       ctx.fillStyle="#684328";ctx.beginPath();ctx.arc(-5,0,1.7,0,Math.PI*2);ctx.arc(5,0,1.7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.font="900 11px system-ui";ctx.textAlign="center";ctx.fillText("JANE",0,-24);ctx.restore();
     } else if(level.decor==="boatEscape"){
       const sea=ctx.createLinearGradient(0,55,0,500);sea.addColorStop(0,"#7fc0d7");sea.addColorStop(.55,"#3e819d");sea.addColorStop(1,"#16485f");ctx.fillStyle=sea;ctx.fillRect(0,55,W,445);
-      ctx.fillStyle="#6f7e82";for(let x=0;x<W;x+=70){const h=45+(x*13)%100;ctx.fillRect(x,260-h,55,h);}ctx.fillStyle="rgba(236,248,250,.78)";
-      const t=performance.now(),strength=1+boatDistance/120;for(let i=0;i<8;i++){const x=((i*155-t*.11)%1240+1240)%1240-120,y=360+Math.sin(t*.0034+i)*38*strength;ctx.beginPath();ctx.moveTo(x-55,y+38);ctx.quadraticCurveTo(x,y-45-(i%3)*13,x+55,y+38);ctx.quadraticCurveTo(x,y+18,x-55,y+38);ctx.fill();}
-      ctx.fillStyle="rgba(255,255,255,.85)";ctx.font="900 12px system-ui";ctx.textAlign="left";ctx.fillText(`ESCAPE ${Math.floor(boatDistance)}%`,28,82);
+      const t=performance.now(),scroll=boatDistance*2.8;
+      // Shoreline and city slide backward as the boat advances.
+      ctx.fillStyle="#6f7e82";for(let i=-1;i<18;i++){const x=i*70-(scroll%70),seed=i+Math.floor(scroll/70),h=45+((seed*13%100)+100)%100;ctx.fillRect(x,260-h,55,h);}
+      ctx.fillStyle="rgba(236,248,250,.78)";for(let i=0;i<8;i++){const x=((i*155-t*.11-scroll*1.35)%1240+1240)%1240-120,y=360+Math.sin(t*.0034+i)*30;ctx.beginPath();ctx.moveTo(x-55,y+38);ctx.quadraticCurveTo(x,y-45-(i%3)*13,x+55,y+38);ctx.quadraticCurveTo(x,y+18,x-55,y+38);ctx.fill();}
+      // Passing buoys provide a clear foreground motion cue.
+      for(let i=0;i<4;i++){const x=((i*310-scroll*2.2)%1240+1240)%1240-140,y=294+(i%2)*28;ctx.fillStyle="#d9e0d8";ctx.fillRect(x-3,y,6,28);ctx.fillStyle=i%2?"#e0a94d":"#df6658";ctx.beginPath();ctx.arc(x,y,8,Math.PI,Math.PI*2);ctx.fill();}
+      // A small school swims through the deep water with visible fish skeletons.
+      for(let i=0;i<9;i++){const x=((i*112-t*.035-scroll*.72)%1120+1120)%1120-80,y=457+(i%3)*11+Math.sin(t*.002+i*1.7)*3,scale=.58+(i%3)*.08;ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
+        ctx.fillStyle="rgba(42,101,119,.8)";ctx.strokeStyle="rgba(202,235,231,.8)";ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(-17,0);ctx.quadraticCurveTo(-7,-8,8,-5);ctx.quadraticCurveTo(15,-3,18,0);ctx.quadraticCurveTo(9,6,-4,5);ctx.quadraticCurveTo(-13,4,-17,0);ctx.closePath();ctx.fill();ctx.stroke();
+        ctx.beginPath();ctx.moveTo(-15,0);ctx.lineTo(-23,-7);ctx.lineTo(-21,0);ctx.lineTo(-23,7);ctx.closePath();ctx.fill();ctx.stroke();ctx.beginPath();ctx.moveTo(-3,-5);ctx.lineTo(1,-11);ctx.lineTo(5,-5);ctx.moveTo(-2,5);ctx.lineTo(2,10);ctx.lineTo(6,5);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle="rgba(224,246,239,.9)";ctx.beginPath();ctx.arc(12,-1.5,1.35,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="rgba(239,250,234,.94)";ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(10,0);ctx.quadraticCurveTo(0,-1,-9,0);ctx.lineTo(-19,0);ctx.stroke();for(let rib=0;rib<4;rib++){const rx=6-rib*4;ctx.beginPath();ctx.moveTo(rx,-1);ctx.quadraticCurveTo(rx-2,-4,rx-5,-4);ctx.moveTo(rx,-1);ctx.quadraticCurveTo(rx-2,3,rx-5,3);ctx.stroke();}ctx.beginPath();ctx.arc(8,0,4.5,-1.15,1.15);ctx.moveTo(2,1);ctx.lineTo(-3,8);ctx.lineTo(-7,3);ctx.stroke();ctx.restore();}
+      ctx.fillStyle="rgba(255,255,255,.9)";ctx.font="900 12px system-ui";ctx.textAlign="left";ctx.fillText("ESCAPE "+Math.floor(boatDistance/3)+"%",28,82);
     } else if (level.decor === "kitchen") {
       ctx.fillStyle="#aebfbb";ctx.fillRect(0,70,W,430);
       ctx.strokeStyle="rgba(70,88,86,.22)";ctx.lineWidth=1;
