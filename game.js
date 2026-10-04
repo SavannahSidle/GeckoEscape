@@ -2826,8 +2826,22 @@
     // Arcade boat hull.
     ctx.fillStyle="#8a3f2d";ctx.beginPath();ctx.moveTo(-82,10);ctx.lineTo(88,10);ctx.lineTo(58,48);ctx.lineTo(-58,48);ctx.closePath();ctx.fill();ctx.strokeStyle="#f0dfbd";ctx.lineWidth=4;ctx.stroke();
     ctx.fillStyle="#e8e1d2";roundedRect(-38,-14,78,27,5);ctx.fill();ctx.fillStyle="#26343a";ctx.fillRect(-24,-9,20,13);ctx.fillRect(7,-9,20,13);
-    // Jane: black clothing, shoulder-length dark brown hair, brown eyes.
-    ctx.save();ctx.translate(-22,-37);ctx.fillStyle="#09090b";roundedRect(-11,9,22,37,6);ctx.fill();
+    // Deck platform sits at Jane's feet so her full silhouette stays visible.
+    ctx.fillStyle="#b9864d";ctx.fillRect(-66,7,132,5);ctx.fillStyle="#e0b775";ctx.fillRect(-66,7,132,2);
+    // Jane: shoulder-length dark brown hair, brown eyes, all-black clothes, visible from head to shoes.
+    ctx.save();ctx.translate(-22,-53);
+    // Black jacket and trousers.
+    ctx.fillStyle="#09090b";roundedRect(-11,9,22,25,5);ctx.fill();
+    ctx.beginPath();ctx.moveTo(-9,29);ctx.lineTo(-1,29);ctx.lineTo(-2,60);ctx.lineTo(-10,60);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(1,29);ctx.lineTo(9,29);ctx.lineTo(10,60);ctx.lineTo(2,60);ctx.closePath();ctx.fill();
+    // Sleeved arms, bent slightly toward the boat rail, with visible hands.
+    ctx.lineCap="round";ctx.lineJoin="round";ctx.strokeStyle="#09090b";ctx.lineWidth=7;
+    ctx.beginPath();ctx.moveTo(-9,13);ctx.lineTo(-17,24);ctx.lineTo(-15,34);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(9,13);ctx.lineTo(17,24);ctx.lineTo(15,34);ctx.stroke();
+    ctx.fillStyle="#c68f6d";ctx.beginPath();ctx.arc(-15,36,3.2,0,Math.PI*2);ctx.arc(15,36,3.2,0,Math.PI*2);ctx.fill();
+    // Black shoes rest on the deck.
+    ctx.fillStyle="#050506";roundedRect(-12,57,12,6,2);ctx.fill();roundedRect(1,57,12,6,2);ctx.fill();
+    // Dark brown shoulder-length hair, face, and simple features.
     ctx.fillStyle="#3b241c";ctx.beginPath();ctx.moveTo(-10,-5);ctx.quadraticCurveTo(-14,7,-11,22);ctx.lineTo(-7,22);ctx.lineTo(-6,1);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(10,-5);ctx.quadraticCurveTo(14,7,11,22);ctx.lineTo(7,22);ctx.lineTo(6,1);ctx.closePath();ctx.fill();
     ctx.fillStyle="#c68f6d";ctx.beginPath();ctx.ellipse(0,2,9,10,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#3b241c";ctx.beginPath();ctx.moveTo(-9,-1);ctx.quadraticCurveTo(-11,-12,0,-12);ctx.quadraticCurveTo(11,-12,9,-1);ctx.quadraticCurveTo(5,-6,0,-6);ctx.quadraticCurveTo(-5,-6,-9,-1);ctx.fill();
     ctx.strokeStyle="#694435";ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(0,-11);ctx.quadraticCurveTo(1,-8,0,-6);ctx.stroke();ctx.fillStyle="#684328";ctx.beginPath();ctx.arc(-4,2,1.4,0,Math.PI*2);ctx.arc(4,2,1.4,0,Math.PI*2);ctx.fill();ctx.restore();
