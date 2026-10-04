@@ -1108,7 +1108,7 @@
     if(selectedCharacter==="raccoon"&&now>=raccoonComboUntil&&raccoonCombo){raccoonCombo=0;updateHud();}
     const inHabitatWater = level.habitat === "newt" && player.x < 520 && player.y + player.h / 2 > 270;
     const swimming = Boolean(level.underwater || inHabitatWater);
-    let speed = swimming ? character.swimSpeed : selectedCharacter==="newt" ? 155 : selectedCharacter==="bat" ? 210 : level.decor === "parachute" ? 265 : level.decor === "highway" ? 245 : level.decor === "house" ? 236 : 220;
+    let speed = swimming ? character.swimSpeed : selectedCharacter==="newt" ? 128 : selectedCharacter==="bat" ? 210 : level.decor === "parachute" ? 265 : level.decor === "highway" ? 245 : level.decor === "house" ? 236 : 220;
     if(selectedCharacter==="opossum"&&now>playDeadUntil&&now<opossumRecoveryUntil)speed+=72;
     if(selectedCharacter==="raccoon"&&!swimming&&(left||right))speed+=18+(raccoonCombo>=3&&now<raccoonComboUntil?32:0);
     if (["chameleon","newt","frog","boa","raccoon","opossum","bat","goat","highland","devilfox"].includes(selectedCharacter)) updateHud();
@@ -1149,7 +1149,7 @@
       const diagonalVine=(level.diagonalVines||[]).find(v=>touchesDiagonalVine(player,v));
       const onVine = level.vines.some(v => intersects(player, {x:v[0], y:v[1], w:v[2], h:v[3]})) || Boolean(diagonalVine);
       const onWall = player.x <= 5 || player.x + player.w >= W - 5;
-      const canClimbVertically=["chameleon","crested","boa"].includes(selectedCharacter);
+      const canClimbVertically=["chameleon","crested","newt","boa"].includes(selectedCharacter);
       const climbingCeiling=player.ceilingClimbing&&player.ceilingVine&&canClimbVertically;
       if(climbingCeiling){
         const vine=player.ceilingVine;
@@ -1202,7 +1202,7 @@
     player.x += player.vx * dt;
     player.x = Math.max(0, Math.min(W - player.w, player.x));
     player.y += player.vy * dt;
-    if(["chameleon","crested"].includes(selectedCharacter)&&player.vy<0&&!player.ceilingClimbing){
+    if(["chameleon","crested"].includes(selectedCharacter)&&player.vy<0&&!player.ceilingClimbing&&!up){
       const canopy=(level.ceilingVines||[]).find(v=>oldY+player.h>=v[1]+v[3]-3&&player.y<=v[1]+v[3]&&player.x+player.w>v[0]&&player.x<v[0]+v[2]);
       if(canopy){player.ceilingVine=canopy;player.ceilingClimbing=true;player.climbing=false;player.grounded=false;player.vy=0;player.y=canopy[1]+canopy[3]+2;player.x=Math.max(canopy[0]-player.w+5,Math.min(canopy[0]+canopy[2]-5,player.x));}
     }
