@@ -145,9 +145,11 @@ canvas {
 
 .secondary-button { margin-left: 8px; }
 
-.crest-skin-select { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin: 12px 0 0; }
-.crest-skin-select span { width: 100%; color: #b8c9bc; font-size: .68rem; font-weight: 900; letter-spacing: .08em; }
-.crest-skin-select button { padding: 7px 10px; border: 1px solid var(--line); border-radius: 5px; background: #10251a; color: var(--ink); font: inherit; font-size: .75rem; cursor: pointer; }
+.start-actions { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+.start-actions .secondary-button { margin-left: 0; }
+.crest-skin-select { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin: 9px 0 0; }
+.crest-skin-select span { margin-right: 3px; color: #b8c9bc; font-size: .62rem; font-weight: 900; letter-spacing: .07em; }
+.crest-skin-select button { padding: 4px 8px; border: 1px solid var(--line); border-radius: 999px; background: rgba(16,37,26,.72); color: var(--ink); font: inherit; font-size: .66rem; line-height: 1.2; cursor: pointer; }
 .crest-skin-select button[aria-pressed="true"] { border-color: var(--acid); color: var(--acid); }
 
 .character-select {
@@ -261,8 +263,9 @@ canvas {
   .panel p:not(.panel-kicker) { margin-bottom: 14px; line-height: 1.35; }
   .primary-button { padding: 11px 14px; }
   .character-select { grid-template-columns: 1fr; gap: 6px; margin-top: 10px; }
-  .crest-skin-select { gap: 5px; }
-  .crest-skin-select button { flex: 1 1 30%; padding: 7px 5px; font-size: .68rem; }
+  .crest-skin-select { gap: 4px; }
+  .crest-skin-select span { flex-basis: 100%; }
+  .crest-skin-select button { flex: 0 1 auto; padding: 4px 7px; font-size: .63rem; }
   .character-card { min-height: 0; display: grid; grid-template-columns: 34px 1fr; column-gap: 10px; padding: 9px 10px; }
   .character-card .character-icon { grid-row: 1 / 3; }
   .character-card strong { margin: 1px 0 2px; }
