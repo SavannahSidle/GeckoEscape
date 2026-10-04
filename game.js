@@ -34,6 +34,8 @@
   let lives = 3;
   let collected = 0;
   let tailReady = true;
+  let devDoorsUnlocked = false;
+  let resumePlayAfterLevelSelect = false;
   let invulnerableUntil = 0;
   let tongueActiveUntil = 0;
   let tongueCooldownUntil = 0;
@@ -107,7 +109,7 @@
   const characters = {
     chameleon: { name: "CHAMELEON", ability: "TONGUE", secondary: "CAMOUFLAGE", collectible: "CRICKETS", color: "#79a94d", climbSpeed: 135, swimSpeed: 150, w: 42, h: 25 },
     crested: { name: "CRESTED GECKO", ability: "SHORT TONGUE", secondary: "DROP TAIL", collectible: "ROACHES", color: "#d29458", climbSpeed: 195, swimSpeed: 160, w: 42, h: 25 },
-    newt: { name: "FIRE-BELLY NEWT", ability: "REGENERATE", secondary: "TOXIN", collectible: "WORMS", color: "#252a28", climbSpeed: 130, swimSpeed: 235, w: 46, h: 23 },
+    newt: { name: "FIRE-BELLY NEWT", ability: "REGENERATE", secondary: "TOXIN", collectible: "WORMS", color: "#252a28", climbSpeed: 105, swimSpeed: 170, w: 46, h: 23 },
     frog: { name: "AZUREUS DART FROG", ability: "TONGUE", secondary: "POWER LEAP", collectible: "FRUIT FLIES", color: "#2679cb", climbSpeed: 120, swimSpeed: 155, w: 38, h: 27 },
     boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", secondary: "STRIKE", collectible: "RATS", color: "#030405", climbSpeed: 155, swimSpeed: 190, w: 94, h: 36 },
     raccoon: { name: "TORONTO TRASH TANK (RACCOON)", ability: "BITE", secondary: "TRASH SHIELD", collectible: "TRASH TREASURES", color: "#73777a", climbSpeed: 178, swimSpeed: 145, w: 58, h: 38 },
@@ -174,8 +176,8 @@
       vines: [],
       insects: [[80,410],[420,355],[300,294],[510,294],[690,171],[120,161],[620,120],[875,142]],
       hazards: [
-        {x:650,y:303,w:66,h:24,type:"cat",axis:"x",min:620,max:820,speed:105},
-        {x:125,y:142,w:88,h:54,type:"dalmatian",axis:"x",min:60,max:165,speed:78}
+        {x:125,y:172,w:66,h:24,type:"cat",axis:"x",min:60,max:165,speed:105},
+        {x:345,y:434,w:88,h:66,type:"dalmatian",axis:"x",min:275,max:610,speed:78}
       ],
       decor: "kitchen"
     },
@@ -295,7 +297,7 @@
       intro:"The cheese haul has become legally significant. Cross the waterfront, reach Jane, and get the evidence onto her boat.",
       completeTitle:"Jane has enabled the crime.",completeText:"Raccoon, human, and an unreasonable quantity of cheese are aboard. Nobody asks sensible questions.",
       palette:["#273747","#a7c5cf","#665747","#f0c94d"],start:[38,438],exit:[870,380,60,120],
-      platforms:[[0,500,960,40,"dock"],[55,445,150,22,"crate"],[230,390,145,22,"crate"],[405,330,145,22,"vanRoof"],[585,390,135,22,"crate"],[740,300,125,22,"pierRoof"],[835,455,125,45,"pier"]],
+      platforms:[[0,500,960,40,"dock"],[55,445,150,22,"crate"],[230,390,145,22,"crate"],[405,330,145,22,"vanRoof"],[585,390,135,22,"crate"],[740,300,125,22,"pierRoof"],[835,478,125,22,"pier"]],
       vines:[[205,330,18,160],[720,270,18,180]],insects:[[115,410],[295,355],[475,295],[650,355],[800,265],[865,420]],
       hazards:[{x:250,y:448,w:65,h:52,type:"frenchie",axis:"x",min:205,max:430,speed:110},{x:500,y:430,w:70,h:70,type:"grab",axis:"x",min:460,max:690,speed:145},{x:700,y:235,w:58,h:30,type:"bird",axis:"diagonal",minX:620,maxX:870,minY:190,maxY:370,speedX:90,speedY:65,chases:true}],
       decor:"cheeseGetaway",habitat:"raccoon"
@@ -535,11 +537,12 @@
     characterSelect.querySelector("button:not(.hidden)")?.focus();
   }
 
-  function showLevelSelect(){
+  function showLevelSelect(fromGameplay=false){
+    resumePlayAfterLevelSelect=fromGameplay;
     state="level-select";
-    panelKicker.textContent="BACKSTAGE MODE";
+    panelKicker.textContent=fromGameplay?"DEVELOPMENT SPEED TEST":"BACKSTAGE MODE";
     panelTitle.textContent="Choose a level.";
-    panelText.textContent=`Testing as ${characters[selectedCharacter].name}. Every exit is unlocked.`;
+    panelText.textContent=`Testing as ${characters[selectedCharacter].name}. Pick any level and launch directly. Shift+U unlocks every exit.`;
     primaryButton.classList.add("hidden");
     characterSelect.classList.add("hidden");
     crestedSkinSelect?.classList.add("hidden");
@@ -547,12 +550,16 @@
     levelSelect.querySelectorAll("[data-level]").forEach(button=>{
       const index=Number(button.dataset.level);const level=levels[index];
       const labLevel=index===FOX_LAB_LEVEL;
-      button.classList.toggle("hidden",["foxLab","foxAlt"].includes(selectedCharacter)?!labLevel:labLevel||!level||index>=storyLevelCount());
+      const foxLabCharacter=["foxLab","foxAlt"].includes(selectedCharacter);
+      button.classList.toggle("hidden",foxLabCharacter?!labLevel:labLevel||!level||index>=(fromGameplay?levels.length:storyLevelCount()));
       const label=button.querySelector("small");
       if(level&&label)label.textContent=level.title.replace(/^The\s+/i,"");
     });
-    secondaryButton.textContent="BACK TO CHARACTERS";
-    secondaryButton.onclick=showCharacterSelect;
+    secondaryButton.textContent=fromGameplay?"BACK TO GAME":"BACK TO CHARACTERS";
+    secondaryButton.onclick=()=>{
+      if(!resumePlayAfterLevelSelect){showCharacterSelect();return;}
+      resumePlayAfterLevelSelect=false;state="playing";overlay.classList.add("hidden");hud.classList.toggle("hidden",levels[levelIndex].decor==="foxMovementLab");canvas.focus();
+    };
     secondaryButton.classList.remove("hidden");
     overlay.classList.remove("hidden");
     hud.classList.add("hidden");
@@ -652,7 +659,7 @@
     player.spawnX = level.start[0];
     player.spawnY = level.start[1];
     resetPlayer(false);
-    levelLabel.textContent = `${level.label}${backstageMode?" · BACKSTAGE":""}`;
+    levelLabel.textContent = `${level.label}${backstageMode?" · BACKSTAGE":""}${devDoorsUnlocked?" · EXITS UNLOCKED":""}`;
     updateHud();
     overlay.classList.add("hidden");
     hud.classList.toggle("hidden",level.decor==="foxMovementLab");
@@ -999,7 +1006,7 @@
   }
 
   function remainingCollectibles(level){
-    if(backstageMode)return 0;
+    if(backstageMode||devDoorsUnlocked)return 0;
     return level.insects.filter(item=>!item[2]).length+(level.mice||[]).filter(item=>!item[2]).length;
   }
 
@@ -1101,12 +1108,12 @@
     if(selectedCharacter==="raccoon"&&now>=raccoonComboUntil&&raccoonCombo){raccoonCombo=0;updateHud();}
     const inHabitatWater = level.habitat === "newt" && player.x < 520 && player.y + player.h / 2 > 270;
     const swimming = Boolean(level.underwater || inHabitatWater);
-    let speed = swimming ? character.swimSpeed : selectedCharacter==="bat" ? 210 : level.decor === "parachute" ? 265 : level.decor === "highway" ? 245 : level.decor === "house" ? 236 : 220;
+    let speed = swimming ? character.swimSpeed : selectedCharacter==="newt" ? 155 : selectedCharacter==="bat" ? 210 : level.decor === "parachute" ? 265 : level.decor === "highway" ? 245 : level.decor === "house" ? 236 : 220;
     if(selectedCharacter==="opossum"&&now>playDeadUntil&&now<opossumRecoveryUntil)speed+=72;
     if(selectedCharacter==="raccoon"&&!swimming&&(left||right))speed+=18+(raccoonCombo>=3&&now<raccoonComboUntil?32:0);
     if (["chameleon","newt","frog","boa","raccoon","opossum","bat","goat","highland","devilfox"].includes(selectedCharacter)) updateHud();
 
-    const acceleration = swimming ? 720 : selectedCharacter==="raccoon" ? 1080 : selectedCharacter==="bat" ? 980 : level.decor==="parachute" ? 1180 : selectedCharacter==="frog" ? 1120 : 1450;
+    const acceleration = swimming ? 720 : selectedCharacter==="raccoon" ? 1080 : selectedCharacter==="bat" ? 980 : level.decor==="parachute" ? 1180 : selectedCharacter==="frog" ? 1120 : selectedCharacter==="newt" ? 900 : 1450;
     const movementAcceleration=selectedCharacter==="raccoon"&&!player.grounded?acceleration*.72:acceleration;
     const playingDead=selectedCharacter==="opossum"&&now<playDeadUntil;
     if (!playingDead&&left) { player.vx -= movementAcceleration * dt; if(selectedCharacter!=="bat"||player.vx<10)player.facing = -1; }
@@ -1146,7 +1153,8 @@
       const climbingCeiling=player.ceilingClimbing&&player.ceilingVine&&canClimbVertically;
       if(climbingCeiling){
         const vine=player.ceilingVine;
-        player.y=vine[1]+vine[3]+2;player.vy=0;player.climbing=false;
+        const vineCenter=ceilingVineY(vine,player.x+player.w/2);
+        player.y=vine[1]+vine[3]+2+(vineCenter-(vine[1]+vine[3]/2));player.vy=0;player.climbing=false;
         if(left||right){player.facing=left?-1:1;player.vx=(right?1:-1)*character.climbSpeed;}
         else player.vx=0;
         if(down){player.ceilingClimbing=false;player.ceilingVine=null;player.vy=100;}
@@ -1195,7 +1203,7 @@
     player.x = Math.max(0, Math.min(W - player.w, player.x));
     player.y += player.vy * dt;
     if(["chameleon","crested"].includes(selectedCharacter)&&player.vy<0&&!player.ceilingClimbing){
-      const canopy=(level.ceilingVines||[]).find(v=>oldY>=v[1]-player.h&&player.y<=v[1]+v[3]&&player.x+player.w>v[0]&&player.x<v[0]+v[2]);
+      const canopy=(level.ceilingVines||[]).find(v=>oldY+player.h>=v[1]+v[3]-3&&player.y<=v[1]+v[3]&&player.x+player.w>v[0]&&player.x<v[0]+v[2]);
       if(canopy){player.ceilingVine=canopy;player.ceilingClimbing=true;player.climbing=false;player.grounded=false;player.vy=0;player.y=canopy[1]+canopy[3]+2;player.x=Math.max(canopy[0]-player.w+5,Math.min(canopy[0]+canopy[2]-5,player.x));}
     }
     for(const p of level.platforms){
@@ -1485,8 +1493,13 @@
       const dusk=ctx.createLinearGradient(0,55,0,500);dusk.addColorStop(0,"#506d82");dusk.addColorStop(1,"#d59b73");ctx.fillStyle=dusk;ctx.fillRect(0,55,W,445);
       ctx.fillStyle="#2f414b";for(let x=0;x<760;x+=75){const h=90+(x%140);ctx.fillRect(x,500-h,62,h);ctx.fillStyle="#e7c76c";for(let y=500-h+15;y<480;y+=22)for(let wx=x+9;wx<x+55;wx+=17)ctx.fillRect(wx,y,6,8);ctx.fillStyle="#2f414b";}
       ctx.fillStyle="#244f62";ctx.fillRect(0,470,W,30);ctx.strokeStyle="#8f7254";ctx.lineWidth=8;for(let x=20;x<W;x+=90){ctx.beginPath();ctx.moveTo(x,430);ctx.lineTo(x,500);ctx.stroke();}
-      // Jane waits at the boat, dressed exclusively in black and making excellent decisions.
-      ctx.save();ctx.translate(846,402);ctx.fillStyle="#09090b";roundedRect(-15,8,30,62,8);ctx.fill();ctx.fillStyle="#c68f6d";ctx.beginPath();ctx.arc(0,0,13,0,Math.PI*2);ctx.fill();ctx.fillStyle="#3b241c";ctx.beginPath();ctx.arc(0,-3,15,Math.PI,Math.PI*2);ctx.fill();ctx.fillRect(-15,-3,6,29);ctx.fillRect(9,-3,6,29);ctx.fillStyle="#684328";ctx.beginPath();ctx.arc(-5,0,1.7,0,Math.PI*2);ctx.arc(5,0,1.7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.font="900 11px system-ui";ctx.textAlign="center";ctx.fillText("JANE",0,-24);ctx.restore();
+      // Jane's hair falls beside her face and to her shoulders; her forehead stays clear.
+      ctx.save();ctx.translate(846,402);ctx.fillStyle="#09090b";roundedRect(-15,8,30,62,8);ctx.fill();
+      ctx.fillStyle="#3b241c";ctx.beginPath();ctx.moveTo(-13,-7);ctx.quadraticCurveTo(-18,8,-15,31);ctx.lineTo(-10,31);ctx.lineTo(-9,5);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(13,-7);ctx.quadraticCurveTo(18,8,15,31);ctx.lineTo(10,31);ctx.lineTo(9,5);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#c68f6d";ctx.beginPath();ctx.ellipse(0,0,12,13,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#3b241c";ctx.beginPath();ctx.moveTo(-12,-2);ctx.quadraticCurveTo(-14,-16,0,-16);ctx.quadraticCurveTo(14,-16,12,-2);ctx.quadraticCurveTo(6,-8,0,-8);ctx.quadraticCurveTo(-6,-8,-12,-2);ctx.fill();
+      ctx.strokeStyle="#694435";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,-15);ctx.quadraticCurveTo(2,-11,0,-8);ctx.stroke();
+      ctx.fillStyle="#684328";ctx.beginPath();ctx.arc(-5,0,1.7,0,Math.PI*2);ctx.arc(5,0,1.7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.font="900 11px system-ui";ctx.textAlign="center";ctx.fillText("JANE",0,-24);ctx.restore();
       ctx.fillStyle="#713f2d";ctx.beginPath();ctx.moveTo(825,468);ctx.lineTo(950,468);ctx.lineTo(920,500);ctx.lineTo(850,500);ctx.closePath();ctx.fill();
     } else if(level.decor==="boatEscape"){
       const sea=ctx.createLinearGradient(0,55,0,500);sea.addColorStop(0,"#7fc0d7");sea.addColorStop(.55,"#3e819d");sea.addColorStop(1,"#16485f");ctx.fillStyle=sea;ctx.fillRect(0,55,W,445);
@@ -1603,33 +1616,48 @@
     for(let i=1;i<6;i+=2){const sx=x+i*24;const sy=y-(i%3)*28;ctx.beginPath();ctx.moveTo(sx-5,sy+4);ctx.bezierCurveTo(sx-8,sy+20,sx+6,sy+26,sx+2,sy+42);ctx.stroke();}
   }
 
-  function drawDalmatianSprite(w=88,h=54){
+  function drawDalmatianSprite(w=88,h=54,now=0,motion=0){
     ctx.save();
-    ctx.fillStyle="#f5f3e8";roundedRect(29,10,w-35,h-18,12);ctx.fill();
+    ctx.fillStyle="#f5f3e8";roundedRect(29,10,w-35,h-34,12);ctx.fill();
     ctx.strokeStyle="#f5f3e8";ctx.lineWidth=6;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(w-11,14);ctx.quadraticCurveTo(w+7,4,w+2,-6);ctx.stroke();
     ctx.fillStyle="#111318";ctx.beginPath();ctx.arc(w-1,-3,3,0,Math.PI*2);ctx.arc(w+3,2,2.5,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#f5f3e8";ctx.beginPath();ctx.arc(20,18,16,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#111318";ctx.beginPath();ctx.ellipse(24,8,7,12,.45,0,Math.PI*2);ctx.fill();
-    [[39,16,5],[50,28,3],[56,12,4],[66,18,2.5],[70,30,5],[78,13,3],[33,31,3]].forEach(([sx,sy,r])=>{ctx.beginPath();ctx.arc(sx,sy,r,0,Math.PI*2);ctx.fill();});
-    ctx.fillRect(38,h-18,7,18);ctx.fillRect(w-23,h-18,7,18);
+    [[39,15,5],[50,23,3],[56,13,4],[66,17,2.5],[70,24,5],[78,13,3],[33,26,3]].forEach(([sx,sy,r])=>{ctx.beginPath();ctx.arc(sx,sy,r,0,Math.PI*2);ctx.fill();});
+    const stride=motion?Math.sin(now*.02)*5:0;
+    ctx.strokeStyle="#f5f3e8";ctx.lineCap="round";ctx.lineWidth=5;
+    [[38,stride],[48,-stride],[w-27,-stride],[w-16,stride]].forEach(([x,swing],i)=>{
+      const hipY=h-34,kneeX=x+(i<2?1:-1)+swing*.38,kneeY=h-17+Math.abs(swing)*.18,pawX=x+swing,pawY=h-1;
+      ctx.beginPath();ctx.moveTo(x,hipY);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();
+      if(i===0||i===3){ctx.fillStyle="#111318";ctx.beginPath();ctx.ellipse(kneeX+(i===0?-2:2),kneeY-2,2,2.6,0,0,Math.PI*2);ctx.fill();}
+    });
     ctx.fillStyle="#eee6da";ctx.beginPath();ctx.ellipse(7,25,15,9,-.08,0,Math.PI*2);ctx.fill();
     ctx.strokeStyle="#b9a99e";ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(7,25,15,9,-.08,0,Math.PI*2);ctx.stroke();
     ctx.fillStyle="#090a0b";ctx.beginPath();ctx.ellipse(-4,22,6,5,0,0,Math.PI*2);ctx.fill();
     ctx.strokeStyle="#403735";ctx.beginPath();ctx.moveTo(1,29);ctx.quadraticCurveTo(9,34,17,28);ctx.stroke();
     ctx.fillStyle="#74462d";ctx.beginPath();ctx.arc(15,16,2.6,0,Math.PI*2);ctx.fill();ctx.fillStyle="#17110d";ctx.beginPath();ctx.arc(15.5,16,1.2,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#c84d4d";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(29,11);ctx.lineTo(30,32);ctx.stroke();
+    ctx.strokeStyle="#c84d4d";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(29,11);ctx.lineTo(30,27);ctx.stroke();
     ctx.restore();
   }
 
-  function drawFrenchieSprite(w=78,h=40){
+  function drawFrenchieSprite(w=78,h=40,now=0,motion=0){
     ctx.save();
-    ctx.fillStyle="#20252a";roundedRect(23,12,w-29,h-13,11);ctx.fill();roundedRect(8,9,27,25,9);ctx.fill();
-    ctx.beginPath();ctx.moveTo(10,13);ctx.quadraticCurveTo(8,1,14,0);ctx.quadraticCurveTo(20,1,20,13);ctx.moveTo(23,13);ctx.quadraticCurveTo(23,1,29,1);ctx.quadraticCurveTo(35,3,32,15);ctx.fill();
-    ctx.fillStyle="#c49a76";ctx.beginPath();ctx.ellipse(10,25,7,5,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(13,16,4,2.5,0,0,Math.PI*2);ctx.ellipse(27,16,4,2.5,0,0,Math.PI*2);ctx.fill();
-    ctx.fillRect(30,h-13,7,13);ctx.fillRect(w-21,h-13,7,13);ctx.beginPath();ctx.moveTo(39,20);ctx.lineTo(48,35);ctx.lineTo(57,35);ctx.lineTo(50,20);ctx.fill();
-    ctx.fillStyle="#171a1e";ctx.beginPath();ctx.ellipse(5,23,4,3.6,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#171a1e";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(7,27);ctx.lineTo(10,29);ctx.quadraticCurveTo(13,30,16,27);ctx.stroke();
-    ctx.strokeStyle="#9c7457";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(10,19);ctx.lineTo(10,26);ctx.stroke();
-    ctx.fillStyle="#c9b06c";ctx.beginPath();ctx.arc(14,20,1.7,0,Math.PI*2);ctx.arc(26,20,1.7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#171b1f";ctx.beginPath();ctx.arc(w-5,17,4,0,Math.PI*2);ctx.fill();
+    const stride=motion?Math.sin(now*.018)*2.4:0;
+    // Compact, broad Frenchie frame with a substantial chest and low, muscular legs.
+    ctx.fillStyle="#42464a";roundedRect(23,10,w-28,h-12,10);ctx.fill();
+    ctx.beginPath();ctx.ellipse(23,17,16,13,-.08,0,Math.PI*2);ctx.fill();
+    // Broad head and rounded bat ears, with the characteristic flat face.
+    ctx.beginPath();ctx.ellipse(15,12,13,12,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.moveTo(7,8);ctx.quadraticCurveTo(1,2,4,-1);ctx.quadraticCurveTo(9,-3,14,6);ctx.moveTo(19,6);ctx.quadraticCurveTo(24,-3,29,0);ctx.quadraticCurveTo(32,3,25,10);ctx.fill();
+    // Rottweiler-style tan points and a short, unmistakable muzzle.
+    ctx.fillStyle="#b89673";ctx.beginPath();ctx.ellipse(9,8,3.2,2.3,0,0,Math.PI*2);ctx.ellipse(21,8,3.2,2.3,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(5,18,7,5,0,0,Math.PI*2);ctx.fill();ctx.ellipse(16,17,7,5,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#171a1e";ctx.beginPath();ctx.ellipse(7,17,4.4,3.5,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#171a1e";ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(3,20);ctx.quadraticCurveTo(8,23,13,20);ctx.stroke();
+    ctx.fillStyle="#c9b06c";ctx.beginPath();ctx.arc(11,13,1.4,0,Math.PI*2);ctx.arc(21,13,1.4,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#33363a";ctx.lineWidth=6;ctx.lineCap="round";
+    [[31,stride],[41,-stride],[w-21,-stride],[w-13,stride]].forEach(([x,swing])=>{ctx.beginPath();ctx.moveTo(x,h-12);ctx.lineTo(x+swing*.35,h-6);ctx.lineTo(x+swing,h-1);ctx.stroke();});
+    ctx.fillStyle="#171b1f";ctx.beginPath();ctx.arc(w-5,16,3.5,0,Math.PI*2);ctx.fill();
     ctx.restore();
   }
 
@@ -1913,9 +1941,10 @@
 
   function ceilingVineY(v,worldX){
     const [x,y,w,h,kind]=v;const cy=y+h/2;
-    if(kind!=="curved")return cy;
     const progress=Math.max(0,Math.min(1,(worldX-x)/w));
-    return cy+Math.sin(progress*Math.PI*8)*11;
+    if(kind==="curved")return cy+Math.sin(progress*Math.PI*8)*11;
+    if(kind==="woody")return cy+Math.sin(progress*Math.PI*2)*8;
+    return cy;
   }
 
   function drawPlatforms(level) {
@@ -1944,7 +1973,8 @@
           if(p[4]==="cloud"){ctx.fillStyle="rgba(255,255,255,.82)";ctx.beginPath();ctx.ellipse(p[0]+p[2]/2,p[1]+7,p[2]/2,p[3]/2,0,0,Math.PI*2);ctx.ellipse(p[0]+p[2]*.35,p[1]+1,p[2]*.22,p[3]*.72,0,0,Math.PI*2);ctx.fill();}
           else{ctx.fillStyle=p[4]==="towerRoof"?"#767f84":"#424e54";roundedRect(p[0],p[1],p[2],p[3],4);ctx.fill();ctx.fillStyle="#aeb7ba";ctx.fillRect(p[0]+5,p[1]+3,p[2]-10,4);}
         }else if(level.decor==="cheeseGetaway"){
-          ctx.fillStyle=p[4]==="crate"?"#8b633d":p[4]==="vanRoof"?"#bbc3c4":"#765238";roundedRect(p[0],p[1],p[2],p[3],5);ctx.fill();ctx.strokeStyle="#d3b487";ctx.lineWidth=2;ctx.stroke();
+          if(p[4]==="pier"){ctx.fillStyle="#765238";roundedRect(p[0],p[1],p[2],p[3],4);ctx.fill();ctx.fillStyle="#b18a60";ctx.fillRect(p[0]+4,p[1]+2,p[2]-8,4);ctx.strokeStyle="#513929";ctx.lineWidth=2;ctx.stroke();}
+          else{ctx.fillStyle=p[4]==="crate"?"#8b633d":p[4]==="vanRoof"?"#bbc3c4":"#765238";roundedRect(p[0],p[1],p[2],p[3],5);ctx.fill();ctx.strokeStyle="#d3b487";ctx.lineWidth=2;ctx.stroke();}
         }else{
           if(p[4]==="trash")ctx.fillStyle="#25292b";
           else if(p[4]==="cardboard")ctx.fillStyle="#9a724a";
@@ -2154,9 +2184,9 @@
       ctx.fillStyle="#d8f56d";ctx.fillRect(13,10,4,3);ctx.fillRect(22,10,4,3);
       ctx.strokeStyle="#151416";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(h.w-4,12);ctx.quadraticCurveTo(h.w+18,-2,h.w+12,-15);ctx.stroke();
     } else if (h.type === "dalmatian") {
-      drawDalmatianSprite(h.w,h.h);
+      drawDalmatianSprite(h.w,h.h,now,h.speed||0);
     } else if (h.type === "frenchie") {
-      drawFrenchieSprite(h.w,h.h);
+      drawFrenchieSprite(h.w,h.h,now,h.speed||0);
     } else if(h.type==="car"){
       ctx.save();if(h.dir<0){ctx.translate(h.w,0);ctx.scale(-1,1);}
       ctx.fillStyle="#111317";ctx.beginPath();ctx.arc(18,h.h-4,8,0,Math.PI*2);ctx.arc(h.w-19,h.h-4,8,0,Math.PI*2);ctx.fill();
@@ -2232,16 +2262,19 @@
       ctx.strokeStyle="#8a632e";ctx.lineWidth=1.6;for(let g=0;g<3;g++){ctx.beginPath();ctx.moveTo(8+g*4,-5);ctx.lineTo(7+g*4,6);ctx.stroke();}
       ctx.restore();
     } else if (h.type === "shark") {
-      ctx.save();ctx.translate(h.w/2,h.h/2+Math.sin(now*.006+h.x*.02)*2);ctx.scale(h.dir<0?-1:1,1);
-      const kick=Math.sin(now*.018+h.x*.025)*4;
-      ctx.fillStyle="#596f78";ctx.beginPath();ctx.ellipse(-3,1,h.w*.39,h.h*.31,0,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#d6e0d8";ctx.beginPath();ctx.ellipse(4,9,h.w*.29,h.h*.12,.02,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#435962";ctx.beginPath();ctx.moveTo(-h.w*.27,-6);ctx.lineTo(-h.w*.49,-h.h*.48+kick);ctx.lineTo(-h.w*.45,h.h*.48+kick);ctx.closePath();ctx.fill();
-      ctx.beginPath();ctx.moveTo(-h.w*.08,-h.h*.23);ctx.lineTo(h.w*.02,-h.h*.6);ctx.lineTo(h.w*.16,-h.h*.2);ctx.closePath();ctx.fill();
-      ctx.beginPath();ctx.moveTo(h.w*.08,5);ctx.lineTo(h.w*.25,h.h*.48);ctx.lineTo(h.w*.3,6);ctx.closePath();ctx.fill();
-      ctx.fillStyle="#182127";ctx.beginPath();ctx.arc(h.w*.23,-4,2.4,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle="#34474d";ctx.lineWidth=1.5;for(let g=0;g<4;g++){ctx.beginPath();ctx.moveTo(h.w*.27+g*2,-2);ctx.lineTo(h.w*.26+g*2,8);ctx.stroke();}
-      ctx.strokeStyle="#26363d";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(h.w*.37,5);ctx.quadraticCurveTo(h.w*.42,8,h.w*.46,5);ctx.stroke();
+      ctx.save();ctx.translate(h.w/2,h.h/2+Math.sin(now*.006+h.x*.02)*1.5);ctx.scale(h.dir<0?-1:1,1);
+      const kick=Math.sin(now*.019+h.x*.025)*3.5;
+      // Streamlined body narrows into the pointed snout and strong crescent tail.
+      ctx.fillStyle="#526b77";ctx.beginPath();ctx.moveTo(-h.w*.43,0);ctx.quadraticCurveTo(-h.w*.23,-h.h*.34,h.w*.12,-h.h*.24);ctx.quadraticCurveTo(h.w*.36,-h.h*.16,h.w*.46,-h.h*.03);ctx.lineTo(h.w*.50,0);ctx.quadraticCurveTo(h.w*.34,h.h*.21,h.w*.10,h.h*.25);ctx.quadraticCurveTo(-h.w*.24,h.h*.30,-h.w*.43,0);ctx.fill();
+      ctx.fillStyle="#d8e0db";ctx.beginPath();ctx.moveTo(-h.w*.14,4);ctx.quadraticCurveTo(h.w*.18,h.h*.20,h.w*.45,1);ctx.quadraticCurveTo(h.w*.32,h.h*.32,-h.w*.02,h.h*.23);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#405964";ctx.beginPath();ctx.moveTo(-h.w*.36,0);ctx.lineTo(-h.w*.50,-h.h*.48+kick);ctx.lineTo(-h.w*.47,0);ctx.lineTo(-h.w*.50,h.h*.46+kick);ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.moveTo(-h.w*.08,-h.h*.20);ctx.lineTo(h.w*.03,-h.h*.60);ctx.lineTo(h.w*.19,-h.h*.14);ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.moveTo(-h.w*.02,h.h*.16);ctx.lineTo(h.w*.18,h.h*.47);ctx.lineTo(h.w*.27,h.h*.12);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#b9c7c7";ctx.beginPath();ctx.moveTo(h.w*.13,-h.h*.14);ctx.lineTo(h.w*.27,-h.h*.34);ctx.lineTo(h.w*.30,-h.h*.08);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#111b20";ctx.beginPath();ctx.arc(h.w*.35,-h.h*.12,2.1,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="#354950";ctx.lineWidth=1.3;for(let g=0;g<5;g++){const gx=h.w*.19+g*2.7;ctx.beginPath();ctx.moveTo(gx,-h.h*.05);ctx.quadraticCurveTo(gx-2,2,gx,7);ctx.stroke();}
+      ctx.strokeStyle="#26363d";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(h.w*.34,5);ctx.quadraticCurveTo(h.w*.43,10,h.w*.49,2);ctx.stroke();
+      ctx.fillStyle="#edf0e6";ctx.beginPath();for(let tooth=0;tooth<5;tooth++){const tx=h.w*.385+tooth*3.3;ctx.moveTo(tx,6);ctx.lineTo(tx+1.6,10);ctx.lineTo(tx+3.2,6);}ctx.fill();
       ctx.restore();
     } else if (h.type === "filter") {
       ctx.fillStyle="#17242a";roundedRect(4,0,h.w-8,h.h,8);ctx.fill();
@@ -2348,12 +2381,13 @@
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
     const chameleonColors=["#79a94d","#d8aa45","#43a4a0","#a565bd","#cf654f"];
     const green=chameleonColors[chameleonColorIndex];
-    const speed=Math.min(1,Math.max(Math.abs(player.vx),Math.abs(player.vy))/150),crawlDirection=player.climbing&&player.vy>0?-1:1,phase=now*(.004+speed*.018)*crawlDirection;
+    const airborne=!player.grounded&&!player.climbing&&!player.ceilingClimbing;
+    const speed=Math.min(1,(Math.abs(player.vx)+Math.abs(player.vy))/190),crawlDirection=player.climbing&&player.vy>0?-1:1,phase=now*(.004+speed*.018)*crawlDirection;
     const chameleonLeg=(hipX,hipY,front,far)=>{
-      const phaseOffset=front===far?0:Math.PI,step=Math.sin(phase+phaseOffset)*speed*7;
-      const lift=Math.max(0,Math.cos(phase+phaseOffset))*speed*3.5;
-      const kneeX=hipX+(front?5:-4)+step*.48,kneeY=hipY+5+lift;
-      const footX=kneeX+(front?6:-5)+step*.52,footY=hipY+12-lift;
+      const phaseOffset=front===far?0:Math.PI,step=airborne?(front?5:-5):Math.sin(phase+phaseOffset)*speed*7;
+      const lift=airborne?(player.vy<0?2:4):Math.max(0,Math.cos(phase+phaseOffset))*speed*3.5;
+      const kneeX=hipX+(front?5:-4)+step*.48,kneeY=hipY+(airborne?(front?1:6):5+lift);
+      const footX=kneeX+(airborne?(front?8:-7):(front?6:-5))+step*.52,footY=hipY+(airborne?(front?8:11):12)-lift;
       ctx.globalAlpha=far?.52:1;ctx.strokeStyle=green;ctx.lineCap="round";
       // Angular upper arm, bent forearm, and paired grasping toes form the climbing foot.
       ctx.lineWidth=far?4:5;ctx.beginPath();ctx.moveTo(hipX,hipY);ctx.lineTo(kneeX,kneeY);ctx.lineTo(footX,footY);ctx.stroke();
@@ -2683,7 +2717,7 @@
 
   function drawPlayer(now) {
     ctx.save();
-    const verticalClimber=player.climbing&&["chameleon","crested","boa"].includes(selectedCharacter);
+    const verticalClimber=player.climbing&&["chameleon","crested","boa","newt"].includes(selectedCharacter);
     if(player.ceilingClimbing&&selectedCharacter!=="bat"){ctx.translate(0,player.y*2+player.h);ctx.scale(1,-1);}
     if(verticalClimber){const cx=player.x+player.w/2,cy=player.y+player.h/2;ctx.translate(cx,cy);ctx.rotate(player.climbDirection<0?-Math.PI/2:Math.PI/2);ctx.translate(-cx,-cy);}
     const priorFacing=player.facing;if(verticalClimber)player.facing=1;
@@ -2793,7 +2827,10 @@
     ctx.fillStyle="#8a3f2d";ctx.beginPath();ctx.moveTo(-82,10);ctx.lineTo(88,10);ctx.lineTo(58,48);ctx.lineTo(-58,48);ctx.closePath();ctx.fill();ctx.strokeStyle="#f0dfbd";ctx.lineWidth=4;ctx.stroke();
     ctx.fillStyle="#e8e1d2";roundedRect(-38,-14,78,27,5);ctx.fill();ctx.fillStyle="#26343a";ctx.fillRect(-24,-9,20,13);ctx.fillRect(7,-9,20,13);
     // Jane: black clothing, shoulder-length dark brown hair, brown eyes.
-    ctx.save();ctx.translate(-22,-37);ctx.fillStyle="#09090b";roundedRect(-11,9,22,37,6);ctx.fill();ctx.fillStyle="#c68f6d";ctx.beginPath();ctx.arc(0,2,10,0,Math.PI*2);ctx.fill();ctx.fillStyle="#3b241c";ctx.beginPath();ctx.arc(0,0,12,Math.PI,Math.PI*2);ctx.fill();ctx.fillRect(-12,0,5,22);ctx.fillRect(7,0,5,22);ctx.fillStyle="#684328";ctx.beginPath();ctx.arc(-4,2,1.4,0,Math.PI*2);ctx.arc(4,2,1.4,0,Math.PI*2);ctx.fill();ctx.restore();
+    ctx.save();ctx.translate(-22,-37);ctx.fillStyle="#09090b";roundedRect(-11,9,22,37,6);ctx.fill();
+    ctx.fillStyle="#3b241c";ctx.beginPath();ctx.moveTo(-10,-5);ctx.quadraticCurveTo(-14,7,-11,22);ctx.lineTo(-7,22);ctx.lineTo(-6,1);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(10,-5);ctx.quadraticCurveTo(14,7,11,22);ctx.lineTo(7,22);ctx.lineTo(6,1);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#c68f6d";ctx.beginPath();ctx.ellipse(0,2,9,10,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#3b241c";ctx.beginPath();ctx.moveTo(-9,-1);ctx.quadraticCurveTo(-11,-12,0,-12);ctx.quadraticCurveTo(11,-12,9,-1);ctx.quadraticCurveTo(5,-6,0,-6);ctx.quadraticCurveTo(-5,-6,-9,-1);ctx.fill();
+    ctx.strokeStyle="#694435";ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(0,-11);ctx.quadraticCurveTo(1,-8,0,-6);ctx.stroke();ctx.fillStyle="#684328";ctx.beginPath();ctx.arc(-4,2,1.4,0,Math.PI*2);ctx.arc(4,2,1.4,0,Math.PI*2);ctx.fill();ctx.restore();
     // Tiny Trash Tank and the evidence pile remain aboard.
     ctx.save();ctx.translate(26,-20+Math.sin(now*.018)*2);ctx.fillStyle="#73777a";ctx.beginPath();ctx.ellipse(0,8,18,12,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#25282a";ctx.beginPath();ctx.ellipse(12,2,11,9,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#d4d0c5";ctx.beginPath();ctx.arc(10,0,2.5,0,Math.PI*2);ctx.arc(16,0,2.5,0,Math.PI*2);ctx.fill();ctx.restore();
     ctx.fillStyle="#efce55";for(const [x,y,r] of [[48,-1,12],[64,5,10],[55,13,13],[73,15,9]]){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.fillStyle="#9c7623";ctx.beginPath();ctx.arc(x+3,y-2,2,0,Math.PI*2);ctx.fill();ctx.fillStyle="#efce55";}
@@ -2828,6 +2865,16 @@
   }
 
   window.addEventListener("keydown", event => {
+    if(event.shiftKey&&event.code==="KeyU"){
+      event.preventDefault();
+      if(!devDoorsUnlocked){devDoorsUnlocked=true;levelLabel.textContent+=" · EXITS UNLOCKED";updateHud();tone(660,.12,"triangle");}
+      return;
+    }
+    if(event.shiftKey&&event.code==="KeyL"){
+      event.preventDefault();
+      if(!event.repeat&&state==="playing")showLevelSelect(true);
+      return;
+    }
     if (["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Space"].includes(event.code)) event.preventDefault();
     if (!keys[event.code] && (event.code === "Space" || event.code === "ArrowUp" || event.code === "KeyW")) jump();
     if (!keys[event.code] && event.code === "KeyE") useAbility();
