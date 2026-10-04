@@ -540,9 +540,9 @@
   function showLevelSelect(fromGameplay=false){
     resumePlayAfterLevelSelect=fromGameplay;
     state="level-select";
-    panelKicker.textContent=fromGameplay?"DEVELOPMENT SPEED TEST":"BACKSTAGE MODE";
+    panelKicker.textContent=allowAllLevels?"DEVELOPMENT LEVEL SELECT":"BACKSTAGE MODE";
     panelTitle.textContent="Choose a level.";
-    panelText.textContent=`Testing as ${characters[selectedCharacter].name}. Pick any level and launch directly. Shift+U unlocks every exit.`;
+    panelText.textContent=`Testing as ${characters[selectedCharacter].name}. Press L to jump to any level; Shift+U unlocks every exit.`;
     primaryButton.classList.add("hidden");
     characterSelect.classList.add("hidden");
     crestedSkinSelect?.classList.add("hidden");
