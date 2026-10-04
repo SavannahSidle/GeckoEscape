@@ -1099,7 +1099,7 @@
       boatStability=Math.min(100,boatStability+8*dt-Math.max(0,Math.abs(boatTilt)-.38)*48*dt);
       boatDistance+=dt*(up?19:14);
       if(boatStability<=0){tone(72,.3,"sawtooth");resetPlayer(false);return;}
-      if(boatDistance>=100){boatDistance=100;completeLevel();return;}
+      if(boatDistance>=300){boatDistance=300;completeLevel();return;}
       updateHud();return;
     }
     if(batStartHanging){player.x=batHangX;player.y=batHangY;player.vx=0;player.vy=0;player.ceilingClimbing=true;return;}
@@ -2835,9 +2835,9 @@
     ctx.beginPath();ctx.moveTo(1,29);ctx.lineTo(9,29);ctx.lineTo(10,60);ctx.lineTo(2,60);ctx.closePath();ctx.fill();
     // Sleeved arms, bent slightly toward the boat rail, with visible hands.
     ctx.lineCap="round";ctx.lineJoin="round";ctx.strokeStyle="#09090b";ctx.lineWidth=7;
-    ctx.beginPath();ctx.moveTo(-9,13);ctx.lineTo(-17,24);ctx.lineTo(-15,34);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(9,13);ctx.lineTo(17,24);ctx.lineTo(15,34);ctx.stroke();
-    ctx.fillStyle="#c68f6d";ctx.beginPath();ctx.arc(-15,36,3.2,0,Math.PI*2);ctx.arc(15,36,3.2,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.moveTo(-9,13);ctx.lineTo(-14,21);ctx.lineTo(-12,28);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(9,13);ctx.lineTo(14,21);ctx.lineTo(12,28);ctx.stroke();
+    ctx.fillStyle="#c68f6d";ctx.beginPath();ctx.arc(-12,30,2.7,0,Math.PI*2);ctx.arc(12,30,2.7,0,Math.PI*2);ctx.fill();
     // Black shoes rest on the deck.
     ctx.fillStyle="#050506";roundedRect(-12,57,12,6,2);ctx.fill();roundedRect(1,57,12,6,2);ctx.fill();
     // Dark brown shoulder-length hair, face, and simple features.
