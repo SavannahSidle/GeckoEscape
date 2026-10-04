@@ -297,7 +297,7 @@
       intro:"The cheese haul has become legally significant. Cross the waterfront, reach Jane, and get the evidence onto her boat.",
       completeTitle:"Jane has enabled the crime.",completeText:"Raccoon, human, and an unreasonable quantity of cheese are aboard. Nobody asks sensible questions.",
       palette:["#273747","#a7c5cf","#665747","#f0c94d"],start:[38,438],exit:[870,380,60,120],
-      platforms:[[0,500,960,40,"dock"],[55,445,150,22,"crate"],[230,390,145,22,"crate"],[405,330,145,22,"vanRoof"],[585,390,135,22,"crate"],[740,300,125,22,"pierRoof"]],
+      platforms:[[0,500,790,40,"dock"],[930,500,30,40,"dock"],[55,445,150,22,"crate"],[230,390,145,22,"crate"],[405,330,145,22,"vanRoof"],[585,390,135,22,"crate"],/* Jane-side block removed */],
       vines:[[205,330,18,160],[720,270,18,180]],insects:[[115,410],[295,355],[475,295],[650,355],[800,265],[865,420]],
       hazards:[{x:250,y:448,w:65,h:52,type:"frenchie",axis:"x",min:205,max:430,speed:110},{x:500,y:430,w:70,h:70,type:"grab",axis:"x",min:460,max:690,speed:145},{x:700,y:235,w:58,h:30,type:"bird",axis:"diagonal",minX:620,maxX:870,minY:190,maxY:370,speedX:90,speedY:65,chases:true}],
       decor:"cheeseGetaway",habitat:"raccoon"
@@ -1468,7 +1468,7 @@
       const diningTables=[[112,452],[322,452],[552,452],[782,452],[222,392],[452,392],[682,392]];for(const [x,y] of diningTables){ctx.fillStyle="#5d3c48";for(const sx of [-1,1]){roundedRect(x+sx*48-13,y-34,26,43,7);ctx.fill();ctx.strokeStyle="#b99762";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x+sx*48-9,y+8);ctx.lineTo(x+sx*48-12,y+36);ctx.moveTo(x+sx*48+9,y+8);ctx.lineTo(x+sx*48+12,y+36);ctx.stroke();}}
       const guests=[[64,408,"#f0c8a4","#221b18","#25395b"],[160,408,"#70452f","#151414","#6a2944"],[274,408,"#9a6548","#2c1714","#244f42"],[370,408,"#e1ad84","#d8c2a6","#26272b"],[504,408,"#5b3529","#171316","#47285c"],[600,408,"#c98f68","#8a4b2f","#244263"],[734,408,"#d7a47e","#3d241d","#3f355f"],[830,408,"#6a4030","#d9c8b2","#27493e"],[910,421,"#b87955","#1b1718","#5a2942"]];
       for(const [x,y,skin,hair,clothes] of guests){ctx.fillStyle=clothes;roundedRect(x-10,y+9,20,31,7);ctx.fill();ctx.fillStyle=skin;ctx.beginPath();ctx.arc(x,y,9,0,Math.PI*2);ctx.fill();ctx.fillStyle=hair;ctx.beginPath();ctx.arc(x,y-3,9,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle="#d8b85f";ctx.fillRect(x-5,y+20,10,3);}
-      ctx.fillStyle="#202a25";roundedRect(48,92,110,88,5);ctx.fill();ctx.strokeStyle="#d5bc7d";ctx.lineWidth=2;ctx.stroke();ctx.fillStyle="#f1dfaa";ctx.font="900 10px system-ui";ctx.fillText("TASTING MENU",103,113);ctx.font="8px system-ui";ctx.fillText("CHEESE  $47",103,134);ctx.fillText("ONE GRAPE  $19",103,150);ctx.fillText("AIR  MARKET",103,166);
+      ctx.fillStyle="#202a25";roundedRect(48,92,116,92,5);ctx.fill();ctx.strokeStyle="#d5bc7d";ctx.lineWidth=2;ctx.stroke();ctx.fillStyle="#f1dfaa";ctx.font="900 12px system-ui";ctx.fillText("TASTING MENU",106,114);ctx.font="8px system-ui";ctx.fillText("CHEESE  $47",106,136);ctx.fillText("ONE GRAPE  $19",106,152);ctx.fillText("AIR  MARKET",106,168);
       ctx.save();ctx.translate(480,468);ctx.strokeStyle="rgba(245,220,172,.18)";ctx.lineWidth=2;for(let a=0;a<Math.PI*2;a+=Math.PI/8){ctx.beginPath();ctx.moveTo(Math.cos(a)*45,Math.sin(a)*7);ctx.lineTo(Math.cos(a)*520,Math.sin(a)*78);ctx.stroke();}ctx.restore();
     } else if (level.decor === "parachute") {
       const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,"#4c9fd2");sky.addColorStop(.65,"#cce9ed");sky.addColorStop(1,"#6f9daa");ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
@@ -1493,13 +1493,15 @@
       const dusk=ctx.createLinearGradient(0,55,0,500);dusk.addColorStop(0,"#506d82");dusk.addColorStop(1,"#d59b73");ctx.fillStyle=dusk;ctx.fillRect(0,55,W,445);
       ctx.fillStyle="#2f414b";for(let x=0;x<760;x+=75){const h=90+(x%140);ctx.fillRect(x,500-h,62,h);ctx.fillStyle="#e7c76c";for(let y=500-h+15;y<480;y+=22)for(let wx=x+9;wx<x+55;wx+=17)ctx.fillRect(wx,y,6,8);ctx.fillStyle="#2f414b";}
       ctx.fillStyle="#244f62";ctx.fillRect(0,470,W,30);ctx.strokeStyle="#8f7254";ctx.lineWidth=8;for(let x=20;x<W;x+=90){ctx.beginPath();ctx.moveTo(x,430);ctx.lineTo(x,500);ctx.stroke();}
-      // Jane's hair falls beside her face and to her shoulders; her forehead stays clear.
-      ctx.save();ctx.translate(846,402);ctx.fillStyle="#09090b";roundedRect(-15,8,30,62,8);ctx.fill();
+      // Jane now has a visible all-black outfit with arms, hands, legs, and shoes.
+      ctx.save();ctx.translate(846,402);ctx.fillStyle="#09090b";roundedRect(-13,8,26,30,6);ctx.fill();
+      ctx.beginPath();ctx.moveTo(-11,34);ctx.lineTo(-2,34);ctx.lineTo(-3,64);ctx.lineTo(-11,64);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(2,34);ctx.lineTo(11,34);ctx.lineTo(11,64);ctx.lineTo(3,64);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#050506";roundedRect(-14,62,12,6,2);ctx.fill();roundedRect(2,62,13,6,2);ctx.fill();
+      ctx.strokeStyle="#09090b";ctx.lineWidth=6;ctx.lineCap="round";ctx.lineJoin="round";ctx.beginPath();ctx.moveTo(-10,13);ctx.lineTo(-15,24);ctx.lineTo(-13,34);ctx.stroke();ctx.beginPath();ctx.moveTo(10,13);ctx.lineTo(15,24);ctx.lineTo(13,34);ctx.stroke();
+      ctx.fillStyle="#c68f6d";ctx.beginPath();ctx.arc(-13,36,2.8,0,Math.PI*2);ctx.arc(13,36,2.8,0,Math.PI*2);ctx.fill();
       ctx.fillStyle="#3b241c";ctx.beginPath();ctx.moveTo(-13,-7);ctx.quadraticCurveTo(-18,8,-15,31);ctx.lineTo(-10,31);ctx.lineTo(-9,5);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(13,-7);ctx.quadraticCurveTo(18,8,15,31);ctx.lineTo(10,31);ctx.lineTo(9,5);ctx.closePath();ctx.fill();
-      ctx.fillStyle="#c68f6d";ctx.beginPath();ctx.ellipse(0,0,12,13,0,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#3b241c";ctx.beginPath();ctx.moveTo(-12,-2);ctx.quadraticCurveTo(-14,-16,0,-16);ctx.quadraticCurveTo(14,-16,12,-2);ctx.quadraticCurveTo(6,-8,0,-8);ctx.quadraticCurveTo(-6,-8,-12,-2);ctx.fill();
-      ctx.strokeStyle="#694435";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,-15);ctx.quadraticCurveTo(2,-11,0,-8);ctx.stroke();
-      ctx.fillStyle="#684328";ctx.beginPath();ctx.arc(-5,0,1.7,0,Math.PI*2);ctx.arc(5,0,1.7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.font="900 11px system-ui";ctx.textAlign="center";ctx.fillText("JANE",0,-24);ctx.restore();
+      ctx.fillStyle="#c68f6d";ctx.beginPath();ctx.ellipse(0,0,12,13,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#3b241c";ctx.beginPath();ctx.moveTo(-12,-2);ctx.quadraticCurveTo(-14,-16,0,-16);ctx.quadraticCurveTo(14,-16,12,-2);ctx.quadraticCurveTo(6,-8,0,-8);ctx.quadraticCurveTo(-6,-8,-12,-2);ctx.fill();
+      ctx.strokeStyle="#694435";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,-15);ctx.quadraticCurveTo(2,-11,0,-8);ctx.stroke();ctx.fillStyle="#684328";ctx.beginPath();ctx.arc(-5,0,1.7,0,Math.PI*2);ctx.arc(5,0,1.7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.font="900 11px system-ui";ctx.textAlign="center";ctx.fillText("JANE",0,-24);ctx.restore();
     } else if(level.decor==="boatEscape"){
       const sea=ctx.createLinearGradient(0,55,0,500);sea.addColorStop(0,"#7fc0d7");sea.addColorStop(.55,"#3e819d");sea.addColorStop(1,"#16485f");ctx.fillStyle=sea;ctx.fillRect(0,55,W,445);
       const t=performance.now(),scroll=boatDistance*2.8;
