@@ -537,7 +537,7 @@
     characterSelect.querySelector("button:not(.hidden)")?.focus();
   }
 
-  function showLevelSelect(fromGameplay=false){
+  function showLevelSelect(fromGameplay=false, allowAllLevels=fromGameplay){
     resumePlayAfterLevelSelect=fromGameplay;
     state="level-select";
     panelKicker.textContent=allowAllLevels?"DEVELOPMENT LEVEL SELECT":"BACKSTAGE MODE";
@@ -551,7 +551,7 @@
       const index=Number(button.dataset.level);const level=levels[index];
       const labLevel=index===FOX_LAB_LEVEL;
       const foxLabCharacter=["foxLab","foxAlt"].includes(selectedCharacter);
-      button.classList.toggle("hidden",foxLabCharacter?!labLevel:labLevel||!level||index>=(fromGameplay?levels.length:storyLevelCount()));
+      button.classList.toggle("hidden",foxLabCharacter?!labLevel:labLevel||!level||index>=(allowAllLevels?levels.length:storyLevelCount()));
       const label=button.querySelector("small");
       if(level&&label)label.textContent=level.title.replace(/^The\s+/i,"");
     });
