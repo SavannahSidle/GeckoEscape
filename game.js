@@ -10,6 +10,7 @@
   const characterSelect = document.querySelector("#characterSelect");
   const levelSelect = document.querySelector("#levelSelect");
   const primaryButton = document.querySelector("#primaryButton");
+  const crestedSkinSelect = document.querySelector("#crestedSkinSelect");
   const secondaryButton = document.querySelector("#secondaryButton");
   const hud = document.querySelector("#hud");
   const levelLabel = document.querySelector("#levelLabel");
@@ -46,6 +47,8 @@
   let camouflageUntil = 0;
   let camouflageCooldownUntil = 0;
   let chameleonColorIndex = 0;
+  let selectedCrestieSkin = "classic";
+  let constrictTarget = null;
   let strikeActiveUntil = 0;
   let strikeCooldownUntil = 0;
   let regenerateUntil = 0;
@@ -139,7 +142,7 @@
   const player = {
     x: 0, y: 0, w: 38, h: 24,
     vx: 0, vy: 0, facing: 1,
-    grounded: false, climbing: false, ceilingClimbing: false,
+    grounded: false, climbing: false, ceilingClimbing: false, ceilingVine: null, climbDirection: -1,
     spawnX: 0, spawnY: 0, onSwing: false
   };
 
@@ -346,7 +349,7 @@
       intro:"The screen door is loose. Cross the ficus branches and leave before anyone notices the suspiciously empty vine.",
       start:[70,420],exit:[870,410,48,90],
       platforms:[[0,500,960,40],[42,452,190,20],[80,340,150,18],[275,392,175,20],[510,330,190,20],[735,264,180,20],[570,180,165,18]],
-      vines:[[420,278,18,118],[655,188,18,142]],ceilingVines:[[150,92,680,18,"woody"]],insects:[[149,307],[95,135],[330,355],[590,292],[810,225]],
+      vines:[[420,278,18,118],[655,188,18,142],[270,276,18,136]],ceilingVines:[[150,92,680,18,"woody"]],insects:[[149,307],[95,135],[330,355],[590,292],[810,225]],
       hazards:[{x:430,y:430,w:92,h:70,type:"grab",axis:"x",min:340,max:620,speed:82}]
     },
     crested: {
@@ -377,8 +380,8 @@
       title:"The Boa Enclosure",habitat:"boa",palette:["#0b100d","#242a20","#62472d","#a0b37b"],
       intro:"The sliding door is open. Follow the heavy logs toward freedom, dignity, and several poorly secured feeder rats.",
       start:[38,430],exit:[870,410,48,90],
-      platforms:[[0,500,960,40],[35,454,245,26],[78,338,170,22],[315,410,210,25],[560,360,220,25],[760,292,170,24],[600,212,175,22],[390,165,180,22],[705,105,180,22]],
-      vines:[[285,325,22,130],[800,215,22,110]],diagonalVines:[],insects:[[480,130]],mice:[[158,304],[365,373],[640,322],[835,255]],
+      platforms:[[0,500,960,40],[35,454,245,26],[78,338,170,22],[315,410,210,25],[560,360,220,25],[760,292,170,24],[600,212,175,22],[223,165,390,14,"boaTunnelFloor"],[38,165,185,14,"boaLedge"],[223,102,390,16,"boaTunnelRoof"],[208,52,15,66,"boaTunnelWall"],[705,105,180,22]],
+      vines:[[285,325,22,130],[800,215,22,110]],diagonalVines:[],insects:[[105,145]],mice:[[158,304],[365,373],[640,322],[835,255]],
       hazards:[{x:455,y:430,w:92,h:70,type:"grab",axis:"x",min:350,max:630,speed:70}]
     },
     raccoon: {
@@ -501,6 +504,7 @@
     primaryButton.classList.remove("hidden");
     characterSelect.classList.add("hidden");
     levelSelect.classList.add("hidden");
+    crestedSkinSelect?.classList.add("hidden");
     secondaryButton.classList.toggle("hidden", !allowSelect);
     if(allowSelect){secondaryButton.textContent="LEVEL SELECT";secondaryButton.onclick=showMenu;}
     overlay.classList.remove("hidden");
@@ -521,6 +525,7 @@
     primaryButton.classList.add("hidden");
     secondaryButton.classList.add("hidden");
     levelSelect.classList.add("hidden");
+    crestedSkinSelect?.classList.add("hidden");
     characterSelect.querySelectorAll("[data-character]").forEach(button=>{
       const id=button.dataset.character;
       const developerFox=id==="foxLab"||id==="foxAlt";
@@ -537,6 +542,7 @@
     panelText.textContent=`Testing as ${characters[selectedCharacter].name}. Every exit is unlocked.`;
     primaryButton.classList.add("hidden");
     characterSelect.classList.add("hidden");
+    crestedSkinSelect?.classList.add("hidden");
     levelSelect.classList.remove("hidden");
     levelSelect.querySelectorAll("[data-level]").forEach(button=>{
       const index=Number(button.dataset.level);const level=levels[index];
@@ -558,6 +564,7 @@
     const level = levels[index];
     state = "intro";
     showPanel(level.label, level.title, level.intro, index === 0 ? "START LEVEL" : "CONTINUE", () => startLevel(index));
+    crestedSkinSelect?.classList.toggle("hidden", selectedCharacter!=="crested");
     if(backstageMode){
       secondaryButton.textContent="LEVEL SELECT";
       secondaryButton.onclick=showLevelSelect;
@@ -585,6 +592,9 @@
     leapCooldownUntil = 0;
     constrictCooldownUntil = 0;
     constrictPulseUntil = 0;
+    constrictTarget = null;
+    player.ceilingVine = null;
+    player.ceilingClimbing = false;
     camouflageUntil = 0;
     camouflageCooldownUntil = 0;
     strikeActiveUntil = 0;
@@ -794,7 +804,8 @@
   function useCamouflage() {
     const now=performance.now();
     if(state!=="playing"||selectedCharacter!=="chameleon"||now<camouflageCooldownUntil)return;
-    chameleonColorIndex=(chameleonColorIndex+1)%5;
+    const next=(Math.random()*5)|0;
+    chameleonColorIndex=next===chameleonColorIndex?(next+1+(Math.random()*4|0))%5:next;
     camouflageUntil=now+2600;
     camouflageCooldownUntil=now+5200;
     updateHud();tone(430,.16,"sine");
@@ -814,7 +825,8 @@
       const distance = Math.hypot(px - (hazard.x + hazard.w / 2), py - (hazard.y + hazard.h / 2));
       if (distance < nearest) { nearest = distance; target = hazard; }
     }
-    constrictPulseUntil = now + 360;
+    constrictPulseUntil = now + 900;
+    constrictTarget = target ? {x:target.x+target.w/2,y:target.y+target.h/2} : null;
     if (!target) { tone(92, .08, "square"); return; }
     target.stunnedUntil = now + 3500;
     constrictCooldownUntil = now + 4600;
@@ -1130,12 +1142,23 @@
       const diagonalVine=(level.diagonalVines||[]).find(v=>touchesDiagonalVine(player,v));
       const onVine = level.vines.some(v => intersects(player, {x:v[0], y:v[1], w:v[2], h:v[3]})) || Boolean(diagonalVine);
       const onWall = player.x <= 5 || player.x + player.w >= W - 5;
-      player.ceilingClimbing=false;
-      player.climbing = (onVine || onWall) && (up || down);
-      if (player.climbing) {
-        player.vx=0;
-        player.vy = up ? -character.climbSpeed : down ? character.climbSpeed : 0;
-      } else {
+      const canClimbVertically=["chameleon","crested","boa"].includes(selectedCharacter);
+      const climbingCeiling=player.ceilingClimbing&&player.ceilingVine&&canClimbVertically;
+      if(climbingCeiling){
+        const vine=player.ceilingVine;
+        player.y=vine[1]+vine[3]+2;player.vy=0;player.climbing=false;
+        if(left||right){player.facing=left?-1:1;player.vx=(right?1:-1)*character.climbSpeed;}
+        else player.vx=0;
+        if(down){player.ceilingClimbing=false;player.ceilingVine=null;player.vy=100;}
+        else player.x=Math.max(vine[0]-player.w+5,Math.min(vine[0]+vine[2]-5,player.x));
+      }else{
+        player.ceilingClimbing=false;player.ceilingVine=null;
+        player.climbing = (onVine || onWall) && (up || down);
+        if(player.climbing){
+          player.vx=0;
+          player.climbDirection=up?-1:1;
+          player.vy=up?-character.climbSpeed:down?character.climbSpeed:0;
+        }else{
         const flying=selectedCharacter==="bat";
         if(flying){
           // Powered flight: up and down steer, neutral input gently hovers.
@@ -1159,6 +1182,7 @@
         if(selectedCharacter==="frog"&&player.grounded&&(left||right)&&now>=frogHopCooldownUntil){
           player.vy=-178;player.grounded=false;frogAutoHopping=true;frogHopCooldownUntil=now+300;
         }
+        }
       }
     }
 
@@ -1170,8 +1194,12 @@
     player.x += player.vx * dt;
     player.x = Math.max(0, Math.min(W - player.w, player.x));
     player.y += player.vy * dt;
+    if(["chameleon","crested"].includes(selectedCharacter)&&player.vy<0&&!player.ceilingClimbing){
+      const canopy=(level.ceilingVines||[]).find(v=>oldY>=v[1]-player.h&&player.y<=v[1]+v[3]&&player.x+player.w>v[0]&&player.x<v[0]+v[2]);
+      if(canopy){player.ceilingVine=canopy;player.ceilingClimbing=true;player.climbing=false;player.grounded=false;player.vy=0;player.y=canopy[1]+canopy[3]+2;player.x=Math.max(canopy[0]-player.w+5,Math.min(canopy[0]+canopy[2]-5,player.x));}
+    }
     for(const p of level.platforms){
-      if(p[4]!=="caveWall"||!intersects(player,{x:p[0],y:p[1],w:p[2],h:p[3]}))continue;
+      if(!["caveWall","boaTunnelRoof","boaTunnelWall"].includes(p[4])||!intersects(player,{x:p[0],y:p[1],w:p[2],h:p[3]}))continue;
       if(oldX+player.w<=p[0]){player.x=p[0]-player.w;player.vx=0;}
       else if(oldX>=p[0]+p[2]){player.x=p[0]+p[2];player.vx=0;}
       else if(oldY+player.h<=p[1]){player.y=p[1]-player.h;player.vy=0;}
@@ -1305,7 +1333,7 @@
     }
     if(selectedCharacter==="opossum"&&performance.now()<playDeadUntil)return;
     if(batStartHanging){batStartHanging=false;player.ceilingClimbing=false;batReleaseUntil=now+260;player.y+=8;player.vy=65;tone(185,.05,"triangle");return;}
-    if(player.ceilingClimbing){player.ceilingClimbing=false;player.climbing=false;player.y+=8;player.vy=135;tone(185,.05,"triangle");return;}
+    if(player.ceilingClimbing){player.ceilingClimbing=false;player.ceilingVine=null;player.climbing=false;player.y+=8;player.vy=135;tone(185,.05,"triangle");return;}
     const level=levels[levelIndex];
     if(selectedCharacter==="raccoon"&&level.decor==="parachute"&&!player.grounded){
       if(now<parachuteBoostCooldownUntil)return;
@@ -1677,6 +1705,8 @@
       ctx.fillStyle="#29231b";roundedRect(695,390,175,106,22);ctx.fill();roundedRect(92,390,168,106,22);ctx.fill();
       ctx.fillStyle="#090a08";ctx.beginPath();ctx.arc(780,456,42,Math.PI,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(176,456,39,Math.PI,Math.PI*2);ctx.fill();
       ctx.strokeStyle="#4d3421";ctx.lineWidth=28;ctx.beginPath();ctx.moveTo(90,438);ctx.quadraticCurveTo(290,365,470,430);ctx.stroke();
+      drawLeaves(20,192,"#315a32");drawLeaves(280,262,"#426d37");drawLeaves(618,194,"#355f35");drawLeaves(844,225,"#456b39");
+      for(const [x,y] of [[275,365],[530,320],[720,255],[155,300]])drawPlantLeaf(x,y,-.5,"#47743a",30,10);
     }else if(level.habitat==="raccoon"){
       // A commercial dumpster inside a fenced alley trash corral: a found enclosure, not a pet cage.
       ctx.fillStyle="#5a4038";ctx.fillRect(20,50,920,446);
@@ -1938,6 +1968,12 @@
       }else if(level.habitat==="bat"&&p[4]!=="caveFloor"){
         if(p[4]==="fruitTray"){ctx.fillStyle="#715746";roundedRect(p[0],p[1],p[2],p[3],5);ctx.fill();for(let x=p[0]+16,index=0;x<p[0]+p[2]-8;x+=25,index++){ctx.fillStyle=["#e4a33a","#8c4f79","#d95b4e"][index%3];ctx.beginPath();ctx.arc(x,p[1]+3,7,Math.PI,Math.PI*2);ctx.fill();ctx.strokeStyle="#517447";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,p[1]-4);ctx.lineTo(x+4,p[1]-9);ctx.stroke();}}
         else{ctx.fillStyle="#3a3544";roundedRect(p[0],p[1],p[2],p[3],8);ctx.fill();ctx.strokeStyle="#655e70";ctx.lineWidth=2;ctx.stroke();}
+      }else if(level.habitat==="boa"&&p[4]==="boaTunnelFloor"){
+        ctx.fillStyle="#57402b";roundedRect(p[0],p[1],p[2],p[3],6);ctx.fill();ctx.fillStyle="#896344";ctx.fillRect(p[0]+5,p[1]+2,p[2]-10,4);
+      }else if(level.habitat==="boa"&&(p[4]==="boaTunnelRoof"||p[4]==="boaTunnelWall")){
+        ctx.fillStyle="#745238";roundedRect(p[0]-2,p[1]-4,p[2]+4,p[3]+8,Math.min(28,p[3]/2));ctx.fill();ctx.strokeStyle="#3e3022";ctx.lineWidth=3;ctx.stroke();
+        ctx.fillStyle="#33281e";for(let i=0;i<8;i++){const x=p[0]+12+(i*53)%(Math.max(20,p[2]-24));ctx.beginPath();ctx.ellipse(x,p[1]+5+(i%3)*3,10+(i%3)*4,3+(i%2)*2,(i%4)*.2,0,Math.PI*2);ctx.fill();}
+        if(p[4]==="boaTunnelRoof"){ctx.fillStyle="#171713";roundedRect(p[0]+10,p[1]+p[3]-1,p[2]-20,40,18);ctx.fill();ctx.strokeStyle="#9a754e";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(p[0]+8,p[1]+p[3]);ctx.quadraticCurveTo(p[0]+p[2]*.5,p[1]+p[3]-8,p[0]+p[2]-8,p[1]+p[3]);ctx.stroke();}
       }else if(level.decor==="kitchen"&&p[4]==="fridgeTop"){
         // The refrigerator artwork itself is the collision surface.
         continue;
@@ -2254,12 +2290,14 @@
     ctx.save();
     ctx.translate(player.x + player.w/2, player.y + player.h/2);
     ctx.scale(player.facing, 1);
-    const green = characters.crested.color;
+    const green = selectedCrestieSkin==="halloween"?"#d9783c":characters.crested.color;
+    const spotColor=selectedCrestieSkin==="halloween"?"#34251f":"#593a28";
     const motion=livelyMotion(now,.02);ctx.translate(0,Math.abs(motion.stride)*motion.moving*1.6+motion.landing*1.5);ctx.scale(1+motion.landing*.06,1-motion.landing*.1);
     // Long, gently tapering tail. Crested geckos are not curly-tailed chameleons.
     if (tailReady) {
       ctx.strokeStyle = green; ctx.lineWidth = 7; ctx.lineCap = "round";
       const tailWave=Math.sin(now*.011)*(2+motion.moving*3)+(motion.airborne?-player.vy*.012:0);ctx.beginPath(); ctx.moveTo(-14, 2); ctx.bezierCurveTo(-27, 3-tailWave*.2, -37, 8+tailWave, -49, 5+tailWave*.5); ctx.stroke();
+      if(selectedCrestieSkin!=="classic"){ctx.fillStyle=selectedCrestieSkin==="halloween"?"#34251f":"#593a28";for(const [x,y,r] of [[-24,2-tailWave*.2,1.4],[-32,6+tailWave*.25,1.7],[-40,6+tailWave*.4,1.2]]){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}}
     }
 
     // Four articulated side-view legs with alternating steps and adhesive toe pads.
@@ -2269,6 +2307,11 @@
     // Slender body and broad, flat-topped wedge head with a distinct blunt snout.
     ctx.fillStyle = green;
     ctx.beginPath(); ctx.ellipse(-1,0,20+motion.breath*.35,9+motion.breath*.2,0,0,Math.PI*2); ctx.fill();
+    if(selectedCrestieSkin!=="classic"){
+      ctx.save();ctx.beginPath();ctx.ellipse(-1,0,20+motion.breath*.35,9+motion.breath*.2,0,0,Math.PI*2);ctx.clip();ctx.fillStyle=spotColor;
+      const marks=selectedCrestieSkin==="super-dalmatian"?[[-16,-3,3.1,2.2],[-10,4,2.1,1.8],[-5,-4,2.7,2],[-1,3,3,2.4],[5,-3,2,1.7],[10,3,3.2,2.2],[15,-2,2.4,1.8]]:[[-15,-2,6,3.4],[-3,3,6,3],[9,-2,6,3.5]];
+      for(const [x,y,rx,ry] of marks){ctx.beginPath();ctx.ellipse(x,y,rx,ry,(x%3)*.08,0,Math.PI*2);ctx.fill();}ctx.restore();
+    }
     ctx.save();ctx.translate(0,motion.headBob);
     ctx.beginPath();
     ctx.moveTo(8,-7);ctx.quadraticCurveTo(19,-11,33,-8);ctx.lineTo(40,-3);
@@ -2304,7 +2347,7 @@
     if (flash) ctx.globalAlpha=.4;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
     const chameleonColors=["#79a94d","#d8aa45","#43a4a0","#a565bd","#cf654f"];
-    const green=now<camouflageUntil?chameleonColors[Math.floor(now/170)%chameleonColors.length]:chameleonColors[chameleonColorIndex];
+    const green=chameleonColors[chameleonColorIndex];
     const speed=Math.min(1,Math.max(Math.abs(player.vx),Math.abs(player.vy))/150),crawlDirection=player.climbing&&player.vy>0?-1:1,phase=now*(.004+speed*.018)*crawlDirection;
     const chameleonLeg=(hipX,hipY,front,far)=>{
       const phaseOffset=front===far?0:Math.PI,step=Math.sin(phase+phaseOffset)*speed*7;
@@ -2406,14 +2449,18 @@
     const midWave=moving*Math.sin(slitherPhase+1.7)*6;
     const neckWave=moving*Math.sin(slitherPhase+3.25)*3.5;
     ctx.strokeStyle=dark;ctx.lineWidth=15;ctx.lineCap="round";
-    if(now<constrictPulseUntil){
-      // One continuous tightening spiral keeps the body and neck visibly attached.
-      ctx.lineWidth=14;ctx.beginPath();ctx.moveTo(-58,9);
-      ctx.bezierCurveTo(-53,-16,-17,-23,12,-10);
-      ctx.bezierCurveTo(38,2,23,25,-9,21);
-      ctx.bezierCurveTo(-38,17,-39,-4,-16,-10);
-      ctx.bezierCurveTo(4,-15,22,-2,14,9);ctx.stroke();
-      ctx.strokeStyle="#414448";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-55,5);ctx.bezierCurveTo(-35,-18,-5,-16,13,-7);ctx.bezierCurveTo(31,2,18,19,-7,17);ctx.stroke();
+    const constricting=now<constrictPulseUntil;
+    const targetX=constrictTarget?Math.max(-23,Math.min(20,(constrictTarget.x-(player.x+player.w/2))*player.facing)):0;
+    const coilShift=constricting?Math.sin(now*.014)*2.5:0;
+    if(constricting){
+      // Overlapping, tightening body passes wrap around the prey while the neck follows.
+      ctx.lineWidth=15;ctx.beginPath();ctx.moveTo(-58,10);
+      ctx.bezierCurveTo(-54,-15,-24,-24,targetX+8,-14+coilShift);
+      ctx.bezierCurveTo(targetX+38,-4,targetX+34,24,targetX+3,23);
+      ctx.bezierCurveTo(targetX-30,22,targetX-36,-6,targetX-9,-12);
+      ctx.bezierCurveTo(targetX+12,-17,targetX+25,-2,targetX+13,11);ctx.stroke();
+      ctx.lineWidth=10;ctx.beginPath();ctx.ellipse(targetX,4+coilShift,26,17,-.12,Math.PI*.08,Math.PI*1.9);ctx.stroke();
+      ctx.strokeStyle="#414448";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-54,6);ctx.bezierCurveTo(-32,-19,-3,-17,targetX+10,-9);ctx.bezierCurveTo(targetX+28,1,targetX+21,17,targetX-5,18);ctx.stroke();
     }else{
       ctx.beginPath();ctx.moveTo(-64,5+tailWave*.55);
       ctx.bezierCurveTo(-53,-17+tailWave,-40,19-midWave,-25,3+midWave*.35);
@@ -2421,9 +2468,10 @@
     }
     const strikeProgress=now<strikeActiveUntil?Math.max(0,1-(strikeActiveUntil-now)/300):0;
     const lunge=now<strikeActiveUntil?Math.sin(strikeProgress*Math.PI)*38:0;
-    const headWave=now<constrictPulseUntil?0:neckWave*.35;
-    ctx.strokeStyle=dark;ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(now<constrictPulseUntil?12:14,(now<constrictPulseUntil?7:-1)+headWave);ctx.quadraticCurveTo(20+lunge*.45,-5+headWave,24+lunge,-2+headWave);ctx.stroke();
-    ctx.save();ctx.translate(lunge,headWave);ctx.rotate(moving*Math.sin(slitherPhase+3.25)*.025);
+    const headWave=constricting?Math.sin(now*.019)*2.8:neckWave*.35;
+    const headReach=constricting?targetX+12+Math.sin(now*.012)*3:lunge;
+    ctx.strokeStyle=dark;ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(constricting?targetX+7:14, (constricting?8:-1)+headWave);ctx.quadraticCurveTo(targetX+15+lunge*.2,-1+headWave,targetX+24+headReach,-3+headWave);ctx.stroke();
+    ctx.save();ctx.translate(constricting?headReach:lunge,headWave);ctx.rotate(constricting?-.16+Math.sin(now*.015)*.05:moving*Math.sin(slitherPhase+3.25)*.025);
     ctx.fillStyle=dark;
     ctx.beginPath();ctx.moveTo(15,-11);ctx.quadraticCurveTo(34,-14,48,-8);ctx.lineTo(54,-1);ctx.lineTo(49,8);ctx.quadraticCurveTo(33,13,16,9);ctx.lineTo(9,3);ctx.lineTo(11,-6);ctx.closePath();ctx.fill();
     ctx.strokeStyle="#383b3e";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(19,8);ctx.quadraticCurveTo(35,12,49,6);ctx.stroke();
@@ -2635,7 +2683,10 @@
 
   function drawPlayer(now) {
     ctx.save();
+    const verticalClimber=player.climbing&&["chameleon","crested","boa"].includes(selectedCharacter);
     if(player.ceilingClimbing&&selectedCharacter!=="bat"){ctx.translate(0,player.y*2+player.h);ctx.scale(1,-1);}
+    if(verticalClimber){const cx=player.x+player.w/2,cy=player.y+player.h/2;ctx.translate(cx,cy);ctx.rotate(player.climbDirection<0?-Math.PI/2:Math.PI/2);ctx.translate(-cx,-cy);}
+    const priorFacing=player.facing;if(verticalClimber)player.facing=1;
     if (selectedCharacter === "chameleon") drawChameleon(now);
     else if (selectedCharacter === "newt") drawNewt(now);
     else if (selectedCharacter === "frog") drawFrog(now);
@@ -2648,6 +2699,7 @@
     else if (selectedCharacter === "devilfox") drawDevilFox(now);
     else if (["foxLab","foxAlt"].includes(selectedCharacter)) drawExperimentalFox(now);
     else drawCrestedGecko(now);
+    player.facing=priorFacing;
     ctx.restore();
   }
 
@@ -2811,6 +2863,12 @@
   });
   levelSelect.querySelectorAll("[data-level]").forEach(button=>{
     button.addEventListener("click",()=>showIntro(Number(button.dataset.level)));
+  });
+  crestedSkinSelect?.querySelectorAll("[data-crestie-skin]").forEach(button=>{
+    button.addEventListener("click",()=>{
+      selectedCrestieSkin=button.dataset.crestieSkin;
+      crestedSkinSelect.querySelectorAll("[data-crestie-skin]").forEach(option=>option.setAttribute("aria-pressed",String(option===button)));
+    });
   });
   soundButton.addEventListener("click", () => {
     soundOn = !soundOn;
