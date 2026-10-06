@@ -112,8 +112,7 @@
     newt: { name: "FIRE-BELLY NEWT", ability: "REGENERATE", secondary: "TOXIN", collectible: "WORMS", color: "#252a28", climbSpeed: 92, swimSpeed: 170, w: 46, h: 23 },
     frog: { name: "AZUREUS DART FROG", ability: "TONGUE", secondary: "POWER LEAP", collectible: "FRUIT FLIES", color: "#2679cb", climbSpeed: 120, swimSpeed: 155, w: 38, h: 27 },
     boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", secondary: "STRIKE", collectible: "RATS", color: "#030405", climbSpeed: 155, swimSpeed: 190, w: 94, h: 36 },
-    raccoon: { name: "TORONTO TRASH TANK (RACCOON)", ability: "BITE", secondary: "TRASH SHIELD", collectible: "TRASH TREASURES", color: "#73777a", climbSpeed: 178, swimSpeed: 145, w: 58, h: 38 },
-    opossum: { name: "VIRGINIA OPOSSUM", ability: "HISS", secondary: "PLAY DEAD", collectible: "FORAGE", color: "#b8b2aa", climbSpeed: 182, swimSpeed: 135, w: 58, h: 31 },
+        opossum: { name: "VIRGINIA OPOSSUM", ability: "HISS", secondary: "PLAY DEAD", collectible: "FORAGE", color: "#b8b2aa", climbSpeed: 182, swimSpeed: 135, w: 58, h: 31 },
     bat: { name: "EGYPTIAN FRUIT BAT", ability: "HANG", secondary: "ECHO PULSE", collectible: "FRUIT", color: "#806956", climbSpeed: 190, swimSpeed: 145, w: 54, h: 30 },
     goat: { name: "GOAT", ability: "HEADBUTT", secondary: "MOUNTAIN SCRAMBLE", collectible: "FORAGE", color: "#d9d0bb", climbSpeed: 165, swimSpeed: 130, w: 62, h: 38 },
     highland: { name: "HIGHLAND COW", ability: "HORN TOSS", secondary: "HIGHLAND CHARGE", collectible: "MEADOW BITES", color: "#b85f2e", climbSpeed: 105, swimSpeed: 115, w: 82, h: 48 },
@@ -125,9 +124,9 @@
   const singleLevelCharacters=new Set(["opossum","bat","goat","highland","devilfox","foxLab","foxAlt"]);
   const editionCharacters = {
     1: new Set(["chameleon","crested","newt","frog","boa"]),
-    2: new Set(["raccoon","opossum","bat","goat","highland","devilfox"])
+    2: new Set(["opossum","bat","goat","highland","devilfox"])
   };
-  const storyLevelCount=()=>backstageMode?levels.length:selectedCharacter==="raccoon"?6:singleLevelCharacters.has(selectedCharacter)?1:standardStoryLevels.length+1;
+  const storyLevelCount=()=>backstageMode?levels.length:singleLevelCharacters.has(selectedCharacter)?1:standardStoryLevels.length+1;
   let foxLabStridePhase=0;
   const foxLabTailAngles=[0,0,0,0,0],foxLabTailVelocities=[0,0,0,0,0];
   let foxLabLandingImpact=0;
@@ -258,58 +257,7 @@
 
   const standardStoryLevels=levels.slice(1).map(level=>JSON.parse(JSON.stringify(level)));
 
-  const raccoonTorontoLevels=[
-    {
-      label:"LEVEL 2 · VERTICAL MENACE",title:"Climb the CN Tower",
-      intro:"The Toronto Trash Tank has selected the tallest available bad idea. Climb the maintenance ledges, raid every snack, and reach the observation deck.",
-      completeTitle:"Toronto has made a tactical error.",completeText:"The Trash Tank has reached the top. The restaurant contains rich people food and insufficient security.",
-      palette:["#5a99c2","#d4e4e8","#59636b","#ef4c45"],start:[38,438],exit:[862,72,58,94],
-      platforms:[[0,500,960,40,"street"],[28,458,165,22,"concrete"],[210,402,135,18,"towerLedge"],[365,350,130,18,"towerLedge"],[520,292,130,18,"towerLedge"],[675,235,130,18,"towerLedge"],[800,166,135,20,"observation"],[585,110,125,18,"antenna"],[430,188,100,18,"towerPod"],[165,258,120,18,"service"],[215,466,76,14,"utilityBox"],[315,432,72,14,"scaffold"],[460,390,82,14,"scaffold"],[590,334,72,14,"vent"],[720,278,68,14,"service"],[842,218,72,14,"service"],[545,240,66,14,"sign"],[300,296,72,14,"service"],[92,330,74,14,"awning"],[505,148,62,14,"antenna"]],
-      vines:[[184,300,18,158],[345,348,18,102],[650,230,18,125],[785,160,18,120]],
-      insects:[[90,425],[268,368],[430,316],[585,258],[742,201],[860,132],[635,77],[435,144],[220,224]],
-      hazards:[{x:300,y:285,w:62,h:30,type:"bird",axis:"x",min:230,max:600,speed:115},{x:620,y:145,w:52,h:30,type:"bird",axis:"diagonal",minX:510,maxX:810,minY:120,maxY:280,speedX:62,speedY:45}],
-      decor:"torontoTower",habitat:"raccoon",vinesLabel:"maintenance ladders"
-    },
-    {
-      label:"LEVEL 3 · FINE DINING FELONY",title:"The 360 Restaurant Heist",
-      intro:"White tablecloths. Tiny portions. Excellent margins. Steal every fancy dish before security realizes the guest list contains one enormous raccoon.",
-      completeTitle:"The tasting menu has been abolished.",completeText:"Caviar, steak, cake, and several cheeses are now evidence. The only remaining exit is dramatically downward.",
-      palette:["#151923","#3f3340","#8f6b45","#f0cc76"],start:[38,438],exit:[872,86,55,82],
-      platforms:[[0,500,960,40,"restaurantFloor"],[45,452,135,18,"table"],[255,452,135,18,"table"],[485,452,135,18,"table"],[715,452,135,18,"table"],[170,392,105,18,"table"],[400,392,105,18,"table"],[630,392,105,18,"table"],[255,126,50,16,"chandelier"],[455,126,50,16,"chandelier"],[655,126,50,16,"chandelier"],[760,125,170,18,"observation"]],
-      vines:[[190,78,16,260],[385,78,16,260],[575,78,16,260],[765,78,16,260]],
-      insects:[[90,418],[285,376],[455,356],[650,356],[840,196],[650,171],[810,91],[535,345],[735,345],[555,170],[745,170],[885,91],[0,0,false,"waiterCheese",0],[0,0,false,"waiterCheese",1]],
-      hazards:[{x:330,y:448,w:82,h:52,type:"server",axis:"x",min:250,max:470,speed:105},{x:700,y:448,w:82,h:52,type:"server",axis:"x",min:620,max:840,speed:120}],
-      decor:"towerRestaurant",habitat:"raccoon"
-    },
-    {
-      label:"LEVEL 4 · GRAVITY DISPUTE",title:"Parachute Escape",
-      intro:"There is no approved raccoon exit from the CN Tower. Deploy the stolen emergency parachute, catch the airborne snacks, and land somewhere that cannot issue a bill.",
-      completeTitle:"A majestic garbage meteor lands.",completeText:"Toronto survives. Several pigeons file formal complaints. The Trash Tank disappears into the city with a parachute and twelve thousand dollars in cheese.",
-      palette:["#5aa9d6","#dff3f4","#506c79","#ff5b4f"],start:[38,92],exit:[872,400,58,92],
-      platforms:[[18,130,155,20,"towerRoof"],[205,198,125,18,"cloud"],[430,290,120,18,"cloud"],[700,330,125,18,"cloud"],[835,470,125,30,"rooftop"]],
-      airCurrents:[[150,190,-185,95],[400,210,-210,-75],[665,190,-175,110]],
-      vines:[],insects:[[110,92],[265,160],[445,232],[615,168],[755,292],[525,367],[315,342],[865,430]],
-      hazards:[{x:260,y:105,w:62,h:30,type:"bird",axis:"diagonal",minX:80,maxX:880,minY:60,maxY:430,speedX:88,speedY:62,chases:true},{x:590,y:260,w:52,h:30,type:"drone",axis:"diagonal",minX:520,maxX:840,minY:170,maxY:370,speedX:70,speedY:48}],
-      decor:"parachute",habitat:"raccoon",parachute:true
-    },
-    {
-      label:"LEVEL 5 · CHEESE EMERGENCY",title:"The Great Cheese Getaway",
-      intro:"The cheese haul has become legally significant. Cross the waterfront, reach Jane, and get the evidence onto her boat.",
-      completeTitle:"Jane has enabled the crime.",completeText:"Raccoon, human, and an unreasonable quantity of cheese are aboard. Nobody asks sensible questions.",
-      palette:["#273747","#a7c5cf","#665747","#f0c94d"],start:[38,438],exit:[870,380,60,120],
-      platforms:[[0,500,790,40,"dock"],[930,500,30,40,"dock"],[55,445,150,22,"crate"],[230,390,145,22,"crate"],[405,330,145,22,"vanRoof"],[585,390,135,22,"crate"],/* Jane-side block removed */],
-      vines:[[205,330,18,160],[720,270,18,180]],insects:[[115,410],[295,355],[475,295],[650,355],[800,265],[865,420]],
-      hazards:[{x:250,y:448,w:65,h:52,type:"frenchie",axis:"x",min:205,max:430,speed:110},{x:500,y:430,w:70,h:70,type:"grab",axis:"x",min:460,max:690,speed:145},{x:700,y:235,w:58,h:30,type:"bird",axis:"diagonal",minX:620,maxX:870,minY:190,maxY:370,speedX:90,speedY:65,chases:true}],
-      decor:"cheeseGetaway",habitat:"raccoon"
-    },
-    {
-      label:"LEVEL 6 · MARITIME FELONY",title:"Boat Escape",
-      intro:"Jane has a boat. The raccoon has the cheese. Toronto has waves and several unanswered questions. Steer, stay upright, and flee.",
-      completeTitle:"International waters were not required.",completeText:"Jane and the Trash Tank escape with every cheese wheel intact. Toronto begins the paperwork.",
-      palette:["#4b89a8","#b9dce5","#28556a","#f0c94d"],start:[170,340],exit:[9999,0,1,1],
-      platforms:[],vines:[],insects:[],hazards:[],decor:"boatEscape",habitat:"raccoon"
-    }
-  ];
+;
 
   const FOX_LAB_LEVEL=6;
   while(levels.length<FOX_LAB_LEVEL)levels.push(null);
@@ -476,9 +424,6 @@
         level.mice=prey.mice.map(mouse=>[...mouse]);
       }
     });
-    if(selectedCharacter==="raccoon"){
-      raccoonTorontoLevels.forEach((level,index)=>{levels[index+1]=JSON.parse(JSON.stringify(level));});
-    }
   }
 
   function tone(frequency, duration = 0.08, type = "sine") {
