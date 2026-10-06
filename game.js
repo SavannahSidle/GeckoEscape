@@ -667,9 +667,12 @@
     const character = characters[selectedCharacter];
     const preyTotal = levels[levelIndex].insects.length;
     const miceTotal=(levels[levelIndex].mice||[]).length;
+    const boatRoute=levels[levelIndex]?.decor==="boatEscape";
     const collectibleLabel=selectedCharacter==="raccoon"&&levels[levelIndex].decor==="towerRestaurant"?"FANCY FOOD":selectedCharacter==="raccoon"&&levels[levelIndex].decor==="parachute"?"AIRBORNE SNACKS":character.collectible;
-    bugLabel.textContent = `${collectibleLabel} ${collected}/${preyTotal}${miceTotal?` · MICE ${miceCollected}/${miceTotal}`:""}`;
-    if (levels[levelIndex]?.underwater && selectedCharacter !== "newt") {
+    bugLabel.textContent = boatRoute ? (boatOceanPhase ? "OCEAN · SAIL FOR ISLAND" : "PORTAL APPROACH · STEER RIGHT") : `${collectibleLabel} ${collected}/${preyTotal}${miceTotal?` · MICE ${miceCollected}/${miceTotal}`:""}`;
+    if (boatRoute) {
+      abilityLabel.textContent=`BOAT STABILITY ${Math.ceil(boatStability)}% · ROUTE ${Math.floor(boatDistance/9)}%`;
+    } else if (levels[levelIndex]?.underwater && selectedCharacter !== "newt") {
       abilityLabel.textContent = `AIR ${Math.max(0, Math.ceil(air))}% · ${character.ability}`;
     } else if (selectedCharacter === "crested") {
       abilityLabel.textContent = `SHORT TONGUE · TAIL ${tailReady ? "READY" : "GONE"}`;
@@ -684,8 +687,6 @@
       abilityLabel.textContent=`${constrictState} · ${strikeState}`;
     } else if (selectedCharacter === "chameleon") {
       abilityLabel.textContent = `TONGUE · ${performance.now() >= camouflageCooldownUntil ? "CAMOUFLAGE READY" : "CAMOUFLAGE RECHARGING"}`;
-    } else if (levels[levelIndex].decor==="boatEscape") {
-      abilityLabel.textContent=`BOAT STABILITY ${Math.ceil(boatStability)}% · ROUTE ${Math.floor(boatDistance/9)}%`;
     } else if (selectedCharacter === "raccoon") {
       const parachuteState=levels[levelIndex].decor==="parachute"?` · ${performance.now()>=parachuteBoostCooldownUntil?"AIR BRAKE READY":"AIR BRAKE RECHARGING"}`:"";
       const comboState=performance.now()<raccoonComboUntil&&raccoonCombo>1?` · TRASH COMBO ×${raccoonCombo}`:"";
@@ -1502,7 +1503,7 @@
         const p=Math.min(1,(boatDistance-285)/135),px=830,py=322+Math.sin(t*.004)*5;
         ctx.save();ctx.translate(px,py);ctx.shadowColor="#da6dff";ctx.shadowBlur=24;ctx.strokeStyle="rgba(217,126,255,.8)";ctx.lineWidth=8;ctx.beginPath();ctx.ellipse(0,0,25+p*13,55+p*14,.08,0,Math.PI*2);ctx.stroke();
         ctx.strokeStyle="rgba(127,224,255,.92)";ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(0,0,18+p*13,46+p*12,-.08,0,Math.PI*2);ctx.stroke();ctx.fillStyle="rgba(25,35,75,.72)";ctx.beginPath();ctx.ellipse(0,0,14+p*10,39+p*11,0,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle="#fff";ctx.font="900 11px system-ui";ctx.textAlign="center";ctx.fillText("PORTAL · STEER RIGHT",0,-72);ctx.restore();
+        ctx.fillStyle="#fff";ctx.font="900 11px system-ui";ctx.textAlign="center";ctx.fillText("PORTAL · STEER RIGHT",0,-122);ctx.restore();
       }
       for(let i=0;i<9;i++){const x=((i*112-t*.035-scroll*.72)%1120+1120)%1120-80,y=457+(i%3)*11+Math.sin(t*.002+i*1.7)*3,scale=.58+(i%3)*.08;ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
         ctx.fillStyle="rgba(42,101,119,.8)";ctx.strokeStyle="rgba(202,235,231,.8)";ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(-17,0);ctx.quadraticCurveTo(-7,-8,8,-5);ctx.quadraticCurveTo(15,-3,18,0);ctx.quadraticCurveTo(9,6,-4,5);ctx.quadraticCurveTo(-13,4,-17,0);ctx.closePath();ctx.fill();ctx.stroke();
