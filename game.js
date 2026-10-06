@@ -1940,8 +1940,7 @@
     }
     if(kind==="curved"){
       ctx.strokeStyle="#356b3c";ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(x,cy);
-      const sections=8,step=w/sections;
-      for(let i=0;i<sections;i++){const start=x+i*step;const end=start+step;const bend=i%2===0?18:-18;ctx.quadraticCurveTo(start+step/2,cy+bend,end,cy);}
+      for(let sample=1;sample<=96;sample++){const px=x+w*sample/96;ctx.lineTo(px,cy+Math.sin((px-x)/w*Math.PI*8)*11);}
       ctx.stroke();
       ctx.strokeStyle="#75a957";ctx.lineWidth=2;ctx.stroke();
       for(let px=x+28,index=0;px<x+w-20;px+=38,index++){const py=cy+Math.sin((px-x)/w*Math.PI*8)*11;drawPlantLeaf(px,py,index%2?-.8:.8,index%2?"#4c8e48":"#65a653",19,8);}
