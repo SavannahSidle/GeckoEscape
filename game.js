@@ -1479,9 +1479,9 @@
       ctx.fillStyle="#050506";roundedRect(-14,62,12,6,2);ctx.fill();roundedRect(2,62,13,6,2);ctx.fill();
       ctx.strokeStyle="#09090b";ctx.lineWidth=6;ctx.lineCap="round";ctx.lineJoin="round";ctx.beginPath();ctx.moveTo(-10,13);ctx.lineTo(-15,24);ctx.lineTo(-13,34);ctx.stroke();ctx.beginPath();ctx.moveTo(10,13);ctx.lineTo(15,24);ctx.lineTo(13,34);ctx.stroke();
       ctx.fillStyle="#c68f6d";ctx.beginPath();ctx.arc(-13,36,2.8,0,Math.PI*2);ctx.arc(13,36,2.8,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#3b241c";ctx.beginPath();ctx.moveTo(-13,-7);ctx.quadraticCurveTo(-18,8,-15,31);ctx.lineTo(-10,31);ctx.lineTo(-9,5);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(13,-7);ctx.quadraticCurveTo(18,8,15,31);ctx.lineTo(10,31);ctx.lineTo(9,5);ctx.closePath();ctx.fill();
-      ctx.fillStyle="#c68f6d";ctx.beginPath();ctx.ellipse(0,0,12,13,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#3b241c";ctx.beginPath();ctx.moveTo(-12,-2);ctx.quadraticCurveTo(-14,-16,0,-16);ctx.quadraticCurveTo(14,-16,12,-2);ctx.quadraticCurveTo(6,-8,0,-8);ctx.quadraticCurveTo(-6,-8,-12,-2);ctx.fill();
-      ctx.strokeStyle="#694435";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,-15);ctx.quadraticCurveTo(2,-11,0,-8);ctx.stroke();ctx.fillStyle="#684328";ctx.beginPath();ctx.arc(-5,0,1.7,0,Math.PI*2);ctx.arc(5,0,1.7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.font="900 11px system-ui";ctx.textAlign="center";ctx.fillText("JANE",0,-36);ctx.restore();
+
+      drawJaneHairAndFace();
+      ctx.fillStyle="#fff";ctx.font="900 11px system-ui";ctx.textAlign="center";ctx.fillText("JANE",0,-36);ctx.restore();
     } else if(level.decor==="boatEscape"){
       const t=performance.now(),scroll=boatDistance*2.8,sea=ctx.createLinearGradient(0,55,0,500);
       if(boatOceanPhase){sea.addColorStop(0,"#3287a0");sea.addColorStop(.55,"#14536c");sea.addColorStop(1,"#062b43");}
@@ -1602,6 +1602,76 @@
       for(let row=0;row<3;row++){for(let x=8+(row%2)*9;x<W;x+=19){ctx.fillStyle=gravelColors[(Math.floor(x/19)+row)%gravelColors.length];ctx.beginPath();ctx.ellipse(x,503+row*10,10,6,(x%7)*.08,0,Math.PI*2);ctx.fill();}}
       drawUnderwaterPlant(105,500,88,"#3e8a5a");drawUnderwaterPlant(390,500,64,"#4b9a63");drawUnderwaterPlant(670,500,104,"#39794f");
     }
+  }
+
+  function drawJaneHairAndFace(){
+    // Center-parted, shoulder-length layers based on the references.
+    ctx.fillStyle="#3b241c";
+    ctx.beginPath();
+    ctx.moveTo(-11,-2);
+    ctx.quadraticCurveTo(-17,-14,-8,-18);
+    ctx.quadraticCurveTo(0,-22,8,-18);
+    ctx.quadraticCurveTo(17,-14,11,-2);
+    ctx.lineTo(13,12);
+    ctx.quadraticCurveTo(13,21,19,27);
+    ctx.quadraticCurveTo(12,32,7,26);
+    ctx.quadraticCurveTo(5,20,6,10);
+    ctx.lineTo(6,-2);
+    ctx.quadraticCurveTo(0,-6,-6,-2);
+    ctx.lineTo(-6,10);
+    ctx.quadraticCurveTo(-5,20,-7,26);
+    ctx.quadraticCurveTo(-12,32,-19,27);
+    ctx.quadraticCurveTo(-13,21,-13,12);
+    ctx.closePath();
+    ctx.fill();
+
+    // The face overlaps the crown, leaving the forehead open and fringe-free.
+    ctx.fillStyle="#c68f6d";
+    ctx.beginPath();
+    ctx.ellipse(0,2,12,13,0,0,Math.PI*2);
+    ctx.fill();
+
+    // Soft face-framing pieces stay to the sides of the forehead and eyes.
+    ctx.fillStyle="#3b241c";
+    ctx.beginPath();
+    ctx.moveTo(-10,-7);
+    ctx.quadraticCurveTo(-12,0,-10,10);
+    ctx.quadraticCurveTo(-10,17,-8,22);
+    ctx.quadraticCurveTo(-6,18,-7,11);
+    ctx.lineTo(-7,-3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(10,-7);
+    ctx.quadraticCurveTo(12,0,10,10);
+    ctx.quadraticCurveTo(10,17,8,22);
+    ctx.quadraticCurveTo(6,18,7,11);
+    ctx.lineTo(7,-3);
+    ctx.closePath();
+    ctx.fill();
+
+    // Subtle part line and strand highlights keep the brown dimensional.
+    ctx.strokeStyle="#795847";
+    ctx.lineWidth=1;
+    ctx.lineCap="round";
+    ctx.beginPath();
+    ctx.moveTo(0,-18);
+    ctx.quadraticCurveTo(-.5,-14,0,-11);
+    ctx.stroke();
+    ctx.strokeStyle="rgba(177,132,104,.48)";
+    ctx.lineWidth=.8;
+    ctx.beginPath();
+    ctx.moveTo(-8,-13);
+    ctx.quadraticCurveTo(-12,-5,-11,5);
+    ctx.moveTo(8,-13);
+    ctx.quadraticCurveTo(12,-5,11,5);
+    ctx.stroke();
+
+    ctx.fillStyle="#684328";
+    ctx.beginPath();
+    ctx.arc(-5,0,1.7,0,Math.PI*2);
+    ctx.arc(5,0,1.7,0,Math.PI*2);
+    ctx.fill();
   }
 
   function drawIslandCompanions(time=0){
@@ -2882,10 +2952,8 @@
     ctx.fillStyle="#c68f6d";ctx.beginPath();ctx.arc(-12,30,2.7,0,Math.PI*2);ctx.arc(12,30,2.7,0,Math.PI*2);ctx.fill();
     // Black shoes rest on the deck.
     ctx.fillStyle="#050506";roundedRect(-12,57,12,6,2);ctx.fill();roundedRect(1,57,12,6,2);ctx.fill();
-    // Dark brown shoulder-length hair, face, and simple features.
-    ctx.fillStyle="#3b241c";ctx.beginPath();ctx.moveTo(-10,-5);ctx.quadraticCurveTo(-14,7,-11,22);ctx.lineTo(-7,22);ctx.lineTo(-6,1);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(10,-5);ctx.quadraticCurveTo(14,7,11,22);ctx.lineTo(7,22);ctx.lineTo(6,1);ctx.closePath();ctx.fill();
-    ctx.fillStyle="#3b241c";ctx.beginPath();ctx.arc(0,-4,10,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle="#c68f6d";ctx.beginPath();ctx.ellipse(0,2,9,10,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#684328";ctx.beginPath();ctx.arc(-4,2,1.4,0,Math.PI*2);ctx.arc(4,2,1.4,0,Math.PI*2);ctx.fill();ctx.restore();
+    // Shared center-parted, shoulder-length brown hair and face.
+    drawJaneHairAndFace();ctx.restore();
     // Tiny Trash Tank and the evidence pile remain aboard.
     ctx.save();ctx.translate(26,-20+Math.sin(now*.018)*2);ctx.fillStyle="#73777a";ctx.beginPath();ctx.ellipse(0,8,18,12,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#25282a";ctx.beginPath();ctx.ellipse(12,2,11,9,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#d4d0c5";ctx.beginPath();ctx.arc(10,0,2.5,0,Math.PI*2);ctx.arc(16,0,2.5,0,Math.PI*2);ctx.fill();ctx.restore();
     ctx.fillStyle="#efce55";for(const [x,y,r] of [[48,-1,12],[64,5,10],[55,13,13],[73,15,9]]){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.fillStyle="#9c7623";ctx.beginPath();ctx.arc(x+3,y-2,2,0,Math.PI*2);ctx.fill();ctx.fillStyle="#efce55";}
