@@ -467,7 +467,7 @@
   function showCharacterSelect() {
     state = "character-select";
     panelKicker.textContent = "CHOOSE YOUR ESCAPE ARTIST";
-    panelTitle.textContent = gameEdition===1 ? "Five reptiles and amphibians. Five escapes." : "Six mammals. A truly suspicious getaway.";
+    panelTitle.textContent = gameEdition===1 ? "Five reptiles and amphibians. Five escapes." : "Five mammals. Five very different escapes.";
     panelText.textContent = gameEdition===1 ? "Choose a reptile or amphibian and escape its enclosure." : "Choose your animal. The crime gets bigger from here.";
     primaryButton.classList.add("hidden");
     secondaryButton.classList.add("hidden");
