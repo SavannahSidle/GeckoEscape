@@ -74,6 +74,8 @@
   let boatTilt = 0;
   let boatStability = 100;
   let boatDistance = 0;
+  let boatOceanPhase = false;
+  let boatPortalFlashUntil = 0;
   let hissActiveUntil = 0;
   let hissCooldownUntil = 0;
   let playDeadUntil = 0;
@@ -247,6 +249,24 @@
     decor:"highway"
   });
 
+  levels.push({
+    label:"LEVEL 6 · PORTAL CROSSING",title:"The Long Way Through",
+    intro:"Jane and Trash Tank push across the harbor toward a strange portal. Keep the boat steady and on course: the trip takes real work. The portal opens onto deep ocean, with an island somewhere beyond it.",
+    completeTitle:"Land, cheese, and a dragon-shaped clue.",
+    completeText:"Jane and the raccoon made it to the island. Trash Tank has found an alarming quantity of cheese and is staying put. Jane meets S, a dragon trainer, and learns there is a rescue mission ahead. Who needs rescuing is still an open question.",
+    palette:["#1b5974","#0b3046","#557a61","#f6d58c"],start:[210,335],exit:[884,366,58,116],
+    platforms:[],angledPlatforms:[],vines:[],ceilingVines:[],diagonalVines:[],insects:[],mice:[],hazards:[],decor:"boatEscape"
+  });
+  levels.push({
+    label:"LEVEL 7 · ISLAND",title:"The Dragon Trainer's Island",
+    intro:"The portal leaves Jane and the crew in open ocean. They reach a lush island where the raccoon settles beside its cheese. S, the island's dragon trainer, has dragons ready to help Jane with an unnamed rescue mission. Explore the island and meet the team.",
+    completeTitle:"A mission takes shape.",
+    completeText:"Jane and S are ready to take the dragons to help someone. The raccoon is happily guarding the cheese. The rescue target remains yours to choose.",
+    palette:["#7cc6df","#1c6876","#715943","#ffe27c"],start:[40,448],exit:[875,364,70,136],
+    platforms:[[0,500,960,40,"islandSand"],[42,448,170,18,"beachRock"],[248,405,142,18,"driftwood"],[422,356,156,18,"cliff"],[606,408,148,18,"beachRock"],[758,322,172,18,"cliff"],[665,258,124,18,"canopy"],[476,274,122,18,"canopy"],[287,307,110,18,"driftwood"]],
+    angledPlatforms:[],vines:[],ceilingVines:[],diagonalVines:[],insects:[[126,416],[327,275],[500,242],[675,375],[821,289]],mice:[],hazards:[],decor:"dragonIsland"
+  });
+
   const standardStoryLayouts=levels.slice(1).map(level=>({
     platforms:level.platforms.map(platform=>[...platform]),
     angledPlatforms:(level.angledPlatforms||[]).map(platform=>[...platform]),
@@ -259,7 +279,7 @@
 
 ;
 
-  const FOX_LAB_LEVEL=6;
+  const FOX_LAB_LEVEL=7;
   while(levels.length<FOX_LAB_LEVEL)levels.push(null);
   levels[FOX_LAB_LEVEL]={
     label:"EXPERIMENTAL ZONE",title:"Fox Movement Lab",intro:"Move with A/D or the arrow keys. Jump with Space or Up.",
@@ -415,13 +435,17 @@
       level.mice=selectedCharacter==="crested"?[]:layout.mice.map(mouse=>[...mouse]);
       if(selectedCharacter==="frog"){
         const extras=frogLevelExtras[level.decor];
-        level.platforms.push(...extras.platforms.map(platform=>[...platform]));
-        level.insects.push(...extras.insects.map(insect=>[...insect]));
+        if(extras){
+          level.platforms.push(...extras.platforms.map(platform=>[...platform]));
+          level.insects.push(...extras.insects.map(insect=>[...insect]));
+        }
       }
       if(selectedCharacter==="boa"){
         const prey=boaStoryCollectibles[level.decor];
-        level.insects=prey.rats.map(rat=>[...rat]);
-        level.mice=prey.mice.map(mouse=>[...mouse]);
+        if(prey){
+          level.insects=prey.rats.map(rat=>[...rat]);
+          level.mice=prey.mice.map(mouse=>[...mouse]);
+        }
       }
     });
   }
@@ -627,7 +651,7 @@
     player.vx = 0;
     player.vy = 0;
     player.grounded = false;
-    if(levels[levelIndex]?.decor==="boatEscape"){boatTilt=0;boatStability=100;boatDistance=0;}
+    if(levels[levelIndex]?.decor==="boatEscape"){boatTilt=0;boatStability=100;boatDistance=0;boatOceanPhase=false;boatPortalFlashUntil=0;}
     batStartHanging=selectedCharacter==="bat"&&levels[levelIndex]?.habitat==="bat";
     batHangX=player.spawnX;batHangY=player.spawnY;batReleaseUntil=0;batVisualFacing=player.facing;
     player.ceilingClimbing = batStartHanging;
@@ -660,8 +684,8 @@
       abilityLabel.textContent=`${constrictState} · ${strikeState}`;
     } else if (selectedCharacter === "chameleon") {
       abilityLabel.textContent = `TONGUE · ${performance.now() >= camouflageCooldownUntil ? "CAMOUFLAGE READY" : "CAMOUFLAGE RECHARGING"}`;
-    } else if (selectedCharacter === "raccoon"&&levels[levelIndex].decor==="boatEscape") {
-      abilityLabel.textContent=`BOAT STABILITY ${Math.ceil(boatStability)}% · ESCAPE ${Math.floor(boatDistance/3)}%`;
+    } else if (levels[levelIndex].decor==="boatEscape") {
+      abilityLabel.textContent=`BOAT STABILITY ${Math.ceil(boatStability)}% · ROUTE ${Math.floor(boatDistance/9)}%`;
     } else if (selectedCharacter === "raccoon") {
       const parachuteState=levels[levelIndex].decor==="parachute"?` · ${performance.now()>=parachuteBoostCooldownUntil?"AIR BRAKE READY":"AIR BRAKE RECHARGING"}`:"";
       const comboState=performance.now()<raccoonComboUntil&&raccoonCombo>1?` · TRASH COMBO ×${raccoonCombo}`:"";
@@ -1043,8 +1067,9 @@
       const targetTilt=Math.max(-.65,Math.min(.65,player.vy*.0045+wave*.2*waveStrength));boatTilt+=(targetTilt-boatTilt)*Math.min(1,dt*5.5);
       boatStability=Math.min(100,boatStability+8*dt-Math.max(0,Math.abs(boatTilt)-.38)*48*dt);
       boatDistance+=dt*(up?19:14);
+      if(!boatOceanPhase&&boatDistance>=420){boatOceanPhase=true;boatPortalFlashUntil=now+1250;tone(740,.18,"sine");setTimeout(()=>tone(980,.2,"triangle"),120);}
       if(boatStability<=0){tone(72,.3,"sawtooth");resetPlayer(false);return;}
-      if(boatDistance>=300){boatDistance=300;completeLevel();return;}
+      if(boatDistance>=900){boatDistance=900;completeLevel();return;}
       updateHud();return;
     }
     if(batStartHanging){player.x=batHangX;player.y=batHangY;player.vx=0;player.vy=0;player.ceilingClimbing=true;return;}
@@ -1362,7 +1387,7 @@
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, W, H);
 
-    if(level.decor!=="enclosure"){
+    if(level.decor!=="enclosure"&&level.decor!=="boatEscape"&&level.decor!=="dragonIsland"){
       ctx.globalAlpha = .13;
       ctx.strokeStyle = level.palette[3];
       ctx.lineWidth = 1;
@@ -1454,19 +1479,41 @@
       ctx.fillStyle="#c68f6d";ctx.beginPath();ctx.ellipse(0,0,12,13,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#3b241c";ctx.beginPath();ctx.moveTo(-12,-2);ctx.quadraticCurveTo(-14,-16,0,-16);ctx.quadraticCurveTo(14,-16,12,-2);ctx.quadraticCurveTo(6,-8,0,-8);ctx.quadraticCurveTo(-6,-8,-12,-2);ctx.fill();
       ctx.strokeStyle="#694435";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,-15);ctx.quadraticCurveTo(2,-11,0,-8);ctx.stroke();ctx.fillStyle="#684328";ctx.beginPath();ctx.arc(-5,0,1.7,0,Math.PI*2);ctx.arc(5,0,1.7,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.font="900 11px system-ui";ctx.textAlign="center";ctx.fillText("JANE",0,-24);ctx.restore();
     } else if(level.decor==="boatEscape"){
-      const sea=ctx.createLinearGradient(0,55,0,500);sea.addColorStop(0,"#7fc0d7");sea.addColorStop(.55,"#3e819d");sea.addColorStop(1,"#16485f");ctx.fillStyle=sea;ctx.fillRect(0,55,W,445);
-      const t=performance.now(),scroll=boatDistance*2.8;
-      // Shoreline and city slide backward as the boat advances.
-      ctx.fillStyle="#6f7e82";for(let i=-1;i<18;i++){const x=i*70-(scroll%70),seed=i+Math.floor(scroll/70),h=45+((seed*13%100)+100)%100;ctx.fillRect(x,260-h,55,h);}
-      ctx.fillStyle="rgba(236,248,250,.78)";for(let i=0;i<8;i++){const x=((i*155-t*.11-scroll*1.35)%1240+1240)%1240-120,y=360+Math.sin(t*.0034+i)*30;ctx.beginPath();ctx.moveTo(x-55,y+38);ctx.quadraticCurveTo(x,y-45-(i%3)*13,x+55,y+38);ctx.quadraticCurveTo(x,y+18,x-55,y+38);ctx.fill();}
-      // Passing buoys provide a clear foreground motion cue.
+      const t=performance.now(),scroll=boatDistance*2.8,sea=ctx.createLinearGradient(0,55,0,500);
+      if(boatOceanPhase){sea.addColorStop(0,"#3287a0");sea.addColorStop(.55,"#14536c");sea.addColorStop(1,"#062b43");}
+      else{sea.addColorStop(0,"#7fc0d7");sea.addColorStop(.55,"#3e819d");sea.addColorStop(1,"#16485f");}
+      ctx.fillStyle=sea;ctx.fillRect(0,55,W,445);
+      if(!boatOceanPhase){
+        ctx.fillStyle="#6f7e82";for(let i=-1;i<18;i++){const x=i*70-(scroll%70),seed=i+Math.floor(scroll/70),h=45+((seed*13%100)+100)%100;ctx.fillRect(x,260-h,55,h);}
+      }else{
+        ctx.fillStyle="rgba(226,247,245,.72)";ctx.fillRect(0,229,W,3);
+        const approach=Math.max(0,Math.min(1,(boatDistance-420)/480)),ix=910-approach*545;
+        ctx.fillStyle="#3d7358";ctx.beginPath();ctx.moveTo(ix-155,289);ctx.quadraticCurveTo(ix-40,225,ix+8,267);ctx.quadraticCurveTo(ix+88,220,ix+166,291);ctx.closePath();ctx.fill();
+        ctx.fillStyle="#d7c18c";ctx.beginPath();ctx.ellipse(ix+8,292,158,17,0,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#285b43";for(const [px,py,scale] of [[ix-72,260,.72],[ix+53,244,1],[ix+110,269,.68]]){ctx.save();ctx.translate(px,py);ctx.scale(scale,scale);ctx.strokeStyle="#61492f";ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(0,0);ctx.quadraticCurveTo(8,-40,0,-79);ctx.stroke();ctx.fillStyle="#32794e";for(let f=-2;f<=2;f++){ctx.beginPath();ctx.ellipse(f*18,-82-Math.abs(f)*4,24,7,f*.22,0,Math.PI*2);ctx.fill();}ctx.restore();}
+        ctx.fillStyle="#fff2c3";ctx.font="900 11px system-ui";ctx.textAlign="center";ctx.fillText("ISLAND",ix+5,218);
+      }
+      ctx.fillStyle="rgba(236,248,250,.56)";for(let i=0;i<9;i++){const x=((i*155-t*.11-scroll*1.35)%1240+1240)%1240-120,y=360+Math.sin(t*.0034+i)*30;ctx.beginPath();ctx.moveTo(x-55,y+38);ctx.quadraticCurveTo(x,y-45-(i%3)*13,x+55,y+38);ctx.quadraticCurveTo(x,y+18,x-55,y+38);ctx.fill();}
       for(let i=0;i<4;i++){const x=((i*310-scroll*2.2)%1240+1240)%1240-140,y=294+(i%2)*28;ctx.fillStyle="#d9e0d8";ctx.fillRect(x-3,y,6,28);ctx.fillStyle=i%2?"#e0a94d":"#df6658";ctx.beginPath();ctx.arc(x,y,8,Math.PI,Math.PI*2);ctx.fill();}
-      // A small school swims through the deep water with visible fish skeletons.
+      if(!boatOceanPhase&&boatDistance>285){
+        const p=Math.min(1,(boatDistance-285)/135),px=830-p*530,py=322+Math.sin(t*.004)*5;
+        ctx.save();ctx.translate(px,py);ctx.shadowColor="#da6dff";ctx.shadowBlur=24;ctx.strokeStyle="rgba(217,126,255,.8)";ctx.lineWidth=8;ctx.beginPath();ctx.ellipse(0,0,25+p*13,55+p*14,.08,0,Math.PI*2);ctx.stroke();
+        ctx.strokeStyle="rgba(127,224,255,.92)";ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(0,0,18+p*13,46+p*12,-.08,0,Math.PI*2);ctx.stroke();ctx.fillStyle="rgba(25,35,75,.72)";ctx.beginPath();ctx.ellipse(0,0,14+p*10,39+p*11,0,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#fff";ctx.font="900 11px system-ui";ctx.textAlign="center";ctx.fillText("PORTAL",0,-72);ctx.restore();
+      }
       for(let i=0;i<9;i++){const x=((i*112-t*.035-scroll*.72)%1120+1120)%1120-80,y=457+(i%3)*11+Math.sin(t*.002+i*1.7)*3,scale=.58+(i%3)*.08;ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
         ctx.fillStyle="rgba(42,101,119,.8)";ctx.strokeStyle="rgba(202,235,231,.8)";ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(-17,0);ctx.quadraticCurveTo(-7,-8,8,-5);ctx.quadraticCurveTo(15,-3,18,0);ctx.quadraticCurveTo(9,6,-4,5);ctx.quadraticCurveTo(-13,4,-17,0);ctx.closePath();ctx.fill();ctx.stroke();
         ctx.beginPath();ctx.moveTo(-15,0);ctx.lineTo(-23,-7);ctx.lineTo(-21,0);ctx.lineTo(-23,7);ctx.closePath();ctx.fill();ctx.stroke();ctx.beginPath();ctx.moveTo(-3,-5);ctx.lineTo(1,-11);ctx.lineTo(5,-5);ctx.moveTo(-2,5);ctx.lineTo(2,10);ctx.lineTo(6,5);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle="rgba(224,246,239,.9)";ctx.beginPath();ctx.arc(12,-1.5,1.35,0,Math.PI*2);ctx.fill();
         ctx.strokeStyle="rgba(239,250,234,.94)";ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(10,0);ctx.quadraticCurveTo(0,-1,-9,0);ctx.lineTo(-19,0);ctx.stroke();for(let rib=0;rib<4;rib++){const rx=6-rib*4;ctx.beginPath();ctx.moveTo(rx,-1);ctx.quadraticCurveTo(rx-2,-4,rx-5,-4);ctx.moveTo(rx,-1);ctx.quadraticCurveTo(rx-2,3,rx-5,3);ctx.stroke();}ctx.beginPath();ctx.arc(8,0,4.5,-1.15,1.15);ctx.moveTo(2,1);ctx.lineTo(-3,8);ctx.lineTo(-7,3);ctx.stroke();ctx.restore();}
-      ctx.fillStyle="rgba(255,255,255,.9)";ctx.font="900 12px system-ui";ctx.textAlign="left";ctx.fillText("ESCAPE "+Math.floor(boatDistance/3)+"%",28,82);
+      if(performance.now()<boatPortalFlashUntil){ctx.save();ctx.globalAlpha=.4+.25*Math.sin(t*.04);ctx.strokeStyle="#e6a0ff";ctx.lineWidth=14;ctx.beginPath();ctx.ellipse(480,320,62,130,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
+      ctx.fillStyle="rgba(255,255,255,.9)";ctx.font="900 12px system-ui";ctx.textAlign="left";ctx.fillText((boatOceanPhase?"OCEAN":"HARBOR")+" · "+Math.floor(boatDistance/9)+"%",28,82);
+    } else if(level.decor==="dragonIsland"){
+      const sky=ctx.createLinearGradient(0,0,0,500);sky.addColorStop(0,"#82d3e7");sky.addColorStop(.55,"#d2e9c6");sky.addColorStop(1,"#edbf82");ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+      const sun=ctx.createRadialGradient(768,112,8,768,112,100);sun.addColorStop(0,"rgba(255,245,180,.9)");sun.addColorStop(1,"rgba(255,245,180,0)");ctx.fillStyle=sun;ctx.fillRect(650,0,230,230);ctx.fillStyle="#ffe99a";ctx.beginPath();ctx.arc(768,112,24,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#5d9a91";ctx.beginPath();ctx.moveTo(0,352);ctx.quadraticCurveTo(250,282,440,346);ctx.quadraticCurveTo(690,278,960,345);ctx.lineTo(960,500);ctx.lineTo(0,500);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#318698";ctx.fillRect(0,365,W,135);ctx.strokeStyle="rgba(216,250,239,.7)";ctx.lineWidth=3;for(let x=18;x<W;x+=95){const y=392+(x%4)*9;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+36,y-9,x+77,y);ctx.stroke();}
+      ctx.fillStyle="#e8d097";ctx.beginPath();ctx.moveTo(0,425);ctx.quadraticCurveTo(190,386,350,436);ctx.quadraticCurveTo(590,462,960,413);ctx.lineTo(960,500);ctx.lineTo(0,500);ctx.closePath();ctx.fill();
+      for(const [x,y,c] of [[34,396,"#2c7147"],[96,408,"#43894a"],[178,394,"#26714c"],[884,392,"#2d7045"],[938,408,"#488748"],[585,344,"#337c4a"],[275,365,"#4c914b"]]){ctx.strokeStyle="#654a30";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(x,y+60);ctx.lineTo(x-4,y-6);ctx.stroke();for(let j=0;j<6;j++){ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(x-5+j*3,y-10-(j%2)*8,25,8,(j-2.5)*.24,0,Math.PI*2);ctx.fill();}}
     } else if (level.decor === "kitchen") {
       ctx.fillStyle="#aebfbb";ctx.fillRect(0,70,W,430);
       ctx.strokeStyle="rgba(70,88,86,.22)";ctx.lineWidth=1;
@@ -1551,6 +1598,16 @@
       for(let row=0;row<3;row++){for(let x=8+(row%2)*9;x<W;x+=19){ctx.fillStyle=gravelColors[(Math.floor(x/19)+row)%gravelColors.length];ctx.beginPath();ctx.ellipse(x,503+row*10,10,6,(x%7)*.08,0,Math.PI*2);ctx.fill();}}
       drawUnderwaterPlant(105,500,88,"#3e8a5a");drawUnderwaterPlant(390,500,64,"#4b9a63");drawUnderwaterPlant(670,500,104,"#39794f");
     }
+  }
+
+  function drawIslandCompanions(time=0){
+      // Raccoon chooses a cheese-based island retirement.
+      ctx.save();ctx.translate(142,460);ctx.fillStyle="#73777a";ctx.beginPath();ctx.ellipse(0,12,25,15,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#393d40";ctx.beginPath();ctx.ellipse(18,3,16,13,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#e7e2d2";ctx.beginPath();ctx.arc(13,1,4,0,Math.PI*2);ctx.arc(24,1,4,0,Math.PI*2);ctx.fill();ctx.fillStyle="#efce55";for(const [x,y,r] of [[-42,18,12],[-23,12,10],[-37,2,9]]){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}ctx.fillStyle="#fff";ctx.font="900 10px system-ui";ctx.textAlign="center";ctx.fillText("CHEESE SECURED",0,-14);ctx.restore();
+      // Jane waits at the island trailhead.
+      ctx.save();ctx.translate(298,444);ctx.fillStyle="#09090b";roundedRect(-11,18,22,32,5);ctx.fill();ctx.fillStyle="#09090b";ctx.fillRect(-9,46,8,17);ctx.fillRect(2,46,8,17);ctx.fillStyle="#c68f6d";ctx.beginPath();ctx.ellipse(0,8,10,12,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#3b241c";ctx.beginPath();ctx.arc(0,4,11,Math.PI,Math.PI*2);ctx.fill();ctx.fillRect(-12,1,4,22);ctx.fillRect(8,1,4,22);ctx.strokeStyle="#09090b";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-9,23);ctx.lineTo(-19,39);ctx.moveTo(9,23);ctx.lineTo(18,33);ctx.stroke();ctx.fillStyle="#fff";ctx.font="900 10px system-ui";ctx.textAlign="center";ctx.fillText("JANE",0,-12);ctx.restore();
+      // S and three distinct dragons wait at the end of the trail.
+      ctx.save();ctx.translate(844,433);ctx.fillStyle="#223448";roundedRect(-15,17,30,43,8);ctx.fill();ctx.fillStyle="#bd7f57";ctx.beginPath();ctx.arc(0,5,13,0,Math.PI*2);ctx.fill();ctx.fillStyle="#20212b";ctx.beginPath();ctx.arc(0,2,14,Math.PI,Math.PI*2);ctx.fill();ctx.strokeStyle="#f2c75d";ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,4,19,Math.PI*1.08,Math.PI*1.92);ctx.stroke();ctx.fillStyle="#ecdfc3";ctx.fillRect(-21,57,14,6);ctx.fillRect(7,57,14,6);ctx.fillStyle="#fff";ctx.font="900 11px system-ui";ctx.textAlign="center";ctx.fillText("S · DRAGON TRAINER",0,-20);ctx.restore();
+      for(const [x,y,scale,body,wing] of [[754,462,.72,"#df7952","#f3b574"],[802,478,.88,"#42a779","#9ad99c"],[918,469,.7,"#7867c0","#c0a7ed"]]){ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.fillStyle=body;ctx.strokeStyle="#253e3e";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-25,4);ctx.quadraticCurveTo(-46,-14,-55,-3);ctx.quadraticCurveTo(-42,12,-22,13);ctx.ellipse(0,0,25,16,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle=wing;ctx.beginPath();ctx.moveTo(-5,-8);ctx.quadraticCurveTo(-18,-48,-31,-34);ctx.lineTo(-23,-13);ctx.lineTo(-39,-21);ctx.quadraticCurveTo(-36,0,-8,7);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle=body;ctx.beginPath();ctx.arc(22,-12,13,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.beginPath();ctx.moveTo(16,-22);ctx.lineTo(13,-33);ctx.lineTo(22,-25);ctx.moveTo(28,-23);ctx.lineTo(33,-34);ctx.lineTo(34,-21);ctx.stroke();ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(26,-15,2.5,0,Math.PI*2);ctx.fill();ctx.fillStyle="#1d2624";ctx.beginPath();ctx.arc(27,-15,1.1,0,Math.PI*2);ctx.fill();ctx.fillStyle=wing;ctx.beginPath();ctx.ellipse(27,-7,8,4,.25,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#283b32";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-5,10);ctx.lineTo(-6,19);ctx.moveTo(12,10);ctx.lineTo(13,19);ctx.stroke();ctx.restore();}
   }
 
   function drawLeaves(x, y, color) {
@@ -2830,6 +2887,7 @@
     drawMice(level,time);
     drawAirPockets(level, time);
     level.hazards.forEach(hazard => drawHazard(hazard, time));
+    if(level.decor==="dragonIsland")drawIslandCompanions(time);
     drawDroppedTail(time);
     drawPlayer(time);
     drawCharacterPickup(time);
