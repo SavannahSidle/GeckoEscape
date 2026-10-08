@@ -60,8 +60,9 @@ h1 {
 }
 
 .edition-links { display: flex; gap: 12px; margin-top: 9px; }
-.edition-links a { color: var(--muted); font-size: .68rem; font-weight: 850; letter-spacing: .08em; text-decoration: none; }
-.edition-links a:hover, .edition-links a:focus-visible { color: var(--acid); }
+.edition-links span { color: var(--muted); font-size: .68rem; font-weight: 850; letter-spacing: .08em; text-decoration: none; }
+.edition-links [aria-current="page"] { color: var(--acid); }
+.edition-links .edition-disabled { color: #626b64; cursor: not-allowed; }
 
 .icon-button,
 .secondary-button {

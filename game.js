@@ -26,7 +26,7 @@
   const keys = Object.create(null);
   const routeParams = new URLSearchParams(window.location.search);
   const backstageMode = routeParams.get("tour") === "arboreal-backstage-27";
-  const gameEdition = routeParams.get("edition") === "2" ? 2 : 1;
+  const gameEdition = 1;
   const directFoxRoute = routeParams.get("foxLab") === "1";
   let state = "menu";
   let levelIndex = 0;
@@ -112,7 +112,6 @@
     newt: { name: "FIRE-BELLY NEWT", ability: "REGENERATE", secondary: "TOXIN", collectible: "WORMS", color: "#252a28", climbSpeed: 105, swimSpeed: 170, w: 46, h: 23 },
     frog: { name: "AZUREUS DART FROG", ability: "TONGUE", secondary: "POWER LEAP", collectible: "FRUIT FLIES", color: "#2679cb", climbSpeed: 120, swimSpeed: 155, w: 38, h: 27 },
     boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", secondary: "STRIKE", collectible: "RATS", color: "#030405", climbSpeed: 155, swimSpeed: 190, w: 94, h: 36 },
-    raccoon: { name: "TORONTO TRASH TANK (RACCOON)", ability: "BITE", secondary: "TRASH SHIELD", collectible: "TRASH TREASURES", color: "#73777a", climbSpeed: 178, swimSpeed: 145, w: 58, h: 38 },
     opossum: { name: "VIRGINIA OPOSSUM", ability: "HISS", secondary: "PLAY DEAD", collectible: "FORAGE", color: "#b8b2aa", climbSpeed: 182, swimSpeed: 135, w: 58, h: 31 },
     bat: { name: "EGYPTIAN FRUIT BAT", ability: "HANG", secondary: "ECHO PULSE", collectible: "FRUIT", color: "#806956", climbSpeed: 190, swimSpeed: 145, w: 54, h: 30 },
     goat: { name: "GOAT", ability: "HEADBUTT", secondary: "MOUNTAIN SCRAMBLE", collectible: "FORAGE", color: "#d9d0bb", climbSpeed: 165, swimSpeed: 130, w: 62, h: 38 },
@@ -125,9 +124,9 @@
   const singleLevelCharacters=new Set(["opossum","bat","goat","highland","devilfox","foxLab","foxAlt"]);
   const editionCharacters = {
     1: new Set(["chameleon","crested","newt","frog","boa"]),
-    2: new Set(["raccoon","opossum","bat","goat","highland","devilfox"])
+    2: new Set()
   };
-  const storyLevelCount=()=>backstageMode?levels.length:selectedCharacter==="raccoon"?6:singleLevelCharacters.has(selectedCharacter)?1:gameEdition===1?3:standardStoryLevels.length+1;
+  const storyLevelCount=()=>backstageMode?levels.length:singleLevelCharacters.has(selectedCharacter)?1:3;
   let foxLabStridePhase=0;
   const foxLabTailAngles=[0,0,0,0,0],foxLabTailVelocities=[0,0,0,0,0];
   let foxLabLandingImpact=0;
@@ -814,7 +813,7 @@
     const next=(Math.random()*5)|0;
     chameleonColorIndex=next===chameleonColorIndex?(next+1+(Math.random()*4|0))%5:next;
     camouflageUntil=now+2600;
-    camouflageCooldownUntil=now+2000;
+    camouflageCooldownUntil=now+750;
     updateHud();tone(430,.16,"sine");
   }
 
