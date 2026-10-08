@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <meta name="theme-color" content="#07150f" />
-    <meta name="description" content="A tiny animal escape game with seven story levels, including a portal crossing and a dragon trainer’s island." />
+    <meta name="description" content="A tiny five-level animal escape game by Alien Arboreal." />
     <title>Gecko Escape</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2307150f'/%3E%3Cpath d='M13 34c7-15 22-21 35-12 7 5 3 14-5 12-5-1-5-7-1-8-9-5-17 2-20 10-2 6-7 10-12 9' fill='none' stroke='%238fe36a' stroke-width='6' stroke-linecap='round'/%3E%3Ccircle cx='48' cy='24' r='2' fill='%23fff7d6'/%3E%3C/svg%3E" />
     <link rel="stylesheet" href="style.css" />
@@ -54,7 +54,11 @@
                 <strong>BLACK COLOMBIAN BOA</strong>
                 <small>Coils to constrict hazards and strikes living enemies.</small>
               </button>
-
+              <button type="button" class="character-card" data-character="raccoon">
+                <span class="character-icon raccoon-icon" aria-hidden="true">🦝</span>
+                <strong>TORONTO TRASH TANK (RACCOON)</strong>
+                <small>Bites living enemies and weaponizes municipal waste with a trash-lid shield.</small>
+              </button>
               <button type="button" class="character-card" data-character="opossum">
                 <span class="character-icon opossum-icon" aria-hidden="true"><svg viewBox="0 0 40 40" width="32" height="32"><path d="M5 25C5 12 25 9 32 19c4 6-1 13-10 13H9Z" fill="#aaa5a0"/><path d="M29 18l9 4-8 4Z" fill="#efb2ae"/><circle cx="29" cy="18" r="2" fill="#111"/><path d="M8 28C-1 29 0 37 8 35" fill="none" stroke="#efb2ae" stroke-width="2.5" stroke-linecap="round"/><circle cx="13" cy="13" r="5" fill="#e6b2af"/></svg></span>
                 <strong>VIRGINIA OPOSSUM</strong>
@@ -97,9 +101,8 @@
               <button type="button" class="character-card" data-level="2"><strong>LEVEL 3</strong><small>Kitchen</small></button>
               <button type="button" class="character-card" data-level="3"><strong>LEVEL 4</strong><small>Living Room</small></button>
               <button type="button" class="character-card" data-level="4"><strong>LEVEL 5</strong><small>Highway</small></button>
-              <button type="button" class="character-card" data-level="5"><strong>LEVEL 6</strong><small>Portal Crossing</small></button>
-              <button type="button" class="character-card" data-level="6"><strong>LEVEL 7</strong><small>Dragon Trainer’s Island</small></button>
-              <button type="button" class="character-card hidden" data-level="7"><strong>FOX MOVEMENT LAB</strong><small>Experimental Fox</small></button>
+              <button type="button" class="character-card" data-level="5"><strong>LEVEL 6</strong><small>Boat Escape</small></button>
+              <button type="button" class="character-card hidden" data-level="6"><strong>FOX MOVEMENT LAB</strong><small>Experimental Fox</small></button>
             </div>
             <div class="start-actions">
               <button id="primaryButton" class="primary-button" type="button">BEGIN ESCAPE</button>
@@ -134,6 +137,6 @@
         </div>
       </div>
     </main>
-    <script src="game.js?v=20261006-jane-lob1"></script>
+    <script src="game.js?v=20261008-gecko-escape-1"></script>
   </body>
 </html>
