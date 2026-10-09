@@ -331,10 +331,24 @@ canvas {
 @media (max-height: 600px) and (orientation: landscape) {
   .game-shell { padding-block: 8px; gap: 7px; }
   .game-header { display: none; }
-  .stage-wrap { max-height: calc(100vh - 72px); width: auto; margin-inline: auto; }
-  .controls-row { min-height: 48px; }
+  .stage-wrap { max-height: calc(100vh - 124px); width: auto; margin-inline: auto; }
+  .touch-controls { min-height: 96px; padding-block: 4px; }
+  .move-stick { width: 84px; height: 84px; }
+  .move-stick-knob { width: 34px; height: 34px; }
+  .touch-actions { grid-template-columns: repeat(3,minmax(58px,1fr)); gap: 6px; }
+  .touch-controls button { min-width: 58px; min-height: 42px; padding: 5px; }
+  .controls-row { min-height: 96px; }
 }
 
-@media (max-width: 420px) {\n  .game-shell { padding-inline: 8px; gap: 9px; }\n  .move-stick { width: 98px; height: 98px; }\n  .move-stick-knob { width: 38px; height: 38px; }\n  .touch-controls { padding-inline: 8px; gap: 8px; }\n  .touch-actions { grid-template-columns: repeat(2,minmax(62px,1fr)); gap: 6px; }\n  .touch-controls button { min-width: 62px; min-height: 46px; padding: 6px; font-size: .62rem; }\n}\n\n@media (prefers-reduced-motion: reduce) {
+@media (max-width: 420px) {
+  .game-shell { padding-inline: 8px; gap: 9px; }
+  .move-stick { width: 98px; height: 98px; }
+  .move-stick-knob { width: 38px; height: 38px; }
+  .touch-controls { padding-inline: 8px; gap: 8px; }
+  .touch-actions { grid-template-columns: repeat(2,minmax(62px,1fr)); gap: 6px; }
+  .touch-controls button { min-width: 62px; min-height: 46px; padding: 6px; font-size: .62rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
 }
