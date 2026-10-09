@@ -229,22 +229,66 @@ canvas {
 
 .keyboard-help strong { color: var(--ink); }
 
-.touch-controls { display: none; gap: 8px; }
+.touch-controls { display: none; }
 
+.touch-move { display: grid; justify-items: center; gap: 5px; flex: 0 0 auto; }
+.touch-control-label { color: var(--muted); font-size: .58rem; font-weight: 900; letter-spacing: .14em; }
+.move-stick {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  border: 1px solid rgba(169,245,118,.42);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(169,245,118,.12) 0 34%, rgba(16,37,26,.96) 36% 100%);
+  box-shadow: inset 0 0 0 7px rgba(255,255,255,.025), 0 5px 16px rgba(0,0,0,.28);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.move-stick::before, .move-stick::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: rgba(169,245,118,.16);
+  transform: translate(-50%,-50%);
+  pointer-events: none;
+}
+.move-stick::before { width: 1px; height: 72%; }
+.move-stick::after { width: 72%; height: 1px; }
+.move-stick-knob {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 50%;
+  width: 42px;
+  height: 42px;
+  border: 2px solid rgba(247,243,223,.82);
+  border-radius: 50%;
+  background: linear-gradient(145deg, #a9f576, #477d3f);
+  box-shadow: 0 3px 12px rgba(0,0,0,.45), inset 0 0 0 3px rgba(4,18,10,.2);
+  transform: translate(-50%,-50%);
+  pointer-events: none;
+}
+.touch-actions { display: grid; grid-template-columns: repeat(2,minmax(66px,1fr)); gap: 8px; justify-items: stretch; align-content: center; }
 .touch-controls button {
-  width: 52px;
-  height: 48px;
+  min-width: 66px;
+  min-height: 50px;
+  padding: 7px 8px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 12px;
   background: #10251a;
   color: var(--ink);
-  font-size: 1.1rem;
+  font-size: .68rem;
+  line-height: 1.1;
   font-weight: 900;
-  touch-action: manipulation;
+  letter-spacing: .035em;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
-
-.touch-controls .ability-control { width: 88px; color: #ffcab0; font-size: .62rem; }
-.touch-controls .tongue-control { width: 72px; color: #ff9eb8; font-size: .62rem; }
+.touch-controls .ability-control { color: #ffcab0; }
+.touch-controls .tongue-control { color: #ff9eb8; }
 .touch-controls button:active { background: var(--acid-dark); transform: translateY(1px); }
 .hidden { display: none !important; }
 
@@ -254,10 +298,22 @@ canvas {
   .eyebrow { font-size: .58rem; }
   .icon-button { padding: 8px 9px; }
   .keyboard-help { display: none; }
-  .touch-controls { display: flex; width: 100%; justify-content: center; }
-  .touch-controls button { width: 46px; }
-  .touch-controls .ability-control { width: 72px; }
-  .controls-row { justify-content: center; }
+  .touch-controls {
+    display: flex;
+    width: 100%;
+    min-height: 132px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 12px;
+    border: 1px solid rgba(169,245,118,.15);
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(10,25,18,.96), rgba(5,14,10,.96));
+    touch-action: none;
+  }
+  .touch-actions { grid-template-columns: repeat(2,minmax(64px,1fr)); gap: 7px; }
+  .touch-controls button { min-width: 64px; min-height: 48px; }
+  .controls-row { justify-content: stretch; }
   .overlay { padding: 10px; }
   .panel { padding: 18px; }
   .panel h2 { font-size: clamp(1.6rem, 7vw, 3.2rem); margin-bottom: 8px; }
@@ -279,6 +335,6 @@ canvas {
   .controls-row { min-height: 48px; }
 }
 
-@media (prefers-reduced-motion: reduce) {
+@media (max-width: 420px) {\n  .game-shell { padding-inline: 8px; gap: 9px; }\n  .move-stick { width: 98px; height: 98px; }\n  .move-stick-knob { width: 38px; height: 38px; }\n  .touch-controls { padding-inline: 8px; gap: 8px; }\n  .touch-actions { grid-template-columns: repeat(2,minmax(62px,1fr)); gap: 6px; }\n  .touch-controls button { min-width: 62px; min-height: 46px; padding: 6px; font-size: .62rem; }\n}\n\n@media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
 }
