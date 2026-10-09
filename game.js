@@ -1083,7 +1083,7 @@
     const left = keys.ArrowLeft || keys.KeyA || keys.touchLeft;
     const right = keys.ArrowRight || keys.KeyD || keys.touchRight;
     const up = keys.ArrowUp || keys.KeyW || keys.Space || keys.touchJump;
-    const down = keys.ArrowDown || keys.KeyS;
+    const down = keys.ArrowDown || keys.KeyS || keys.touchDown;
     if(["foxLab","foxAlt"].includes(selectedCharacter)&&level.decor==="foxMovementLab"){
       updateFoxLab(dt,now,left,right,up,keys.KeyI||keys.touchInvestigate);
       return;
@@ -2891,6 +2891,53 @@
     keys[event.code] = true;
   });
   window.addEventListener("keyup", event => keys[event.code] = false);
+
+  const moveStick=document.querySelector("#moveStick");
+  const moveStickKnob=document.querySelector("#moveStickKnob");
+  if(moveStick&&moveStickKnob){
+    let stickPointer=null;
+    const directions=["touchLeft","touchRight","touchUp","touchDown"];
+    const resetStick=()=>{
+      stickPointer=null;
+      directions.forEach(direction=>keys[direction]=false);
+      moveStickKnob.style.transform="translate(-50%,-50%)";
+      moveStick.setAttribute("aria-valuenow","0");
+      moveStick.setAttribute("aria-valuetext","Neutral");
+    };
+    const updateStick=(event)=>{
+      const rect=moveStick.getBoundingClientRect();
+      const centerX=rect.left+rect.width/2,centerY=rect.top+rect.height/2;
+      const maxTravel=rect.width*.31;
+      let dx=event.clientX-centerX,dy=event.clientY-centerY;
+      const distance=Math.hypot(dx,dy);
+      if(distance>maxTravel){dx=dx/distance*maxTravel;dy=dy/distance*maxTravel;}
+      moveStickKnob.style.transform=`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px))`;
+      const nx=dx/maxTravel,ny=dy/maxTravel,deadzone=.2;
+      keys.touchLeft=nx< -deadzone;keys.touchRight=nx>deadzone;
+      keys.touchUp=ny< -deadzone;keys.touchDown=ny>deadzone;
+      const horizontal=Math.abs(nx)<deadzone?"":nx<0?"left":"right";
+      const vertical=Math.abs(ny)<deadzone?"":ny<0?"up":"down";
+      const value=[vertical,horizontal].filter(Boolean).join(" ");
+      moveStick.setAttribute("aria-valuenow",String(Math.max(-1,Math.min(1,ny)).toFixed(2)));
+      moveStick.setAttribute("aria-valuetext",value||"Neutral");
+    };
+    moveStick.addEventListener("pointerdown",event=>{
+      event.preventDefault();
+      stickPointer=event.pointerId;
+      moveStick.setPointerCapture(event.pointerId);
+      updateStick(event);
+    });
+    moveStick.addEventListener("pointermove",event=>{
+      if(event.pointerId===stickPointer){event.preventDefault();updateStick(event);}
+    });
+    for(const eventName of ["pointerup","pointercancel","lostpointercapture"]){
+      moveStick.addEventListener(eventName,event=>{
+        if(stickPointer===event.pointerId||eventName==="lostpointercapture")resetStick();
+      });
+    }
+    window.addEventListener("blur",resetStick);
+    document.addEventListener("visibilitychange",()=>{if(document.hidden)resetStick();});
+  }
 
   document.querySelectorAll("[data-control]").forEach(button => {
     const control = button.dataset.control;
