@@ -123,15 +123,21 @@
       <div class="controls-row">
         <p class="keyboard-help"><strong>MOVE</strong> WASD / ARROWS &nbsp; <strong>JUMP</strong> SPACE &nbsp; <strong>PRIMARY</strong> E &nbsp; <strong>SECONDARY</strong> R</p>
         <div class="touch-controls" aria-label="Touch controls">
-          <button type="button" data-control="left" aria-label="Move left">◀</button>
-          <button type="button" data-control="right" aria-label="Move right">▶</button>
-          <button type="button" data-control="jump" aria-label="Jump">↑</button>
-          <button type="button" data-control="investigate" class="hidden" aria-label="Investigate">SNIFF</button>
-          <button id="abilityButton" type="button" data-control="primary" class="ability-control" aria-label="Use primary ability">ABILITY</button>
-          <button id="tongueButton" type="button" data-control="secondary" class="tongue-control hidden" aria-label="Use secondary ability">SPECIAL</button>
+          <div class="touch-move">
+            <span class="touch-control-label">MOVE</span>
+            <div id="moveStick" class="move-stick" role="slider" aria-label="Move in any direction" aria-valuemin="-1" aria-valuemax="1" aria-valuenow="0" aria-valuetext="Neutral">
+              <span class="move-stick-knob" id="moveStickKnob" aria-hidden="true"></span>
+            </div>
+          </div>
+          <div class="touch-actions" aria-label="Actions">
+            <button type="button" data-control="jump" aria-label="Jump">JUMP ↑</button>
+            <button id="abilityButton" type="button" data-control="primary" class="ability-control" aria-label="Use primary ability">ABILITY</button>
+            <button id="tongueButton" type="button" data-control="secondary" class="tongue-control hidden" aria-label="Use secondary ability">SPECIAL</button>
+            <button type="button" data-control="investigate" class="hidden" aria-label="Investigate">SNIFF</button>
+          </div>
         </div>
       </div>
     </main>
-    <script src="game.js?v=20261008-gecko-escape-1"></script>
+    <script src="game.js?v=20261009-gecko-mobile-stick1"></script>
   </body>
 </html>
