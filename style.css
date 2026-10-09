@@ -312,6 +312,7 @@ canvas {
     touch-action: none;
   }
   .touch-actions { grid-template-columns: repeat(2,minmax(64px,1fr)); gap: 7px; }
+  .touch-actions [data-control="jump"] { grid-column: 2; grid-row: 1; }
   .touch-controls button { min-width: 64px; min-height: 48px; }
   .controls-row { justify-content: stretch; }
   .overlay { padding: 10px; }
@@ -336,6 +337,7 @@ canvas {
   .move-stick { width: 84px; height: 84px; }
   .move-stick-knob { width: 34px; height: 34px; }
   .touch-actions { grid-template-columns: repeat(3,minmax(58px,1fr)); gap: 6px; }
+  .touch-actions [data-control="jump"] { grid-column: 3; grid-row: 1; }
   .touch-controls button { min-width: 58px; min-height: 42px; padding: 5px; }
   .controls-row { min-height: 96px; }
 }
