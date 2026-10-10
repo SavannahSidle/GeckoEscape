@@ -3059,9 +3059,9 @@
     startLevel(FOX_LAB_LEVEL);
   }else showMenu();
   if(!directFoxRoute){
-    document.title=gameEdition===1?"Gecko Escape 1":"Gecko Escape 2";
+    document.title=gameEdition===1?"Gecko Escape 1 · Playtest":"Gecko Escape 2";
     document.querySelector("h1").textContent=gameEdition===1?"GECKO ESCAPE 1":"GECKO ESCAPE 2";
-    document.querySelector(".eyebrow").textContent=gameEdition===1?"THE ORIGINAL CREATURE ESCAPES":"THE ANIMAL GETAWAY EXPANDS";
+    document.querySelector(".eyebrow").textContent=gameEdition===1?"GECKO ESCAPE GAMEPLAY DESIGN TEST · /TEST":"THE ANIMAL GETAWAY EXPANDS";
   }
   requestAnimationFrame(frame);
 })();
