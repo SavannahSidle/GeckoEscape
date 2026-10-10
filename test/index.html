@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="theme-color" content="#07150f" />
+    <meta name="description" content="A tiny reptile and amphibian escape game by Alien Arboreal." />
+    <title>Gecko Escape</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2307150f'/%3E%3Cpath d='M13 34c7-15 22-21 35-12 7 5 3 14-5 12-5-1-5-7-1-8-9-5-17 2-20 10-2 6-7 10-12 9' fill='none' stroke='%238fe36a' stroke-width='6' stroke-linecap='round'/%3E%3Ccircle cx='48' cy='24' r='2' fill='%23fff7d6'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="style.css?v=test-20261010-20261009-mobile-landscape-stack" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <header class="game-header">
+        <div>
+          <p class="eyebrow">ALIEN ARBOREAL PRESENTS</p>
+          <h1>GECKO ESCAPE</h1>
+          <nav class="edition-links" aria-label="Game editions"><span aria-current="page">GECKO ESCAPE 1</span><span class="edition-disabled" aria-disabled="true" title="Gecko Escape 2 is a separate game">GECKO ESCAPE 2 · SEPARATE GAME</span></nav>
+        </div>
+        <button id="soundButton" class="icon-button" type="button" aria-pressed="true" aria-label="Turn sound off">SOUND: ON</button>
+      </header>
+
+      <section class="stage-wrap" aria-label="Gecko Escape game">
+        <canvas id="game" width="960" height="540" tabindex="0" aria-label="Gecko Escape. Choose a character, use arrow keys or WASD to move, Space to jump, and E for your ability."></canvas>
+
+        <div id="overlay" class="overlay">
+          <div class="panel">
+            <p id="panelKicker" class="panel-kicker">STORY MODE</p>
+            <h2 id="panelTitle">The enclosure door is open.</h2>
+            <p id="panelText">This is almost certainly a trap. Unfortunately, you are a gecko.</p>
+            <div id="characterSelect" class="character-select hidden" aria-label="Choose your escape artist">
+              <button type="button" class="character-card" data-character="chameleon">
+                <span class="character-icon chameleon-icon" aria-hidden="true">◉</span>
+                <strong>CHAMELEON</strong>
+                <small>Catches bugs with its tongue and changes colour to camouflage.</small>
+              </button>
+              <button type="button" class="character-card" data-character="crested">
+                <span class="character-icon crested-icon" aria-hidden="true">♛</span>
+                <strong>CRESTED GECKO</strong>
+                <small>Uses a short tongue for nearby prey and drops its tail to escape danger.</small>
+              </button>
+              <button type="button" class="character-card" data-character="newt">
+                <span class="character-icon newt-icon" aria-hidden="true">●</span>
+                <strong>FIRE-BELLY NEWT</strong>
+                <small>Regenerates health behind a temporary shield, uses toxic defence, and never needs air.</small>
+              </button>
+              <button type="button" class="character-card" data-character="frog">
+                <span class="character-icon frog-icon" aria-hidden="true">●</span>
+                <strong>AZUREUS DART FROG</strong>
+                <small>Power-leaps through the air and catches prey with its tongue.</small>
+              </button>
+              <button type="button" class="character-card" data-character="boa">
+                <span class="character-icon boa-icon" aria-hidden="true">≈</span>
+                <strong>BLACK COLOMBIAN BOA</strong>
+                <small>Coils to constrict hazards and strikes living enemies.</small>
+              </button>
+              <button type="button" class="character-card" data-character="opossum">
+                <span class="character-icon opossum-icon" aria-hidden="true"><svg viewBox="0 0 40 40" width="32" height="32"><path d="M5 25C5 12 25 9 32 19c4 6-1 13-10 13H9Z" fill="#aaa5a0"/><path d="M29 18l9 4-8 4Z" fill="#efb2ae"/><circle cx="29" cy="18" r="2" fill="#111"/><path d="M8 28C-1 29 0 37 8 35" fill="none" stroke="#efb2ae" stroke-width="2.5" stroke-linecap="round"/><circle cx="13" cy="13" r="5" fill="#e6b2af"/></svg></span>
+                <strong>VIRGINIA OPOSSUM</strong>
+                <small>Hisses to stun nearby enemies and plays dead to avoid danger.</small>
+              </button>
+              <button type="button" class="character-card" data-character="bat">
+                <span class="character-icon bat-icon" aria-hidden="true">🦇</span>
+                <strong>EGYPTIAN FRUIT BAT</strong>
+                <small>Flies automatically, hangs upside down, and uses echolocation to reveal food.</small>
+              </button>
+              <button type="button" class="character-card" data-character="goat">
+                <span class="character-icon goat-icon" aria-hidden="true">♑</span>
+                <strong>GOAT</strong>
+                <small>Headbutts enemies and launches into an unreasonable mountain scramble.</small>
+              </button>
+              <button type="button" class="character-card" data-character="highland">
+                <span class="character-icon highland-icon" aria-hidden="true">♉</span>
+                <strong>HIGHLAND COW</strong>
+                <small>Tosses enemies with its horns and becomes an unstoppable wall of hair.</small>
+              </button>
+              <button type="button" class="character-card" data-character="devilfox">
+                <span class="character-icon devilfox-icon" aria-hidden="true">♢</span>
+                <strong>FOX</strong>
+                <small>Pounces on enemies and blinks through danger in a cloud of beautiful misconduct.</small>
+              </button>
+              <button type="button" class="character-card hidden" data-character="foxLab">
+                <span class="character-icon devilfox-icon" aria-hidden="true">🦊</span>
+                <strong>EXPERIMENTAL FOX</strong>
+                <small>Separate movement prototype. Run, turn, jump, and land.</small>
+              </button>
+              <button type="button" class="character-card hidden" data-character="foxAlt">
+                <span class="character-icon devilfox-icon" aria-hidden="true">🦊</span>
+                <strong>ALT FOX</strong>
+                <small>Saved version of the fox movement prototype.</small>
+              </button>
+            </div>
+            <div id="levelSelect" class="character-select hidden" aria-label="Choose a level">
+              <button type="button" class="character-card" data-level="0"><strong>LEVEL 1</strong><small>Enclosure</small></button>
+              <button type="button" class="character-card" data-level="1"><strong>LEVEL 2</strong><small>Aquarium</small></button>
+              <button type="button" class="character-card" data-level="2"><strong>LEVEL 3</strong><small>Kitchen</small></button>
+              <button type="button" class="character-card" data-level="3"><strong>LEVEL 4</strong><small>Living Room</small></button>
+              <button type="button" class="character-card" data-level="4"><strong>LEVEL 5</strong><small>Highway</small></button>
+              <button type="button" class="character-card" data-level="5"><strong>LEVEL 6</strong><small>Boat Escape</small></button>
+              <button type="button" class="character-card hidden" data-level="6"><strong>FOX MOVEMENT LAB</strong><small>Experimental Fox</small></button>
+            </div>
+            <div class="start-actions">
+              <button id="primaryButton" class="primary-button" type="button">BEGIN ESCAPE</button>
+              <button id="secondaryButton" class="secondary-button hidden" type="button">LEVEL SELECT</button>
+            </div>
+            <div id="crestedSkinSelect" class="crest-skin-select hidden" role="group" aria-label="Choose crested gecko pattern">
+              <span>CRESTED GECKO PATTERN</span>
+              <button type="button" data-crestie-skin="classic" aria-pressed="true">Classic</button>
+              <button type="button" data-crestie-skin="super-dalmatian" aria-pressed="false">Super Dalmatian</button>
+              <button type="button" data-crestie-skin="halloween" aria-pressed="false">Harlequin / Halloween</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="hud" class="hud hidden" aria-live="polite">
+          <span id="levelLabel">LEVEL 1 · EASY</span>
+          <span id="bugLabel">BUGS 0/3</span>
+          <span id="abilityLabel">ABILITY READY</span>
+          <span id="lifeLabel">♥ ♥ ♥</span>
+        </div>
+      </section>
+
+      <div class="controls-row">
+        <p class="keyboard-help"><strong>MOVE</strong> WASD / ARROWS &nbsp; <strong>JUMP</strong> SPACE &nbsp; <strong>PRIMARY</strong> E &nbsp; <strong>SECONDARY</strong> R</p>
+        <div class="touch-controls" aria-label="Touch controls">
+          <div class="touch-move">
+            <span class="touch-control-label">MOVE</span>
+            <div id="moveStick" class="move-stick" role="slider" aria-label="Move in any direction" aria-valuemin="-1" aria-valuemax="1" aria-valuenow="0" aria-valuetext="Neutral">
+              <span class="move-stick-knob" id="moveStickKnob" aria-hidden="true"></span>
+            </div>
+          </div>
+          <div class="touch-actions" aria-label="Actions">
+            <button type="button" data-control="jump" aria-label="Jump">JUMP ↑</button>
+            <button id="abilityButton" type="button" data-control="primary" class="ability-control" aria-label="Use primary ability">ABILITY</button>
+            <button id="tongueButton" type="button" data-control="secondary" class="tongue-control hidden" aria-label="Use secondary ability">SPECIAL</button>
+            <button type="button" data-control="investigate" class="hidden" aria-label="Investigate">SNIFF</button>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script src="game.js?v=test-20261010-20261009-gecko-mobile-stick1"></script>
+  </body>
+</html>
