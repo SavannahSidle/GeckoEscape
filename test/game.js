@@ -385,7 +385,7 @@
       intro:"The sliding door is open. Follow the heavy logs toward freedom, dignity, and several poorly secured feeder rats.",
       start:[38,418],exit:[870,410,48,90],
       platforms:[[0,500,960,40],[35,454,245,26],[78,338,170,22],[45,260,150,18,"boaLedge"],[250,420,95,16,"logStep"],[315,410,210,25],[268,340,105,16,"logStep"],[560,360,220,25],[500,286,110,16,"logStep"],[760,292,170,24],[600,212,175,22],[223,165,390,14,"boaTunnelFloor"],[38,165,185,14,"boaLedge"],[223,102,390,16,"boaTunnelRoof"],[705,105,180,22]],
-      vines:[[285,325,22,130],[535,230,20,110],[800,215,22,110]],diagonalVines:[],insects:[[105,145],[525,152]],mice:[[158,304],[365,373],[640,322],[835,255],[660,190]],
+      vines:[[285,325,22,130],[535,230,20,110],[800,215,22,110]],diagonalVines:[],insects:[[105,145],[525,152]],mice:[[158,304],[365,373],[640,322],[835,255],[660,190],[550,266]],
       hazards:[{x:455,y:430,w:92,h:70,type:"grab",axis:"x",min:360,max:600,speed:62}]
     },
     raccoon: {
@@ -1378,7 +1378,10 @@
     if(selectedCharacter==="opossum"&&performance.now()<playDeadUntil)return;
     if(batStartHanging){batStartHanging=false;player.ceilingClimbing=false;batReleaseUntil=now+260;player.y+=8;player.vy=65;tone(185,.05,"triangle");return;}
     if(player.ceilingClimbing){player.ceilingClimbing=false;player.ceilingVine=null;player.climbing=false;climbDetachUntil=now+220;player.y+=8;player.vx=((keys.ArrowLeft||keys.KeyA)?-1:(keys.ArrowRight||keys.KeyD)?1:player.facing)*135;player.vy=-310;jumpBufferUntil=0;tone(185,.05,"triangle");return;}
-    if(player.climbing){player.climbing=false;player.ceilingVine=null;climbDetachUntil=now+240;player.vx=((keys.ArrowLeft||keys.KeyA)?-1:(keys.KeyD||keys.ArrowRight)?1:player.facing)*155;player.vy=-455;player.grounded=false;jumpBufferUntil=0;tone(245,.05,"triangle");return;}
+    const jumpProbe={x:player.x-10,y:player.y-8,w:player.w+20,h:player.h+16};
+    const climbableNearby=["chameleon","crested","newt","boa"].includes(selectedCharacter)&&
+      (levels[levelIndex].vines.some(v=>intersects(jumpProbe,{x:v[0],y:v[1],w:v[2],h:v[3]}))||player.x<=5||player.x+player.w>=W-5);
+    if(player.climbing||climbableNearby){player.climbing=false;player.ceilingVine=null;climbDetachUntil=now+240;player.vx=((keys.ArrowLeft||keys.KeyA)?-1:(keys.KeyD||keys.ArrowRight)?1:player.facing)*155;player.vy=-455;player.grounded=false;jumpBufferUntil=0;tone(245,.05,"triangle");return;}
     const level=levels[levelIndex];
     if(selectedCharacter==="raccoon"&&level.decor==="parachute"&&!player.grounded){
       if(now<parachuteBoostCooldownUntil)return;
