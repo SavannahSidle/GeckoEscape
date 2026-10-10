@@ -1113,17 +1113,26 @@
     if(selectedCharacter==="raccoon"&&now>=raccoonComboUntil&&raccoonCombo){raccoonCombo=0;updateHud();}
     const inHabitatWater = level.habitat === "newt" && player.x < 520 && player.y + player.h / 2 > 270;
     const swimming = Boolean(level.underwater || inHabitatWater);
-    let speed = swimming ? character.swimSpeed : selectedCharacter==="newt" ? 128 : selectedCharacter==="bat" ? 210 : level.decor === "parachute" ? 265 : level.decor === "highway" ? 245 : level.decor === "house" ? 236 : 220;
+    // Land movement is species-weighted: the boa carries more mass, the newt stays deliberate, and the geckos keep quick arboreal control.
+    let speed = swimming ? (selectedCharacter==="newt"?148:character.swimSpeed) :
+      selectedCharacter==="newt" ? 108 : selectedCharacter==="boa" ? 158 :
+      selectedCharacter==="chameleon" ? 190 : selectedCharacter==="crested" ? 190 :
+      selectedCharacter==="frog" ? 172 : selectedCharacter==="bat" ? 210 :
+      level.decor === "parachute" ? 265 : level.decor === "highway" ? 245 : level.decor === "house" ? 236 : 220;
     if(selectedCharacter==="opossum"&&now>playDeadUntil&&now<opossumRecoveryUntil)speed+=72;
     if(selectedCharacter==="raccoon"&&!swimming&&(left||right))speed+=18+(raccoonCombo>=3&&now<raccoonComboUntil?32:0);
     if (["chameleon","newt","frog","boa","raccoon","opossum","bat","goat","highland","devilfox"].includes(selectedCharacter)) updateHud();
 
-    const acceleration = swimming ? 720 : selectedCharacter==="raccoon" ? 1080 : selectedCharacter==="bat" ? 980 : level.decor==="parachute" ? 1180 : selectedCharacter==="frog" ? 1120 : selectedCharacter==="newt" ? 900 : 1450;
-    const movementAcceleration=selectedCharacter==="raccoon"&&!player.grounded?acceleration*.72:acceleration;
+    const acceleration = swimming ? 720 :
+      selectedCharacter==="boa" ? 720 : selectedCharacter==="chameleon" ? 1080 :
+      selectedCharacter==="crested" ? 1180 : selectedCharacter==="raccoon" ? 1080 :
+      selectedCharacter==="bat" ? 980 : level.decor==="parachute" ? 1180 :
+      selectedCharacter==="frog" ? 980 : selectedCharacter==="newt" ? 760 : 1450;
+    const movementAcceleration=player.grounded?acceleration:acceleration*.78;
     const playingDead=selectedCharacter==="opossum"&&now<playDeadUntil;
     if (!playingDead&&left) { player.vx -= movementAcceleration * dt; if(selectedCharacter!=="bat"||player.vx<10)player.facing = -1; }
     if (!playingDead&&right) { player.vx += movementAcceleration * dt; if(selectedCharacter!=="bat"||player.vx>-10)player.facing = 1; }
-    if (!left && !right) player.vx *= Math.pow(swimming ? .025 : selectedCharacter==="raccoon" ? .065 : selectedCharacter==="bat" ? .22 : level.decor==="parachute" ? .3 : selectedCharacter==="frog" ? .00008 : .0007, dt);
+    if (!left && !right) player.vx *= Math.pow(swimming ? .025 : selectedCharacter==="boa" ? .12 : selectedCharacter==="chameleon" ? .025 : selectedCharacter==="crested" ? .035 : selectedCharacter==="newt" ? .055 : selectedCharacter==="raccoon" ? .065 : selectedCharacter==="bat" ? .22 : level.decor==="parachute" ? .3 : selectedCharacter==="frog" ? .00008 : .0007, dt);
     if(playingDead)player.vx=0;
     player.vx = Math.max(-speed, Math.min(speed, player.vx));
 
@@ -1980,6 +1989,24 @@
 
   function drawPlatforms(level) {
     for (const p of level.platforms) {
+      if(["branchStep","corkStep","shoreStone","leafBridge","logStep"].includes(p[4])){
+        if(p[4]==="branchStep"||p[4]==="logStep"){
+          const logColor=p[4]==="branchStep"?"#715033":"#68472b";
+          ctx.fillStyle=logColor;roundedRect(p[0],p[1],p[2],p[3],Math.min(9,p[3]/2));ctx.fill();
+          ctx.fillStyle=p[4]==="branchStep"?"#a17a49":"#9b7045";ctx.fillRect(p[0]+4,p[1]+2,p[2]-8,3);
+          ctx.strokeStyle="#493624";ctx.lineWidth=1.5;for(let x=p[0]+14;x<p[0]+p[2]-8;x+=26){ctx.beginPath();ctx.ellipse(x,p[1]+p[3]/2,5,2,.25,0,Math.PI*2);ctx.stroke();}
+          if(p[4]==="branchStep"){ctx.fillStyle="#5a9a4d";for(let x=p[0]+12;x<p[0]+p[2];x+=30){ctx.beginPath();ctx.ellipse(x,p[1]-1,5,2,-.4,0,Math.PI*2);ctx.fill();}}
+        }else if(p[4]==="corkStep"){
+          ctx.fillStyle="#956a42";roundedRect(p[0],p[1],p[2],p[3],5);ctx.fill();ctx.strokeStyle="#593c28";ctx.lineWidth=1.5;
+          for(let x=p[0]+8;x<p[0]+p[2];x+=22){ctx.beginPath();ctx.moveTo(x,p[1]+3);ctx.quadraticCurveTo(x-5,p[1]+p[3]/2,x+2,p[1]+p[3]-2);ctx.stroke();}
+        }else if(p[4]==="shoreStone"){
+          ctx.fillStyle="#66766b";roundedRect(p[0],p[1],p[2],p[3],7);ctx.fill();ctx.fillStyle="#96ad88";ctx.fillRect(p[0]+7,p[1]+2,p[2]-14,3);
+          ctx.fillStyle="#78a873";for(let x=p[0]+12;x<p[0]+p[2]-5;x+=24){ctx.beginPath();ctx.arc(x,p[1]+2,2,Math.PI,Math.PI*2);ctx.fill();}
+        }else{
+          ctx.save();ctx.translate(p[0],p[1]);ctx.fillStyle="#3e8148";ctx.beginPath();ctx.moveTo(0,p[3]);ctx.quadraticCurveTo(p[2]*.35,-3,p[2],p[3]);ctx.quadraticCurveTo(p[2]*.52,p[3]+4,0,p[3]);ctx.fill();ctx.strokeStyle="#8fc766";ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(4,p[3]-1);ctx.quadraticCurveTo(p[2]*.5,3,p[2]-4,p[3]-1);ctx.stroke();ctx.restore();
+        }
+        continue;
+      }
       if(level.habitat==="goat"&&p[4]!=="barnFloor"){
         if(p[4]==="hayBale"){ctx.fillStyle="#d5aa4c";roundedRect(p[0],p[1],p[2],p[3],5);ctx.fill();ctx.strokeStyle="#8d6b2d";ctx.lineWidth=2;for(let x=p[0]+12;x<p[0]+p[2];x+=18){ctx.beginPath();ctx.moveTo(x,p[1]+2);ctx.lineTo(x-6,p[1]+p[3]-2);ctx.stroke();}}
         else if(p[4]==="spool"){ctx.fillStyle="#80684d";roundedRect(p[0],p[1],p[2],p[3],8);ctx.fill();ctx.strokeStyle="#4a3828";ctx.lineWidth=4;ctx.beginPath();ctx.arc(p[0]+p[2]/2,p[1]+p[3]/2,Math.min(30,p[3]),0,Math.PI*2);ctx.stroke();}
@@ -2516,13 +2543,14 @@
     ctx.strokeStyle=dark;ctx.lineWidth=15;ctx.lineCap="round";
     const constricting=now<constrictPulseUntil&&Boolean(constrictTarget);
     const targetX=constrictTarget?Math.max(-23,Math.min(20,(constrictTarget.x-(player.x+player.w/2))*player.facing)):0;
+    const targetOffsetY=constrictTarget?Math.max(-12,Math.min(12,constrictTarget.y-(player.y+player.h/2))):0;
     const coilShift=constricting?Math.sin(now*.014)*2.5:0;
     // The trunk keeps its long S-shaped silhouette; only the flexible neck loops around prey.
     ctx.beginPath();ctx.moveTo(-64,5+tailWave*.55);
     ctx.bezierCurveTo(-53,-17+tailWave,-40,19-midWave,-25,3+midWave*.35);
     ctx.bezierCurveTo(-10,-18+midWave,4,15-neckWave,20,-1+neckWave*.3);ctx.stroke();
     if(constricting){
-      const wrapX=targetX+8,wrapY=7+coilShift;
+      const wrapX=targetX+8,wrapY=targetOffsetY+7+coilShift;
       ctx.lineWidth=11;ctx.beginPath();ctx.moveTo(8,-1+neckWave*.3);
       ctx.quadraticCurveTo(wrapX-14,-15+coilShift,wrapX+1,-15+coilShift);
       ctx.bezierCurveTo(wrapX+21,-15+coilShift,wrapX+22,wrapY+12,wrapX+4,wrapY+14);
