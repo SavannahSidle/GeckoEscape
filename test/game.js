@@ -56,6 +56,9 @@
   let regenerateUntil = 0;
   let regenerateCooldownUntil = 0;
   let frogHopCooldownUntil = 0;
+  let jumpBufferUntil = 0;
+  let groundedGraceUntil = 0;
+  let climbDetachUntil = 0;
   let frogAutoHopping = false;
   let waterJumpUntil = 0;
   let biteActiveUntil = 0;
@@ -608,6 +611,9 @@
     regenerateUntil = 0;
     regenerateCooldownUntil = 0;
     frogHopCooldownUntil = 0;
+    jumpBufferUntil = 0;
+    groundedGraceUntil = 0;
+    climbDetachUntil = 0;
     frogAutoHopping = false;
     waterJumpUntil = 0;
     biteActiveUntil = 0;
@@ -1146,7 +1152,9 @@
       updateHud();
     } else {
       const diagonalVine=(level.diagonalVines||[]).find(v=>touchesDiagonalVine(player,v));
-      const onVine = level.vines.some(v => intersects(player, {x:v[0], y:v[1], w:v[2], h:v[3]})) || Boolean(diagonalVine);
+      // A small magnetic reach makes intentional climbs reliable without auto-grabbing every route during a jump.
+      const climbProbe = {x:player.x-10,y:player.y-8,w:player.w+20,h:player.h+16};
+      const onVine = level.vines.some(v => intersects(climbProbe, {x:v[0], y:v[1], w:v[2], h:v[3]})) || Boolean(diagonalVine);
       const onWall = player.x <= 5 || player.x + player.w >= W - 5;
       const canClimbVertically=["chameleon","crested","newt","boa"].includes(selectedCharacter);
       const climbingCeiling=player.ceilingClimbing&&player.ceilingVine&&canClimbVertically;
@@ -1160,7 +1168,7 @@
         else player.x=Math.max(vine[0]-player.w+5,Math.min(vine[0]+vine[2]-5,player.x));
       }else{
         player.ceilingClimbing=false;player.ceilingVine=null;
-        player.climbing = (onVine || onWall) && (up || down);
+        player.climbing = (onVine || onWall) && (up || down) && now >= climbDetachUntil;
         if(player.climbing){
           player.vx=0;
           player.climbDirection=up?-1:1;
@@ -1239,6 +1247,18 @@
       if(oldY+player.h<=surfaceY+6&&player.y+player.h>=surfaceY){player.y=surfaceY-player.h;player.vy=0;player.grounded=true;if(["raccoon","opossum","devilfox","crested","newt","goat","highland"].includes(selectedCharacter)&&landingSpeed>150)raccoonLandingUntil=now+190;if(selectedCharacter==="raccoon"&&now<raccoonJumpBufferUntil){player.vy=-455;player.grounded=false;raccoonJumpBufferUntil=0;raccoonCoyoteUntil=0;}}
     }
 
+    if(player.grounded){
+      groundedGraceUntil=now+115;
+      if(jumpBufferUntil>now){
+        player.vy=selectedCharacter==="frog"?-535:-455;
+        player.grounded=false;
+        jumpBufferUntil=0;
+        groundedGraceUntil=0;
+        if(raccoonMovement)raccoonLaunchUntil=now+130;
+        if(selectedCharacter==="frog")frogAutoHopping=false;
+        tone(245,.05,"triangle");
+      }
+    }
     if (player.y > H + 80) {
       tone(90, .25, "square");
       resetPlayer();
@@ -1333,6 +1353,7 @@
   function jump() {
     if (state !== "playing") return;
     const now=performance.now();
+    jumpBufferUntil=now+145;
     if(levels[levelIndex]?.decor==="boatEscape")return;
     if(["foxLab","foxAlt"].includes(selectedCharacter)){
       if(player.grounded){player.vy=-545;player.grounded=false;foxLabTakeoffUntil=now+145;tone(245,.05,"triangle");}
@@ -1340,7 +1361,8 @@
     }
     if(selectedCharacter==="opossum"&&performance.now()<playDeadUntil)return;
     if(batStartHanging){batStartHanging=false;player.ceilingClimbing=false;batReleaseUntil=now+260;player.y+=8;player.vy=65;tone(185,.05,"triangle");return;}
-    if(player.ceilingClimbing){player.ceilingClimbing=false;player.ceilingVine=null;player.climbing=false;player.y+=8;player.vy=135;tone(185,.05,"triangle");return;}
+    if(player.ceilingClimbing){player.ceilingClimbing=false;player.ceilingVine=null;player.climbing=false;climbDetachUntil=now+220;player.y+=8;player.vx=((keys.ArrowLeft||keys.KeyA)?-1:(keys.ArrowRight||keys.KeyD)?1:player.facing)*135;player.vy=-310;jumpBufferUntil=0;tone(185,.05,"triangle");return;}
+    if(player.climbing){player.climbing=false;player.ceilingVine=null;climbDetachUntil=now+240;player.vx=((keys.ArrowLeft||keys.KeyA)?-1:(keys.KeyD||keys.ArrowRight)?1:player.facing)*155;player.vy=-455;player.grounded=false;jumpBufferUntil=0;tone(245,.05,"triangle");return;}
     const level=levels[levelIndex];
     if(selectedCharacter==="raccoon"&&level.decor==="parachute"&&!player.grounded){
       if(now<parachuteBoostCooldownUntil)return;
@@ -1365,10 +1387,12 @@
       return;
     }
     const raccoonMovement=selectedCharacter==="raccoon"||selectedCharacter==="devilfox";
-    if (player.grounded || player.climbing || (raccoonMovement&&now<raccoonCoyoteUntil) || (selectedCharacter === "frog" && frogAutoHopping)) {
+    if (player.grounded || now<groundedGraceUntil || (raccoonMovement&&now<raccoonCoyoteUntil) || (selectedCharacter === "frog" && frogAutoHopping)) {
       player.vy = selectedCharacter === "frog" ? -535 : -455;
       if(raccoonMovement)raccoonLaunchUntil=now+130;
       player.grounded = false;
+      groundedGraceUntil=0;
+      jumpBufferUntil=0;
       if(raccoonMovement){raccoonCoyoteUntil=0;raccoonJumpBufferUntil=0;}
       if(selectedCharacter==="frog")frogAutoHopping=false;
       tone(245, .05, "triangle");
@@ -2490,22 +2514,22 @@
     const midWave=moving*Math.sin(slitherPhase+1.7)*6;
     const neckWave=moving*Math.sin(slitherPhase+3.25)*3.5;
     ctx.strokeStyle=dark;ctx.lineWidth=15;ctx.lineCap="round";
-    const constricting=now<constrictPulseUntil;
+    const constricting=now<constrictPulseUntil&&Boolean(constrictTarget);
     const targetX=constrictTarget?Math.max(-23,Math.min(20,(constrictTarget.x-(player.x+player.w/2))*player.facing)):0;
     const coilShift=constricting?Math.sin(now*.014)*2.5:0;
+    // The trunk keeps its long S-shaped silhouette; only the flexible neck loops around prey.
+    ctx.beginPath();ctx.moveTo(-64,5+tailWave*.55);
+    ctx.bezierCurveTo(-53,-17+tailWave,-40,19-midWave,-25,3+midWave*.35);
+    ctx.bezierCurveTo(-10,-18+midWave,4,15-neckWave,20,-1+neckWave*.3);ctx.stroke();
     if(constricting){
-      // Overlapping, tightening body passes wrap around the prey while the neck follows.
-      ctx.lineWidth=15;ctx.beginPath();ctx.moveTo(-58,10);
-      ctx.bezierCurveTo(-54,-15,-24,-24,targetX+8,-14+coilShift);
-      ctx.bezierCurveTo(targetX+38,-4,targetX+34,24,targetX+3,23);
-      ctx.bezierCurveTo(targetX-30,22,targetX-36,-6,targetX-9,-12);
-      ctx.bezierCurveTo(targetX+12,-17,targetX+25,-2,targetX+13,11);ctx.stroke();
-      ctx.lineWidth=10;ctx.beginPath();ctx.ellipse(targetX,4+coilShift,26,17,-.12,Math.PI*.08,Math.PI*1.9);ctx.stroke();
-      ctx.strokeStyle="#414448";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-54,6);ctx.bezierCurveTo(-32,-19,-3,-17,targetX+10,-9);ctx.bezierCurveTo(targetX+28,1,targetX+21,17,targetX-5,18);ctx.stroke();
-    }else{
-      ctx.beginPath();ctx.moveTo(-64,5+tailWave*.55);
-      ctx.bezierCurveTo(-53,-17+tailWave,-40,19-midWave,-25,3+midWave*.35);
-      ctx.bezierCurveTo(-10,-18+midWave,4,15-neckWave,20,-1+neckWave*.3);ctx.stroke();
+      const wrapX=targetX+8,wrapY=7+coilShift;
+      ctx.lineWidth=11;ctx.beginPath();ctx.moveTo(8,-1+neckWave*.3);
+      ctx.quadraticCurveTo(wrapX-14,-15+coilShift,wrapX+1,-15+coilShift);
+      ctx.bezierCurveTo(wrapX+21,-15+coilShift,wrapX+22,wrapY+12,wrapX+4,wrapY+14);
+      ctx.bezierCurveTo(wrapX-11,wrapY+15,wrapX-16,wrapY+2,wrapX-6,wrapY-3);ctx.stroke();
+      ctx.strokeStyle="#414448";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(9,-3+neckWave*.3);
+      ctx.quadraticCurveTo(wrapX-12,-12+coilShift,wrapX+2,-12+coilShift);
+      ctx.bezierCurveTo(wrapX+16,-11+coilShift,wrapX+17,wrapY+9,wrapX+4,wrapY+11);ctx.stroke();
     }
     const strikeProgress=now<strikeActiveUntil?Math.max(0,1-(strikeActiveUntil-now)/300):0;
     const lunge=now<strikeActiveUntil?Math.sin(strikeProgress*Math.PI)*38:0;
