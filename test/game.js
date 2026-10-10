@@ -370,7 +370,7 @@
       start:[112,435],exit:[870,410,48,90],
       platforms:[[0,500,960,40],[55,458,220,22],[82,342,150,18],[205,282,130,18],[310,422,150,18],[238,240,145,16,"shoreStone"],[385,205,135,16,"shoreStone"],[395,165,135,18],[510,252,130,18],[528,198,100,16,"shoreStone"],[490,372,170,18],[690,320,180,18],[760,232,150,18],[770,390,150,18,"shoreStone"]],
       vines:[[650,260,18,130],[705,205,18,120],[845,165,18,155]],insects:[[151,309],[270,249],[350,390],[462,132],[560,338],[575,219],[800,285],[350,225],[570,178],[816,355]],
-      hazards:[{x:465,y:430,w:92,h:70,type:"grab",axis:"x",min:400,max:620,speed:68}]
+      hazards:[{x:475,y:430,w:92,h:70,type:"grab",axis:"x",min:410,max:620,speed:68}]
     },
     frog: {
       title:"The Planted Vivarium",habitat:"frog",palette:["#061810","#164528","#67502d","#74df79"],
@@ -687,6 +687,13 @@
     player.vx = 0;
     player.vy = 0;
     player.grounded = false;
+    player.climbing = false;
+    player.ceilingClimbing = false;
+    player.ceilingVine = null;
+    player.onSwing = false;
+    jumpBufferUntil = 0;
+    groundedGraceUntil = 0;
+    climbDetachUntil = 0;
     if(levels[levelIndex]?.decor==="boatEscape"){boatTilt=0;boatStability=100;boatDistance=0;}
     batStartHanging=selectedCharacter==="bat"&&levels[levelIndex]?.habitat==="bat";
     batHangX=player.spawnX;batHangY=player.spawnY;batReleaseUntil=0;batVisualFacing=player.facing;
@@ -1218,7 +1225,7 @@
     player.x += player.vx * dt;
     player.x = Math.max(0, Math.min(W - player.w, player.x));
     player.y += player.vy * dt;
-    if(["chameleon","crested"].includes(selectedCharacter)&&player.vy<0&&!player.ceilingClimbing){
+    if(["chameleon","crested"].includes(selectedCharacter)&&player.vy<0&&!player.ceilingClimbing&&now>=climbDetachUntil){
       const canopy=(level.ceilingVines||[]).find(v=>oldY+player.h>=v[1]+v[3]-3&&player.y<=v[1]+v[3]&&player.x+player.w>v[0]&&player.x<v[0]+v[2]);
       if(canopy){player.ceilingVine=canopy;player.ceilingClimbing=true;player.climbing=false;player.grounded=false;player.vy=0;player.y=canopy[1]+canopy[3]+2;player.x=Math.max(canopy[0]-player.w+5,Math.min(canopy[0]+canopy[2]-5,player.x));}
     }
