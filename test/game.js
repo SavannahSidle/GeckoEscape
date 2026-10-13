@@ -510,7 +510,7 @@
     levelSelect.classList.add("hidden");
     crestedSkinSelect?.classList.add("hidden");
     secondaryButton.classList.toggle("hidden", !allowSelect);
-    if(allowSelect){secondaryButton.textContent="LEVEL SELECT";secondaryButton.onclick=showMenu;}
+    if(allowSelect){secondaryButton.textContent="LEVEL SELECT";secondaryButton.onclick=()=>showLevelSelect();}
     overlay.classList.remove("hidden");
     hud.classList.add("hidden");
     primaryButton.focus();
@@ -527,7 +527,9 @@
     panelTitle.textContent = gameEdition===1 ? "Five reptiles and amphibians. Five escapes." : "Six mammals. A truly suspicious getaway.";
     panelText.textContent = gameEdition===1 ? "Choose a reptile or amphibian and escape its enclosure." : "Choose your animal. The crime gets bigger from here.";
     primaryButton.classList.add("hidden");
-    secondaryButton.classList.add("hidden");
+    secondaryButton.textContent="BACK";
+    secondaryButton.onclick=showMenu;
+    secondaryButton.classList.remove("hidden");
     levelSelect.classList.add("hidden");
     crestedSkinSelect?.classList.add("hidden");
     characterSelect.querySelectorAll("[data-character]").forEach(button=>{
@@ -578,9 +580,9 @@
       secondaryButton.textContent="LEVEL SELECT";
       secondaryButton.onclick=showLevelSelect;
       secondaryButton.classList.remove("hidden");
-    }else if(index===0){
-      secondaryButton.textContent="BACK TO CHARACTERS";
-      secondaryButton.onclick=showCharacterSelect;
+    }else{
+      secondaryButton.textContent=index===0?"BACK TO CHARACTERS":"BACK";
+      secondaryButton.onclick=()=>index===0?showCharacterSelect():showIntro(index-1);
       secondaryButton.classList.remove("hidden");
     }
   }
@@ -1029,9 +1031,9 @@
     setTimeout(() => tone(659, .13, "triangle"), 100);
     const level = levels[levelIndex];
     if (levelIndex < storyLevelCount() - 1) {
-      showPanel("ESCAPE SUCCESSFUL", level.completeTitle, level.completeText, "NEXT LEVEL", () => showIntro(levelIndex + 1));
+      showPanel("ESCAPE SUCCESSFUL", level.completeTitle, level.completeText, "NEXT LEVEL", () => showIntro(levelIndex + 1), true);
     } else {
-      showPanel("STORY COMPLETE", level.completeTitle, level.completeText, "ESCAPE AGAIN", showMenu);
+      showPanel("STORY COMPLETE", level.completeTitle, level.completeText, "ESCAPE AGAIN", showMenu, true);
     }
   }
 
@@ -2936,6 +2938,15 @@
   window.addEventListener("keydown", event => {
     const shiftHeld=event.shiftKey||keys.ShiftLeft||keys.ShiftRight||event.code==="ShiftLeft"||event.code==="ShiftRight";
     const keyName=event.key?.toLowerCase();
+    if(event.code==="Escape"){
+      event.preventDefault();
+      if(state==="playing"){showLevelSelect(true,true);return;}
+      if(state==="level-select"){secondaryButton.click();return;}
+      if(state==="character-select"){showMenu();return;}
+      if(state==="intro"){if(backstageMode)showLevelSelect();else if(levelIndex===0)showCharacterSelect();else showIntro(levelIndex-1);return;}
+      if(state==="dead"||state==="complete"){showLevelSelect();return;}
+      return;
+    }
     if((shiftHeld&&(event.code==="KeyU"||keyName==="u"))||((event.code==="ShiftLeft"||event.code==="ShiftRight")&&keys.KeyU)){
       event.preventDefault();
       if(!devDoorsUnlocked){devDoorsUnlocked=true;levelLabel.textContent+=" · EXITS UNLOCKED";updateHud();tone(660,.12,"triangle");}
@@ -3035,6 +3046,8 @@
       crestedSkinSelect.querySelectorAll("[data-crestie-skin]").forEach(option=>option.setAttribute("aria-pressed",String(option===button)));
     });
   });
+  document.querySelector("#gameBackButton")?.addEventListener("click",()=>showLevelSelect(true,true));
+
   soundButton.addEventListener("click", () => {
     soundOn = !soundOn;
     soundButton.textContent = `SOUND: ${soundOn ? "ON" : "OFF"}`;
