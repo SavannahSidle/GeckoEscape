@@ -10,6 +10,7 @@
   const characterSelect = document.querySelector("#characterSelect");
   const levelSelect = document.querySelector("#levelSelect");
   const primaryButton = document.querySelector("#primaryButton");
+  const abilityKeyHelp = document.querySelector("#abilityKeyHelp");
   const crestedSkinSelect = document.querySelector("#crestedSkinSelect");
   const secondaryButton = document.querySelector("#secondaryButton");
   const hud = document.querySelector("#hud");
@@ -48,6 +49,8 @@
   let constrictPulseUntil = 0;
   let camouflageUntil = 0;
   let camouflageCooldownUntil = 0;
+  let camouflageCycleStartedAt = 0;
+  let camouflageColorCycle = [];
   let chameleonColorIndex = 0;
   let selectedCrestieSkin = "classic";
   let constrictTarget = null;
@@ -56,6 +59,9 @@
   let regenerateUntil = 0;
   let regenerateCooldownUntil = 0;
   let frogHopCooldownUntil = 0;
+  let jumpBufferUntil = 0;
+  let groundedGraceUntil = 0;
+  let climbDetachUntil = 0;
   let frogAutoHopping = false;
   let waterJumpUntil = 0;
   let biteActiveUntil = 0;
@@ -126,7 +132,7 @@
     1: new Set(["chameleon","crested","newt","frog","boa"]),
     2: new Set()
   };
-  const storyLevelCount=()=>backstageMode?levels.length:singleLevelCharacters.has(selectedCharacter)?1:3;
+  const storyLevelCount=()=>backstageMode?levels.length:singleLevelCharacters.has(selectedCharacter)?1:["chameleon","crested","newt","frog","boa"].includes(selectedCharacter)?5:3;
   let foxLabStridePhase=0;
   const foxLabTailAngles=[0,0,0,0,0],foxLabTailVelocities=[0,0,0,0,0];
   let foxLabLandingImpact=0;
@@ -170,13 +176,13 @@
       completeText: "The kitchen exit is clear. Somewhere in the dark, a refrigerator hums like destiny.",
       palette: ["#0c1117", "#1d2830", "#754f31", "#f0cc62"],
       start: [45, 445], exit: [876,88,50,82],
-      platforms: [[0,500,960,40],[28,442,235,20,"counter"],[425,390,205,20,"counter"],[375,270,120,18,"spiceShelf"],[105,322,180,18,"sink"],[40,196,210,18,"sill"],[530,206,190,18,"sill"],[775,174,185,18,"fridgeTop"]],
+      platforms: [[0,500,960,40],[375,270,120,18,"spiceShelf"],[105,322,180,18,"sink"],[40,196,210,18,"sill"],[530,206,190,18,"sill"],[775,174,185,18,"fridgeTop"]],
       angledPlatforms: [],
       vines: [],
       insects: [[80,410],[420,355],[300,294],[510,294],[690,171],[120,161],[620,120],[875,142]],
       hazards: [
         {x:125,y:172,w:66,h:24,type:"cat",axis:"x",min:60,max:165,speed:105},
-        {x:345,y:434,w:88,h:66,type:"dalmatian",axis:"x",min:275,max:610,speed:78}
+        {x:345,y:368,w:88,h:132,type:"dalmatian",axis:"x",min:275,max:610,speed:78}
       ],
       decor: "kitchen"
     },
@@ -211,13 +217,12 @@
       start: [35,440], exit: [875,62,58,92],
       platforms: [[0,500,960,40],[70,430,170,18],[315,350,170,18],[555,430,130,18],[700,278,190,18],[410,200,150,18],[72,145,190,18]],
       vines: [[245,310,16,190],[505,220,16,210],[760,120,16,160]],
-      insects: [[180,390],[120,270],[310,115],[475,305],[520,465],[650,330],[810,235],[850,180]],
+      insects: [[180,390],[120,270],[310,115],[475,305],[520,465],[650,330],[810,235],[850,180],[842,468]],
       airPockets: [[285,260,24],[635,175,24]],
       hazards: [
         {x:270,y:392,w:86,h:34,type:"fish",axis:"x",min:245,max:500,speed:112},
         {x:620,y:238,w:92,h:38,type:"fish",axis:"x",min:560,max:800,speed:145},
         {x:352,y:126,w:126,h:48,type:"shark",axis:"x",min:250,max:765,speed:92},
-        {x:805,y:457,w:70,h:43,type:"filter",axis:"none"}
       ],
       decor: "underwater",
       underwater: true
@@ -340,7 +345,7 @@
   const boaStoryCollectibles={
     kitchen:{rats:[[620,120]],mice:[[80,410],[300,294],[420,355],[510,294],[740,294],[120,161],[875,142]]},
     house:{rats:[[95,72],[665,233],[850,177]],mice:[[105,400],[185,225],[290,337],[470,285],[705,358],[835,305]]},
-    underwater:{rats:[[310,115],[850,180]],mice:[[180,390],[120,270],[475,305],[520,465],[650,330],[810,235],[385,315],[735,245]]},
+    underwater:{rats:[[310,115],[850,180],[842,468]],mice:[[180,390],[120,270],[475,305],[520,465],[650,330],[810,235],[385,315],[735,245]]},
     highway:{rats:[[270,350],[692,300]],mice:[[85,420],[360,462],[470,425],[585,462],[780,446],[890,420]]}
   };
 
@@ -348,42 +353,42 @@
     chameleon: {
       title:"The Screen Enclosure",habitat:"chameleon",palette:["#08150c","#17351d","#6b4a2b","#8bd85c"],
       intro:"The screen door is loose. Cross the ficus branches and leave before anyone notices the suspiciously empty vine.",
-      start:[70,420],exit:[870,410,48,90],
-      platforms:[[0,500,960,40],[42,452,190,20],[80,340,150,18],[275,392,175,20],[510,330,190,20],[735,264,180,20],[570,180,165,18]],
-      vines:[[420,278,18,118],[655,188,18,142],[270,276,18,136]],ceilingVines:[[150,92,680,18,"woody"]],insects:[[149,307],[95,135],[330,355],[590,292],[810,225]],
-      hazards:[{x:430,y:430,w:92,h:70,type:"grab",axis:"x",min:340,max:620,speed:82}]
+      start:[64,427],exit:[870,410,48,90],
+      platforms:[[0,500,960,40],[42,452,190,20],[80,340,150,18],[240,405,36,16,"branchStep"],[275,392,175,20],[382,350,95,16,"branchStep"],[450,244,120,16,"branchStep"],[510,330,190,20],[684,222,62,16,"branchStep"],[735,264,180,20],[570,180,165,18],[820,368,105,16,"branchStep"]],
+      vines:[[420,278,18,118],[455,230,16,122],[655,188,18,142],[270,276,18,136]],ceilingVines:[[150,92,680,18,"woody"]],insects:[[149,307],[95,135],[330,355],[590,292],[810,225],[292,375],[425,327],[510,218],[760,235],[855,343]],
+      hazards:[{x:430,y:430,w:92,h:70,type:"grab",axis:"x",min:350,max:620,speed:72}]
     },
     crested: {
       title:"The Arboreal Terrarium",habitat:"crested",palette:["#07150f","#123120","#6f4d2c","#a9f576"],
       intro:"The glass door is open. Cross the cork and branches, then make your first terrible decision.",
       start:[55,433],exit:[870,410,48,90],
-      platforms:[[0,500,960,40],[45,458,190,22],[76,340,150,18],[500,342,185,20],[712,270,190,20],[790,154,150,20]],
-      vines:[[215,328,20,135],[680,204,20,140],[675,342,20,120]],ceilingVines:[[210,92,560,26,"curved"],[350,182,280,22,"curved"],[430,255,250,20,"curved"]],insects:[[145,307],[145,132],[570,308],[840,230]],
-      hazards:[{x:420,y:430,w:92,h:70,type:"grab",axis:"x",min:330,max:610,speed:82}]
+      platforms:[[0,500,960,40],[45,458,190,22],[76,340,150,18],[250,397,130,18,"corkStep"],[390,355,110,18,"corkStep"],[430,280,110,18,"corkStep"],[500,342,185,20],[438,315,62,16,"corkStep"],[712,270,190,20],[705,205,65,16,"corkStep"],[790,154,150,20]],
+      vines:[[215,328,20,135],[375,260,18,115],[625,210,18,125],[680,204,20,140],[675,342,20,120]],ceilingVines:[[210,92,560,26,"curved"],[350,182,280,22,"curved"],[430,255,250,20,"curved"]],insects:[[145,307],[145,132],[570,308],[840,230],[310,370],[445,253],[650,315],[735,185]],
+      hazards:[{x:420,y:430,w:92,h:70,type:"grab",axis:"x",min:350,max:600,speed:72}]
     },
     newt: {
       title:"The Paludarium",habitat:"newt",palette:["#07151a","#153b3d","#536b50","#65d6c4"],
       intro:"The lid has shifted above the shoreline. Climb from water to stone and investigate this administrative failure.",
-      start:[112,445],exit:[870,410,48,90],
-      platforms:[[0,500,960,40],[55,458,220,22],[82,342,150,18],[205,282,130,18],[310,422,150,18],[395,165,135,18],[490,372,170,18],[510,252,130,18],[690,320,180,18],[760,232,150,18]],
-      vines:[[650,260,18,130],[845,165,18,155]],insects:[[151,309],[270,249],[350,390],[462,132],[560,338],[575,219],[800,285]],
-      hazards:[{x:465,y:430,w:92,h:70,type:"grab",axis:"x",min:380,max:640,speed:76}]
+      start:[112,435],exit:[870,410,48,90],
+      platforms:[[0,500,960,40],[55,458,220,22],[82,342,150,18],[205,282,130,18],[310,422,150,18],[238,240,145,16,"shoreStone"],[385,205,135,16,"shoreStone"],[395,165,135,18],[510,252,130,18],[528,198,100,16,"shoreStone"],[490,372,170,18],[690,320,180,18],[760,232,150,18],[770,390,150,18,"shoreStone"]],
+      vines:[[650,260,18,130],[705,205,18,120],[845,165,18,155]],insects:[[151,309],[270,249],[350,390],[462,132],[560,338],[575,219],[800,285],[350,225],[570,178],[816,355]],
+      hazards:[{x:475,y:430,w:92,h:70,type:"grab",axis:"x",min:410,max:620,speed:68}]
     },
     frog: {
       title:"The Planted Vivarium",habitat:"frog",palette:["#061810","#164528","#67502d","#74df79"],
       intro:"A bromeliad has reached the door. Leap through the leaves before the human arrives with entirely too much concern.",
-      start:[170,430],exit:[870,410,48,90],
-      platforms:[[0,500,960,40],[75,455,175,20],[90,342,145,18],[285,405,145,18],[265,270,135,18],[380,95,140,18],[465,350,150,18],[530,220,130,18],[650,295,160,18],[780,215,145,18]],
-      vines:[],insects:[[158,309],[330,370],[332,237],[450,62],[535,315],[595,187],[825,180]],
-      hazards:[{x:450,y:430,w:92,h:70,type:"grab",axis:"x",min:350,max:630,speed:84}]
+      start:[170,428],exit:[870,410,48,90],
+      platforms:[[0,500,960,40],[75,455,175,20],[90,342,145,18],[235,425,45,16,"leafBridge"],[285,405,145,18],[365,328,105,16,"leafBridge"],[265,270,135,18],[380,95,140,18],[422,165,95,16,"leafBridge"],[465,350,150,18],[530,220,130,18],[610,285,36,16,"leafBridge"],[650,295,160,18],[730,174,90,16,"leafBridge"],[780,215,145,18]],
+      vines:[],insects:[[158,309],[330,370],[332,237],[450,62],[535,315],[595,187],[825,180],[295,378],[405,302],[625,258],[762,152]],
+      hazards:[{x:470,y:430,w:86,h:66,type:"grab",axis:"x",min:390,max:620,speed:70}]
     },
     boa: {
       title:"The Boa Enclosure",habitat:"boa",palette:["#0b100d","#242a20","#62472d","#a0b37b"],
       intro:"The sliding door is open. Follow the heavy logs toward freedom, dignity, and several poorly secured feeder rats.",
-      start:[38,430],exit:[870,410,48,90],
-      platforms:[[0,500,960,40],[35,454,245,26],[78,338,170,22],[45,260,150,18,"boaLedge"],[315,410,210,25],[560,360,220,25],[760,292,170,24],[600,212,175,22],[223,165,390,14,"boaTunnelFloor"],[38,165,185,14,"boaLedge"],[223,102,390,16,"boaTunnelRoof"],[208,52,15,66,"boaTunnelWall"],[705,105,180,22]],
-      vines:[[285,325,22,130],[800,215,22,110]],diagonalVines:[],insects:[[105,145]],mice:[[158,304],[365,373],[640,322],[835,255]],
-      hazards:[{x:455,y:430,w:92,h:70,type:"grab",axis:"x",min:350,max:630,speed:70}]
+      start:[38,418],exit:[870,410,48,90],
+      platforms:[[0,500,960,40],[35,454,245,26],[78,338,170,22],[45,260,150,18,"boaLedge"],[250,420,60,16,"logStep"],[315,410,210,25],[268,340,105,16,"logStep"],[560,360,220,25],[500,286,110,16,"logStep"],[760,292,170,24],[600,212,175,22],[223,165,390,14,"boaTunnelFloor"],[38,165,185,14,"boaLedge"],[223,102,390,16,"boaTunnelRoof"],[705,105,180,22]],
+      vines:[[285,325,22,130],[535,230,20,110],[800,215,22,110]],diagonalVines:[],insects:[[105,145],[525,152]],mice:[[158,304],[365,373],[640,322],[835,255],[660,190],[550,266]],
+      hazards:[{x:455,y:430,w:92,h:70,type:"grab",axis:"x",min:360,max:600,speed:62}]
     },
     raccoon: {
       title:"The Dumpster Den",habitat:"raccoon",palette:["#101418","#283037","#765b3f","#f2c14e"],
@@ -507,7 +512,7 @@
     levelSelect.classList.add("hidden");
     crestedSkinSelect?.classList.add("hidden");
     secondaryButton.classList.toggle("hidden", !allowSelect);
-    if(allowSelect){secondaryButton.textContent="LEVEL SELECT";secondaryButton.onclick=showMenu;}
+    if(allowSelect){secondaryButton.textContent="LEVEL SELECT";secondaryButton.onclick=()=>showLevelSelect();}
     overlay.classList.remove("hidden");
     hud.classList.add("hidden");
     primaryButton.focus();
@@ -524,7 +529,9 @@
     panelTitle.textContent = gameEdition===1 ? "Five reptiles and amphibians. Five escapes." : "Six mammals. A truly suspicious getaway.";
     panelText.textContent = gameEdition===1 ? "Choose a reptile or amphibian and escape its enclosure." : "Choose your animal. The crime gets bigger from here.";
     primaryButton.classList.add("hidden");
-    secondaryButton.classList.add("hidden");
+    secondaryButton.textContent="BACK";
+    secondaryButton.onclick=showMenu;
+    secondaryButton.classList.remove("hidden");
     levelSelect.classList.add("hidden");
     crestedSkinSelect?.classList.add("hidden");
     characterSelect.querySelectorAll("[data-character]").forEach(button=>{
@@ -575,9 +582,9 @@
       secondaryButton.textContent="LEVEL SELECT";
       secondaryButton.onclick=showLevelSelect;
       secondaryButton.classList.remove("hidden");
-    }else if(index===0){
-      secondaryButton.textContent="BACK TO CHARACTERS";
-      secondaryButton.onclick=showCharacterSelect;
+    }else{
+      secondaryButton.textContent=index===0?"BACK TO CHARACTERS":"BACK";
+      secondaryButton.onclick=()=>index===0?showCharacterSelect():showIntro(index-1);
       secondaryButton.classList.remove("hidden");
     }
   }
@@ -608,6 +615,9 @@
     regenerateUntil = 0;
     regenerateCooldownUntil = 0;
     frogHopCooldownUntil = 0;
+    jumpBufferUntil = 0;
+    groundedGraceUntil = 0;
+    climbDetachUntil = 0;
     frogAutoHopping = false;
     waterJumpUntil = 0;
     biteActiveUntil = 0;
@@ -681,6 +691,13 @@
     player.vx = 0;
     player.vy = 0;
     player.grounded = false;
+    player.climbing = false;
+    player.ceilingClimbing = false;
+    player.ceilingVine = null;
+    player.onSwing = false;
+    jumpBufferUntil = 0;
+    groundedGraceUntil = 0;
+    climbDetachUntil = 0;
     if(levels[levelIndex]?.decor==="boatEscape"){boatTilt=0;boatStability=100;boatDistance=0;}
     batStartHanging=selectedCharacter==="bat"&&levels[levelIndex]?.habitat==="bat";
     batHangX=player.spawnX;batHangY=player.spawnY;batReleaseUntil=0;batVisualFacing=player.facing;
@@ -695,6 +712,13 @@
 
   function updateHud() {
     const character = characters[selectedCharacter];
+    const abilityDescriptions={
+      chameleon:"E Tongue catches prey · R Camouflage hides from hazards",
+      crested:"E Short tongue catches close prey · R Drop tail to escape",
+      newt:"E Regenerate heals and protects · R Toxin stuns hazards once",
+      frog:"E Tongue catches flies · R Power leap launches you forward",
+      boa:"E Constrict stuns close threats · R Strike knocks enemies back"
+    };
     const preyTotal = levels[levelIndex].insects.length;
     const miceTotal=(levels[levelIndex].mice||[]).length;
     const collectibleLabel=selectedCharacter==="raccoon"&&levels[levelIndex].decor==="towerRestaurant"?"FANCY FOOD":selectedCharacter==="raccoon"&&levels[levelIndex].decor==="parachute"?"AIRBORNE SNACKS":character.collectible;
@@ -734,10 +758,13 @@
     } else {
       abilityLabel.textContent = "TONGUE READY";
     }
+    if(abilityKeyHelp)abilityKeyHelp.textContent = abilityDescriptions[selectedCharacter] || `E: ${character.ability} · R: ${character.secondary || "SPECIAL"}`;
     abilityButton.textContent = character.ability;
-    abilityButton.setAttribute("aria-label", `Use ${character.ability.toLowerCase()} ability`);
+    abilityButton.title = abilityDescriptions[selectedCharacter] || character.ability;
+    abilityButton.setAttribute("aria-label", `E: ${abilityDescriptions[selectedCharacter] || character.ability}`);
     tongueButton.textContent = character.secondary || "";
-    tongueButton.setAttribute("aria-label", character.secondary ? `Use ${character.secondary.toLowerCase()} ability` : "Secondary ability unavailable");
+    tongueButton.title = abilityDescriptions[selectedCharacter] || character.secondary || "";
+    tongueButton.setAttribute("aria-label", character.secondary ? `R: ${abilityDescriptions[selectedCharacter] || character.secondary}` : "Secondary ability unavailable");
     tongueButton.classList.toggle("hidden", !character.secondary);
     lifeLabel.textContent = "♥ ".repeat(Math.max(0, lives)).trim();
   }
@@ -799,7 +826,7 @@
   function usePowerLeap() {
     const now = performance.now();
     if (state !== "playing" || selectedCharacter !== "frog" || now < leapCooldownUntil) return;
-    leapCooldownUntil = now + 950;
+    leapCooldownUntil = now + 650;
     player.vy = levels[levelIndex].underwater ? -characters.frog.swimSpeed * 1.55 : -620;
     player.vx += player.facing * 170;
     player.grounded = false;
@@ -812,8 +839,10 @@
     if(state!=="playing"||selectedCharacter!=="chameleon"||now<camouflageCooldownUntil)return;
     const next=(Math.random()*5)|0;
     chameleonColorIndex=next===chameleonColorIndex?(next+1+(Math.random()*4|0))%5:next;
+    camouflageColorCycle=[chameleonColorIndex,...Array.from({length:3},()=>Math.floor(Math.random()*5)),next];
+    camouflageCycleStartedAt=now;
     camouflageUntil=now+2600;
-    camouflageCooldownUntil=now+750;
+    camouflageCooldownUntil=now+450;
     updateHud();tone(430,.16,"sine");
   }
 
@@ -843,7 +872,7 @@
   function useStrike(){
     const now=performance.now();
     if(state!=="playing"||selectedCharacter!=="boa"||now<strikeCooldownUntil)return;
-    strikeActiveUntil=now+300;strikeCooldownUntil=now+1150;
+    strikeActiveUntil=now+300;strikeCooldownUntil=now+700;
     const strikeBox={x:player.facing>0?player.x+player.w-12:player.x-92,y:player.y-7,w:104,h:player.h+14};
     const livingTypes=new Set(["cat","dalmatian","frenchie","fish","shark","spider","bird","server","drone"]);
     for(const hazard of levels[levelIndex].hazards){
@@ -1016,9 +1045,9 @@
     setTimeout(() => tone(659, .13, "triangle"), 100);
     const level = levels[levelIndex];
     if (levelIndex < storyLevelCount() - 1) {
-      showPanel("ESCAPE SUCCESSFUL", level.completeTitle, level.completeText, "NEXT LEVEL", () => showIntro(levelIndex + 1));
+      showPanel("ESCAPE SUCCESSFUL", level.completeTitle, level.completeText, "NEXT LEVEL", () => showIntro(levelIndex + 1), true);
     } else {
-      showPanel("STORY COMPLETE", level.completeTitle, level.completeText, "ESCAPE AGAIN", showMenu);
+      showPanel("STORY COMPLETE", level.completeTitle, level.completeText, "ESCAPE AGAIN", showMenu, true);
     }
   }
 
@@ -1107,17 +1136,26 @@
     if(selectedCharacter==="raccoon"&&now>=raccoonComboUntil&&raccoonCombo){raccoonCombo=0;updateHud();}
     const inHabitatWater = level.habitat === "newt" && player.x < 520 && player.y + player.h / 2 > 270;
     const swimming = Boolean(level.underwater || inHabitatWater);
-    let speed = swimming ? character.swimSpeed : selectedCharacter==="newt" ? 128 : selectedCharacter==="bat" ? 210 : level.decor === "parachute" ? 265 : level.decor === "highway" ? 245 : level.decor === "house" ? 236 : 220;
+    // Land movement is species-weighted: the boa carries more mass, the newt stays deliberate, and the geckos keep quick arboreal control.
+    let speed = swimming ? (selectedCharacter==="newt"?148:character.swimSpeed) :
+      selectedCharacter==="newt" ? 108 : selectedCharacter==="boa" ? 158 :
+      selectedCharacter==="chameleon" ? 190 : selectedCharacter==="crested" ? 190 :
+      selectedCharacter==="frog" ? 172 : selectedCharacter==="bat" ? 210 :
+      level.decor === "parachute" ? 265 : level.decor === "highway" ? 245 : level.decor === "house" ? 236 : 220;
     if(selectedCharacter==="opossum"&&now>playDeadUntil&&now<opossumRecoveryUntil)speed+=72;
     if(selectedCharacter==="raccoon"&&!swimming&&(left||right))speed+=18+(raccoonCombo>=3&&now<raccoonComboUntil?32:0);
     if (["chameleon","newt","frog","boa","raccoon","opossum","bat","goat","highland","devilfox"].includes(selectedCharacter)) updateHud();
 
-    const acceleration = swimming ? 720 : selectedCharacter==="raccoon" ? 1080 : selectedCharacter==="bat" ? 980 : level.decor==="parachute" ? 1180 : selectedCharacter==="frog" ? 1120 : selectedCharacter==="newt" ? 900 : 1450;
-    const movementAcceleration=selectedCharacter==="raccoon"&&!player.grounded?acceleration*.72:acceleration;
+    const acceleration = swimming ? 720 :
+      selectedCharacter==="boa" ? 720 : selectedCharacter==="chameleon" ? 1080 :
+      selectedCharacter==="crested" ? 1180 : selectedCharacter==="raccoon" ? 1080 :
+      selectedCharacter==="bat" ? 980 : level.decor==="parachute" ? 1180 :
+      selectedCharacter==="frog" ? 980 : selectedCharacter==="newt" ? 760 : 1450;
+    const movementAcceleration=player.grounded?acceleration:acceleration*.78;
     const playingDead=selectedCharacter==="opossum"&&now<playDeadUntil;
     if (!playingDead&&left) { player.vx -= movementAcceleration * dt; if(selectedCharacter!=="bat"||player.vx<10)player.facing = -1; }
     if (!playingDead&&right) { player.vx += movementAcceleration * dt; if(selectedCharacter!=="bat"||player.vx>-10)player.facing = 1; }
-    if (!left && !right) player.vx *= Math.pow(swimming ? .025 : selectedCharacter==="raccoon" ? .065 : selectedCharacter==="bat" ? .22 : level.decor==="parachute" ? .3 : selectedCharacter==="frog" ? .00008 : .0007, dt);
+    if (!left && !right) player.vx *= Math.pow(swimming ? .025 : selectedCharacter==="boa" ? .12 : selectedCharacter==="chameleon" ? .025 : selectedCharacter==="crested" ? .035 : selectedCharacter==="newt" ? .055 : selectedCharacter==="raccoon" ? .065 : selectedCharacter==="bat" ? .22 : level.decor==="parachute" ? .3 : selectedCharacter==="frog" ? .00008 : .0007, dt);
     if(playingDead)player.vx=0;
     player.vx = Math.max(-speed, Math.min(speed, player.vx));
 
@@ -1146,7 +1184,9 @@
       updateHud();
     } else {
       const diagonalVine=(level.diagonalVines||[]).find(v=>touchesDiagonalVine(player,v));
-      const onVine = level.vines.some(v => intersects(player, {x:v[0], y:v[1], w:v[2], h:v[3]})) || Boolean(diagonalVine);
+      // A small magnetic reach makes intentional climbs reliable without auto-grabbing every route during a jump.
+      const climbProbe = {x:player.x-10,y:player.y-8,w:player.w+20,h:player.h+16};
+      const onVine = level.vines.some(v => intersects(climbProbe, {x:v[0], y:v[1], w:v[2], h:v[3]})) || Boolean(diagonalVine);
       const onWall = player.x <= 5 || player.x + player.w >= W - 5;
       const canClimbVertically=["chameleon","crested","newt","boa"].includes(selectedCharacter);
       const climbingCeiling=player.ceilingClimbing&&player.ceilingVine&&canClimbVertically;
@@ -1160,7 +1200,7 @@
         else player.x=Math.max(vine[0]-player.w+5,Math.min(vine[0]+vine[2]-5,player.x));
       }else{
         player.ceilingClimbing=false;player.ceilingVine=null;
-        player.climbing = (onVine || onWall) && (up || down);
+        player.climbing = (onVine || onWall) && (up || down) && now >= climbDetachUntil;
         if(player.climbing){
           player.vx=0;
           player.climbDirection=up?-1:1;
@@ -1201,7 +1241,7 @@
     player.x += player.vx * dt;
     player.x = Math.max(0, Math.min(W - player.w, player.x));
     player.y += player.vy * dt;
-    if(["chameleon","crested"].includes(selectedCharacter)&&player.vy<0&&!player.ceilingClimbing){
+    if(["chameleon","crested"].includes(selectedCharacter)&&player.vy<0&&!player.ceilingClimbing&&now>=climbDetachUntil){
       const canopy=(level.ceilingVines||[]).find(v=>oldY+player.h>=v[1]+v[3]-3&&player.y<=v[1]+v[3]&&player.x+player.w>v[0]&&player.x<v[0]+v[2]);
       if(canopy){player.ceilingVine=canopy;player.ceilingClimbing=true;player.climbing=false;player.grounded=false;player.vy=0;player.y=canopy[1]+canopy[3]+2;player.x=Math.max(canopy[0]-player.w+5,Math.min(canopy[0]+canopy[2]-5,player.x));}
     }
@@ -1239,6 +1279,18 @@
       if(oldY+player.h<=surfaceY+6&&player.y+player.h>=surfaceY){player.y=surfaceY-player.h;player.vy=0;player.grounded=true;if(["raccoon","opossum","devilfox","crested","newt","goat","highland"].includes(selectedCharacter)&&landingSpeed>150)raccoonLandingUntil=now+190;if(selectedCharacter==="raccoon"&&now<raccoonJumpBufferUntil){player.vy=-455;player.grounded=false;raccoonJumpBufferUntil=0;raccoonCoyoteUntil=0;}}
     }
 
+    if(player.grounded){
+      groundedGraceUntil=now+115;
+      if(jumpBufferUntil>now){
+        player.vy=selectedCharacter==="frog"?-535:-455;
+        player.grounded=false;
+        jumpBufferUntil=0;
+        groundedGraceUntil=0;
+        if(raccoonMovement)raccoonLaunchUntil=now+130;
+        if(selectedCharacter==="frog")frogAutoHopping=false;
+        tone(245,.05,"triangle");
+      }
+    }
     if (player.y > H + 80) {
       tone(90, .25, "square");
       resetPlayer();
@@ -1333,6 +1385,7 @@
   function jump() {
     if (state !== "playing") return;
     const now=performance.now();
+    jumpBufferUntil=now+145;
     if(levels[levelIndex]?.decor==="boatEscape")return;
     if(["foxLab","foxAlt"].includes(selectedCharacter)){
       if(player.grounded){player.vy=-545;player.grounded=false;foxLabTakeoffUntil=now+145;tone(245,.05,"triangle");}
@@ -1340,7 +1393,11 @@
     }
     if(selectedCharacter==="opossum"&&performance.now()<playDeadUntil)return;
     if(batStartHanging){batStartHanging=false;player.ceilingClimbing=false;batReleaseUntil=now+260;player.y+=8;player.vy=65;tone(185,.05,"triangle");return;}
-    if(player.ceilingClimbing){player.ceilingClimbing=false;player.ceilingVine=null;player.climbing=false;player.y+=8;player.vy=135;tone(185,.05,"triangle");return;}
+    if(player.ceilingClimbing){player.ceilingClimbing=false;player.ceilingVine=null;player.climbing=false;climbDetachUntil=now+220;player.y+=8;player.vx=((keys.ArrowLeft||keys.KeyA)?-1:(keys.ArrowRight||keys.KeyD)?1:player.facing)*135;player.vy=-310;jumpBufferUntil=0;tone(185,.05,"triangle");return;}
+    const jumpProbe={x:player.x-10,y:player.y-8,w:player.w+20,h:player.h+16};
+    const climbableNearby=["chameleon","crested","newt","boa"].includes(selectedCharacter)&&
+      (levels[levelIndex].vines.some(v=>intersects(jumpProbe,{x:v[0],y:v[1],w:v[2],h:v[3]}))||player.x<=5||player.x+player.w>=W-5);
+    if(player.climbing||climbableNearby){player.climbing=false;player.ceilingVine=null;climbDetachUntil=now+240;player.vx=((keys.ArrowLeft||keys.KeyA)?-1:(keys.KeyD||keys.ArrowRight)?1:player.facing)*155;player.vy=-455;player.grounded=false;jumpBufferUntil=0;tone(245,.05,"triangle");return;}
     const level=levels[levelIndex];
     if(selectedCharacter==="raccoon"&&level.decor==="parachute"&&!player.grounded){
       if(now<parachuteBoostCooldownUntil)return;
@@ -1365,10 +1422,12 @@
       return;
     }
     const raccoonMovement=selectedCharacter==="raccoon"||selectedCharacter==="devilfox";
-    if (player.grounded || player.climbing || (raccoonMovement&&now<raccoonCoyoteUntil) || (selectedCharacter === "frog" && frogAutoHopping)) {
+    if (player.grounded || now<groundedGraceUntil || (raccoonMovement&&now<raccoonCoyoteUntil) || (selectedCharacter === "frog" && frogAutoHopping)) {
       player.vy = selectedCharacter === "frog" ? -535 : -455;
       if(raccoonMovement)raccoonLaunchUntil=now+130;
       player.grounded = false;
+      groundedGraceUntil=0;
+      jumpBufferUntil=0;
       if(raccoonMovement){raccoonCoyoteUntil=0;raccoonJumpBufferUntil=0;}
       if(selectedCharacter==="frog")frogAutoHopping=false;
       tone(245, .05, "triangle");
@@ -1417,7 +1476,7 @@
       for (let x = 20; x < W; x += 48) {
         ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
       }
-      for (let y = 20; y < H; y += 48) {
+      if(level.decor!=="underwater")for (let y = 20; y < H; y += 48) {
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
       }
     }
@@ -1527,6 +1586,14 @@
         ctx.fillStyle="#3d7e42";ctx.beginPath();ctx.moveTo(wx,wy+wh);ctx.lineTo(wx+35,wy+70);ctx.lineTo(wx+68,wy+wh);ctx.lineTo(wx+108,wy+64);ctx.lineTo(wx+150,wy+wh);ctx.fill();
         ctx.strokeStyle="#b9a77e";ctx.lineWidth=7;ctx.strokeRect(wx,wy,ww,wh);ctx.beginPath();ctx.moveTo(wx+ww/2,wy);ctx.lineTo(wx+ww/2,wy+wh);ctx.stroke();
       }
+      // One continuous working kitchen: tiled backsplash, clear counter line, and matching cabinet fronts.
+      ctx.fillStyle="#d7dedb";ctx.fillRect(0,220,775,102);
+      ctx.strokeStyle="rgba(89,111,108,.28)";ctx.lineWidth=1;
+      for(let y=230;y<322;y+=23){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(775,y);ctx.stroke();}
+      for(let x=0;x<775;x+=48){ctx.beginPath();ctx.moveTo(x,220);ctx.lineTo(x,322);ctx.stroke();ctx.beginPath();ctx.moveTo(x+24,230);ctx.lineTo(x+24,322);ctx.stroke();}
+      ctx.fillStyle="#d8d5c9";ctx.fillRect(0,322,775,18);ctx.fillStyle="#f2eee3";ctx.fillRect(0,322,775,4);ctx.fillStyle="#7d8886";ctx.fillRect(0,338,775,5);
+      ctx.fillStyle="#69736f";ctx.fillRect(0,343,775,157);
+      for(let x=12;x<760;x+=128){ctx.fillStyle="#8a938d";roundedRect(x,355,112,126,5);ctx.fill();ctx.strokeStyle="#c2c8bd";ctx.lineWidth=3;ctx.stroke();ctx.strokeStyle="#4b5552";ctx.lineWidth=2;ctx.strokeRect(x+7,362,98,108);ctx.fillStyle="#e1e3db";ctx.beginPath();ctx.arc(x+56,369,3,0,Math.PI*2);ctx.fill();}
     } else if (level.decor === "house") {
       ctx.fillStyle="#292634";ctx.fillRect(0,70,W,340);ctx.fillStyle="#3a2d2c";ctx.fillRect(0,410,W,90);
       ctx.fillStyle="#ddd2bd";ctx.fillRect(0,399,W,11);
@@ -1572,11 +1639,10 @@
       for(const [x,w] of [[78,56],[310,42],[596,70],[830,48]]){ctx.beginPath();ctx.moveTo(x,55);ctx.lineTo(x+w,55);ctx.lineTo(x+w+92,420);ctx.lineTo(x+42,420);ctx.closePath();ctx.fill();}
       ctx.globalAlpha=.42;ctx.fillStyle="#174956";ctx.beginPath();ctx.moveTo(0,375);ctx.lineTo(0,260);ctx.lineTo(88,294);ctx.lineTo(145,246);ctx.lineTo(214,325);ctx.lineTo(290,282);ctx.lineTo(340,370);ctx.lineTo(340,500);ctx.lineTo(0,500);ctx.fill();
       ctx.beginPath();ctx.moveTo(960,370);ctx.lineTo(960,248);ctx.lineTo(878,287);ctx.lineTo(822,238);ctx.lineTo(758,323);ctx.lineTo(700,281);ctx.lineTo(645,390);ctx.lineTo(645,500);ctx.lineTo(960,500);ctx.fill();ctx.restore();
-      ctx.strokeStyle="rgba(196,255,245,.42)";ctx.lineWidth=3;
-      for(let x=30;x<W;x+=120){ctx.beginPath();ctx.moveTo(x,75);ctx.quadraticCurveTo(x+50,95,x+100,75);ctx.stroke();}
+      // Keep the water clean of rigid horizontal bars; depth comes from light shafts, plants, and bubbles.
       ctx.fillStyle="rgba(211,247,239,.45)";for(const [x,y,r] of [[74,186,4],[220,235,3],[345,96,3],[565,185,5],[742,130,3],[878,211,4]]){const drift=(performance.now()*.012+x)%28;ctx.beginPath();ctx.arc(x+Math.sin(performance.now()*.001+x)*4,y-drift,r,0,Math.PI*2);ctx.fill();}
       // Midwater coral and broad-leaf plants keep the playable route readable.
-      drawUnderwaterPlant(247,498,136,"#28744e");drawUnderwaterPlant(748,498,120,"#36895a");
+      drawUnderwaterPlant(247,498,136,"#28744e");drawUnderwaterPlant(748,498,120,"#36895a");drawUnderwaterPlant(535,500,110,"#397e52");drawUnderwaterPlant(900,500,128,"#2d8156");
       ctx.fillStyle="#b76554";for(const [x,y] of [[164,402],[184,390],[202,408],[848,416],[870,399]]){ctx.beginPath();ctx.arc(x,y,9,Math.PI,Math.PI*2);ctx.fill();ctx.fillRect(x-9,y,18,8);}
       ctx.fillStyle="#dd9970";for(const [x,y] of [[135,445],[222,459],[785,454],[900,452]]){ctx.beginPath();ctx.arc(x,y,7,Math.PI,Math.PI*2);ctx.fill();ctx.fillRect(x-7,y,14,7);}
       ctx.fillStyle="#253e3b";ctx.fillRect(0,500,W,40);
@@ -1624,19 +1690,25 @@
     ctx.fillStyle="#684328";ctx.beginPath();ctx.arc(-5,2,1.7,0,Math.PI*2);ctx.arc(5,2,1.7,0,Math.PI*2);ctx.fill();
   }
 
-  function drawDalmatianSprite(w=88,h=54,now=0,motion=0){
+  function drawDalmatianSprite(w=88,h=132,now=0,motion=0){
     ctx.save();
-    ctx.fillStyle="#f5f3e8";roundedRect(29,10,w-35,h-34,12);ctx.fill();
+    const moving=motion>0,stride=moving?Math.sin(now*.016)*9:0,bodyBob=moving?Math.abs(Math.sin(now*.032))*1.4:0;
+    ctx.translate(0,bodyBob);
+    // Keep the compact spotted body and head, extending the legs down for a tall, clear dog silhouette.
+    ctx.fillStyle="#f5f3e8";roundedRect(29,10,w-35,26,12);ctx.fill();
     ctx.strokeStyle="#f5f3e8";ctx.lineWidth=6;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(w-11,14);ctx.quadraticCurveTo(w+7,4,w+2,-6);ctx.stroke();
     ctx.fillStyle="#111318";ctx.beginPath();ctx.arc(w-1,-3,3,0,Math.PI*2);ctx.arc(w+3,2,2.5,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#f5f3e8";ctx.beginPath();ctx.arc(20,18,16,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#111318";ctx.beginPath();ctx.ellipse(24,8,7,12,.45,0,Math.PI*2);ctx.fill();
     [[39,15,5],[50,23,3],[56,13,4],[66,17,2.5],[70,24,5],[78,13,3],[33,26,3]].forEach(([sx,sy,r])=>{ctx.beginPath();ctx.arc(sx,sy,r,0,Math.PI*2);ctx.fill();});
-    const stride=motion?Math.sin(now*.016)*7:0;
-    ctx.strokeStyle="#f5f3e8";ctx.lineCap="round";ctx.lineWidth=5;
-    [[38,stride],[48,-stride],[w-27,-stride],[w-16,stride]].forEach(([x,swing],i)=>{
-      const hipY=Math.max(8,h*.18),kneeX=x+(i<2?1:-1)+swing*.48,kneeY=h*.60+Math.abs(swing)*.18,pawX=x+swing*1.15,pawY=h-1;
-      ctx.beginPath();ctx.moveTo(x,hipY);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();
+    const legs=[[38,0],[49,Math.PI],[w-27,Math.PI],[w-16,0]];
+    legs.forEach(([x,offset],i)=>{
+      const swing=Math.sin(now*.016+offset)*9*(moving?1:0);
+      const hipY=30,kneeX=x+(i<2?1:-1)+swing*.38,kneeY=h*.57+Math.abs(swing)*.16;
+      const pawX=x+swing,pawY=h-3;
+      ctx.strokeStyle="#f5f3e8";ctx.lineWidth=5;ctx.lineCap="round";ctx.beginPath();
+      ctx.moveTo(x,hipY);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();
+      ctx.fillStyle="#111318";roundedRect(pawX-4,pawY-2,10,4,2);ctx.fill();
       if(i===0||i===3){ctx.fillStyle="#111318";ctx.beginPath();ctx.ellipse(kneeX+(i===0?-2:2),kneeY-2,2,2.6,0,0,Math.PI*2);ctx.fill();}
     });
     ctx.fillStyle="#eee6da";ctx.beginPath();ctx.ellipse(7,25,15,9,-.08,0,Math.PI*2);ctx.fill();
@@ -1647,7 +1719,6 @@
     ctx.strokeStyle="#c84d4d";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(29,11);ctx.lineTo(30,27);ctx.stroke();
     ctx.restore();
   }
-
   function drawFrenchieSprite(w=78,h=40,now=0,motion=0){
     ctx.save();
     const stride=motion?Math.sin(now*.018)*2.4:0;
@@ -1884,7 +1955,8 @@
     ctx.bezierCurveTo(x-9,y+h*.68,x+w+9,y+h*.36,cx-1,y+4);ctx.stroke();
     for(let offset=18,index=0;offset<h-8;offset+=27,index++){
       const leafY=y+h-offset;
-      const leafX=cx+Math.sin(offset*.08)*7;
+      const foliageOffset=level.habitat==="chameleon"&&x>600?-160:0;
+      const leafX=cx+Math.sin(offset*.08)*7+foliageOffset;
       const direction=index%2===0?-1:1;
       ctx.strokeStyle=underwater?"#4d8c58":"#426b34";ctx.lineWidth=3;
       ctx.beginPath();ctx.moveTo(leafX,leafY);ctx.lineTo(leafX+direction*15,leafY-7);ctx.stroke();
@@ -1956,6 +2028,24 @@
 
   function drawPlatforms(level) {
     for (const p of level.platforms) {
+      if(["branchStep","corkStep","shoreStone","leafBridge","logStep"].includes(p[4])){
+        if(p[4]==="branchStep"||p[4]==="logStep"){
+          const logColor=p[4]==="branchStep"?"#715033":"#68472b";
+          ctx.fillStyle=logColor;roundedRect(p[0],p[1],p[2],p[3],Math.min(9,p[3]/2));ctx.fill();
+          ctx.fillStyle=p[4]==="branchStep"?"#a17a49":"#9b7045";ctx.fillRect(p[0]+4,p[1]+2,p[2]-8,3);
+          ctx.strokeStyle="#493624";ctx.lineWidth=1.5;for(let x=p[0]+14;x<p[0]+p[2]-8;x+=26){ctx.beginPath();ctx.ellipse(x,p[1]+p[3]/2,5,2,.25,0,Math.PI*2);ctx.stroke();}
+          if(p[4]==="branchStep"){ctx.fillStyle="#5a9a4d";for(let x=p[0]+12;x<p[0]+p[2];x+=30){ctx.beginPath();ctx.ellipse(x,p[1]-1,5,2,-.4,0,Math.PI*2);ctx.fill();}}
+        }else if(p[4]==="corkStep"){
+          ctx.fillStyle="#956a42";roundedRect(p[0],p[1],p[2],p[3],5);ctx.fill();ctx.strokeStyle="#593c28";ctx.lineWidth=1.5;
+          for(let x=p[0]+8;x<p[0]+p[2];x+=22){ctx.beginPath();ctx.moveTo(x,p[1]+3);ctx.quadraticCurveTo(x-5,p[1]+p[3]/2,x+2,p[1]+p[3]-2);ctx.stroke();}
+        }else if(p[4]==="shoreStone"){
+          ctx.fillStyle="#66766b";roundedRect(p[0],p[1],p[2],p[3],7);ctx.fill();ctx.fillStyle="#96ad88";ctx.fillRect(p[0]+7,p[1]+2,p[2]-14,3);
+          ctx.fillStyle="#78a873";for(let x=p[0]+12;x<p[0]+p[2]-5;x+=24){ctx.beginPath();ctx.arc(x,p[1]+2,2,Math.PI,Math.PI*2);ctx.fill();}
+        }else{
+          ctx.save();ctx.translate(p[0],p[1]);ctx.fillStyle="#3e8148";ctx.beginPath();ctx.moveTo(0,p[3]);ctx.quadraticCurveTo(p[2]*.35,-3,p[2],p[3]);ctx.quadraticCurveTo(p[2]*.52,p[3]+4,0,p[3]);ctx.fill();ctx.strokeStyle="#8fc766";ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(4,p[3]-1);ctx.quadraticCurveTo(p[2]*.5,3,p[2]-4,p[3]-1);ctx.stroke();ctx.restore();
+        }
+        continue;
+      }
       if(level.habitat==="goat"&&p[4]!=="barnFloor"){
         if(p[4]==="hayBale"){ctx.fillStyle="#d5aa4c";roundedRect(p[0],p[1],p[2],p[3],5);ctx.fill();ctx.strokeStyle="#8d6b2d";ctx.lineWidth=2;for(let x=p[0]+12;x<p[0]+p[2];x+=18){ctx.beginPath();ctx.moveTo(x,p[1]+2);ctx.lineTo(x-6,p[1]+p[3]-2);ctx.stroke();}}
         else if(p[4]==="spool"){ctx.fillStyle="#80684d";roundedRect(p[0],p[1],p[2],p[3],8);ctx.fill();ctx.strokeStyle="#4a3828";ctx.lineWidth=4;ctx.beginPath();ctx.arc(p[0]+p[2]/2,p[1]+p[3]/2,Math.min(30,p[3]),0,Math.PI*2);ctx.stroke();}
@@ -2191,7 +2281,8 @@
       ctx.fillStyle="#d8f56d";ctx.fillRect(13,10,4,3);ctx.fillRect(22,10,4,3);
       ctx.strokeStyle="#151416";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(h.w-4,12);ctx.quadraticCurveTo(h.w+18,-2,h.w+12,-15);ctx.stroke();
     } else if (h.type === "dalmatian") {
-      drawDalmatianSprite(h.w,h.h,now,h.speed||0);
+      ctx.save();if(h.dir>0){ctx.translate(h.w,0);ctx.scale(-1,1);}
+      drawDalmatianSprite(h.w,h.h,now,h.speed||0);ctx.restore();
     } else if (h.type === "frenchie") {
       drawFrenchieSprite(h.w,h.h,now,h.speed||0);
     } else if(h.type==="car"){
@@ -2258,8 +2349,8 @@
       ctx.fillStyle="#242026";ctx.beginPath();ctx.ellipse(h.w/2,17,8,11,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(h.w/2,7,6,0,Math.PI*2);ctx.fill();
       ctx.fillStyle="#d66c48";ctx.beginPath();ctx.arc(h.w/2-2,5,1.3,0,Math.PI*2);ctx.arc(h.w/2+2,5,1.3,0,Math.PI*2);ctx.fill();
     } else if (h.type === "fish") {
-      ctx.save();ctx.translate(h.w/2,h.h/2+Math.sin(now*.009+h.x*.03)*1.5);ctx.scale(h.dir<0?-1:1,1);
-      const kick=Math.sin(now*.025+h.x*.045);
+      ctx.save();ctx.translate(h.w/2,h.h/2+Math.sin(now*.009+h.x*.03)*1.5);ctx.scale(h.dir<0?-1:1,1);ctx.rotate(Math.sin(now*.012+h.x*.03)*.045);
+      const kick=Math.sin(now*.025+h.x*.045)*1.25;
       ctx.fillStyle="#c99443";ctx.beginPath();ctx.ellipse(-3,0,h.w*.34,h.h*.32,0,0,Math.PI*2);ctx.fill();
       ctx.fillStyle="#e0b85f";ctx.beginPath();ctx.ellipse(0,5,h.w*.24,h.h*.13,0,0,Math.PI*2);ctx.fill();
       ctx.fillStyle="#b88338";ctx.beginPath();ctx.moveTo(-h.w*.28,0);ctx.lineTo(-h.w*.48,-h.h*.35+kick*3);ctx.lineTo(-h.w*.46,h.h*.35+kick*3);ctx.closePath();ctx.fill();
@@ -2387,7 +2478,9 @@
     if (flash) ctx.globalAlpha=.4;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
     const chameleonColors=["#79a94d","#d8aa45","#43a4a0","#a565bd","#cf654f"];
-    const green=chameleonColors[chameleonColorIndex];
+    const cycleIndex=now-camouflageCycleStartedAt<325?Math.min(camouflageColorCycle.length-1,Math.floor((now-camouflageCycleStartedAt)/65)):camouflageColorCycle.length-1;
+    const visibleColorIndex=camouflageColorCycle.length&&now-camouflageCycleStartedAt<325?camouflageColorCycle[cycleIndex]:chameleonColorIndex;
+    const green=chameleonColors[visibleColorIndex];
     const airborne=!player.grounded&&!player.climbing&&!player.ceilingClimbing;
     const speed=Math.min(1,(Math.abs(player.vx)+Math.abs(player.vy))/190),crawlDirection=player.climbing&&player.vy>0?-1:1,phase=now*(.004+speed*.018)*crawlDirection;
     const chameleonLeg=(hipX,hipY,front,far)=>{
@@ -2490,22 +2583,23 @@
     const midWave=moving*Math.sin(slitherPhase+1.7)*6;
     const neckWave=moving*Math.sin(slitherPhase+3.25)*3.5;
     ctx.strokeStyle=dark;ctx.lineWidth=15;ctx.lineCap="round";
-    const constricting=now<constrictPulseUntil;
+    const constricting=now<constrictPulseUntil&&Boolean(constrictTarget);
     const targetX=constrictTarget?Math.max(-23,Math.min(20,(constrictTarget.x-(player.x+player.w/2))*player.facing)):0;
+    const targetOffsetY=constrictTarget?Math.max(-12,Math.min(12,constrictTarget.y-(player.y+player.h/2))):0;
     const coilShift=constricting?Math.sin(now*.014)*2.5:0;
+    // The trunk keeps its long S-shaped silhouette; only the flexible neck loops around prey.
+    ctx.beginPath();ctx.moveTo(-64,5+tailWave*.55);
+    ctx.bezierCurveTo(-53,-17+tailWave,-40,19-midWave,-25,3+midWave*.35);
+    ctx.bezierCurveTo(-10,-18+midWave,4,15-neckWave,20,-1+neckWave*.3);ctx.stroke();
     if(constricting){
-      // Overlapping, tightening body passes wrap around the prey while the neck follows.
-      ctx.lineWidth=15;ctx.beginPath();ctx.moveTo(-58,10);
-      ctx.bezierCurveTo(-54,-15,-24,-24,targetX+8,-14+coilShift);
-      ctx.bezierCurveTo(targetX+38,-4,targetX+34,24,targetX+3,23);
-      ctx.bezierCurveTo(targetX-30,22,targetX-36,-6,targetX-9,-12);
-      ctx.bezierCurveTo(targetX+12,-17,targetX+25,-2,targetX+13,11);ctx.stroke();
-      ctx.lineWidth=10;ctx.beginPath();ctx.ellipse(targetX,4+coilShift,26,17,-.12,Math.PI*.08,Math.PI*1.9);ctx.stroke();
-      ctx.strokeStyle="#414448";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-54,6);ctx.bezierCurveTo(-32,-19,-3,-17,targetX+10,-9);ctx.bezierCurveTo(targetX+28,1,targetX+21,17,targetX-5,18);ctx.stroke();
-    }else{
-      ctx.beginPath();ctx.moveTo(-64,5+tailWave*.55);
-      ctx.bezierCurveTo(-53,-17+tailWave,-40,19-midWave,-25,3+midWave*.35);
-      ctx.bezierCurveTo(-10,-18+midWave,4,15-neckWave,20,-1+neckWave*.3);ctx.stroke();
+      const wrapX=targetX+8,wrapY=targetOffsetY+7+coilShift;
+      ctx.lineWidth=11;ctx.beginPath();ctx.moveTo(8,-1+neckWave*.3);
+      ctx.quadraticCurveTo(wrapX-14,-15+coilShift,wrapX+1,-15+coilShift);
+      ctx.bezierCurveTo(wrapX+21,-15+coilShift,wrapX+22,wrapY+12,wrapX+4,wrapY+14);
+      ctx.bezierCurveTo(wrapX-11,wrapY+15,wrapX-16,wrapY+2,wrapX-6,wrapY-3);ctx.stroke();
+      ctx.strokeStyle="#414448";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(9,-3+neckWave*.3);
+      ctx.quadraticCurveTo(wrapX-12,-12+coilShift,wrapX+2,-12+coilShift);
+      ctx.bezierCurveTo(wrapX+16,-11+coilShift,wrapX+17,wrapY+9,wrapX+4,wrapY+11);ctx.stroke();
     }
     const strikeProgress=now<strikeActiveUntil?Math.max(0,1-(strikeActiveUntil-now)/300):0;
     const lunge=now<strikeActiveUntil?Math.sin(strikeProgress*Math.PI)*38:0;
@@ -2874,6 +2968,15 @@
   window.addEventListener("keydown", event => {
     const shiftHeld=event.shiftKey||keys.ShiftLeft||keys.ShiftRight||event.code==="ShiftLeft"||event.code==="ShiftRight";
     const keyName=event.key?.toLowerCase();
+    if(event.code==="Escape"){
+      event.preventDefault();
+      if(state==="playing"){showLevelSelect(true,true);return;}
+      if(state==="level-select"){secondaryButton.click();return;}
+      if(state==="character-select"){showMenu();return;}
+      if(state==="intro"){if(backstageMode)showLevelSelect();else if(levelIndex===0)showCharacterSelect();else showIntro(levelIndex-1);return;}
+      if(state==="dead"||state==="complete"){showLevelSelect();return;}
+      return;
+    }
     if((shiftHeld&&(event.code==="KeyU"||keyName==="u"))||((event.code==="ShiftLeft"||event.code==="ShiftRight")&&keys.KeyU)){
       event.preventDefault();
       if(!devDoorsUnlocked){devDoorsUnlocked=true;levelLabel.textContent+=" · EXITS UNLOCKED";updateHud();tone(660,.12,"triangle");}
@@ -2960,6 +3063,7 @@
     button.addEventListener("click", () => {
       selectedCharacter = button.dataset.character;
       applyCharacterHabitat();
+      updateHud();
       abilityButton.textContent = characters[selectedCharacter].ability;
       if(backstageMode)showLevelSelect();else showIntro(0);
     });
@@ -2973,6 +3077,8 @@
       crestedSkinSelect.querySelectorAll("[data-crestie-skin]").forEach(option=>option.setAttribute("aria-pressed",String(option===button)));
     });
   });
+  document.querySelector("#gameBackButton")?.addEventListener("click",()=>showLevelSelect(true,true));
+
   soundButton.addEventListener("click", () => {
     soundOn = !soundOn;
     soundButton.textContent = `SOUND: ${soundOn ? "ON" : "OFF"}`;
@@ -2997,7 +3103,7 @@
     startLevel(FOX_LAB_LEVEL);
   }else showMenu();
   if(!directFoxRoute){
-    document.title=gameEdition===1?"Gecko Escape 1":"Gecko Escape 2";
+    document.title=gameEdition===1?"Gecko Escape 1 · Playtest":"Gecko Escape 2";
     document.querySelector("h1").textContent=gameEdition===1?"GECKO ESCAPE 1":"GECKO ESCAPE 2";
     document.querySelector(".eyebrow").textContent=gameEdition===1?"THE ORIGINAL CREATURE ESCAPES":"THE ANIMAL GETAWAY EXPANDS";
   }
