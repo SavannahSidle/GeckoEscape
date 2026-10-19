@@ -59,10 +59,7 @@ h1 {
   letter-spacing: -.055em;
 }
 
-.edition-links { display: flex; gap: 12px; margin-top: 9px; }
-.edition-links span { color: var(--muted); font-size: .68rem; font-weight: 850; letter-spacing: .08em; text-decoration: none; }
-.edition-links [aria-current="page"] { color: var(--acid); }
-.edition-links .edition-disabled { color: #626b64; cursor: not-allowed; }
+.game-two-note { margin: 9px 0 0; color: var(--muted); font-size: .68rem; font-weight: 850; letter-spacing: .08em; }
 
 .icon-button,
 .secondary-button {
