@@ -10,6 +10,7 @@
   const characterSelect = document.querySelector("#characterSelect");
   const levelSelect = document.querySelector("#levelSelect");
   const primaryButton = document.querySelector("#primaryButton");
+  const abilityKeyHelp = document.querySelector("#abilityKeyHelp");
   const crestedSkinSelect = document.querySelector("#crestedSkinSelect");
   const secondaryButton = document.querySelector("#secondaryButton");
   const hud = document.querySelector("#hud");
@@ -48,6 +49,8 @@
   let constrictPulseUntil = 0;
   let camouflageUntil = 0;
   let camouflageCooldownUntil = 0;
+  let camouflageCycleStartedAt = 0;
+  let camouflageColorCycle = [];
   let chameleonColorIndex = 0;
   let selectedCrestieSkin = "classic";
   let constrictTarget = null;
@@ -129,7 +132,7 @@
     1: new Set(["chameleon","crested","newt","frog","boa"]),
     2: new Set()
   };
-  const storyLevelCount=()=>backstageMode?levels.length:singleLevelCharacters.has(selectedCharacter)?1:3;
+  const storyLevelCount=()=>backstageMode?levels.length:singleLevelCharacters.has(selectedCharacter)?1:["chameleon","crested","newt","frog","boa"].includes(selectedCharacter)?5:3;
   let foxLabStridePhase=0;
   const foxLabTailAngles=[0,0,0,0,0],foxLabTailVelocities=[0,0,0,0,0];
   let foxLabLandingImpact=0;
@@ -173,13 +176,13 @@
       completeText: "The kitchen exit is clear. Somewhere in the dark, a refrigerator hums like destiny.",
       palette: ["#0c1117", "#1d2830", "#754f31", "#f0cc62"],
       start: [45, 445], exit: [876,88,50,82],
-      platforms: [[0,500,960,40],[28,442,235,20,"counter"],[425,390,205,20,"counter"],[375,270,120,18,"spiceShelf"],[105,322,180,18,"sink"],[40,196,210,18,"sill"],[530,206,190,18,"sill"],[775,174,185,18,"fridgeTop"]],
+      platforms: [[0,500,960,40],[375,270,120,18,"spiceShelf"],[105,322,180,18,"sink"],[40,196,210,18,"sill"],[530,206,190,18,"sill"],[775,174,185,18,"fridgeTop"]],
       angledPlatforms: [],
       vines: [],
       insects: [[80,410],[420,355],[300,294],[510,294],[690,171],[120,161],[620,120],[875,142]],
       hazards: [
         {x:125,y:172,w:66,h:24,type:"cat",axis:"x",min:60,max:165,speed:105},
-        {x:345,y:434,w:88,h:66,type:"dalmatian",axis:"x",min:275,max:610,speed:78}
+        {x:345,y:368,w:88,h:132,type:"dalmatian",axis:"x",min:275,max:610,speed:78}
       ],
       decor: "kitchen"
     },
@@ -214,13 +217,12 @@
       start: [35,440], exit: [875,62,58,92],
       platforms: [[0,500,960,40],[70,430,170,18],[315,350,170,18],[555,430,130,18],[700,278,190,18],[410,200,150,18],[72,145,190,18]],
       vines: [[245,310,16,190],[505,220,16,210],[760,120,16,160]],
-      insects: [[180,390],[120,270],[310,115],[475,305],[520,465],[650,330],[810,235],[850,180]],
+      insects: [[180,390],[120,270],[310,115],[475,305],[520,465],[650,330],[810,235],[850,180],[842,468]],
       airPockets: [[285,260,24],[635,175,24]],
       hazards: [
         {x:270,y:392,w:86,h:34,type:"fish",axis:"x",min:245,max:500,speed:112},
         {x:620,y:238,w:92,h:38,type:"fish",axis:"x",min:560,max:800,speed:145},
         {x:352,y:126,w:126,h:48,type:"shark",axis:"x",min:250,max:765,speed:92},
-        {x:805,y:457,w:70,h:43,type:"filter",axis:"none"}
       ],
       decor: "underwater",
       underwater: true
@@ -710,6 +712,13 @@
 
   function updateHud() {
     const character = characters[selectedCharacter];
+    const abilityDescriptions={
+      chameleon:"E Tongue catches prey · R Camouflage hides from hazards",
+      crested:"E Short tongue catches close prey · R Drop tail to escape",
+      newt:"E Regenerate heals and protects · R Toxin stuns hazards once",
+      frog:"E Tongue catches flies · R Power leap launches you forward",
+      boa:"E Constrict stuns close threats · R Strike knocks enemies back"
+    };
     const preyTotal = levels[levelIndex].insects.length;
     const miceTotal=(levels[levelIndex].mice||[]).length;
     const collectibleLabel=selectedCharacter==="raccoon"&&levels[levelIndex].decor==="towerRestaurant"?"FANCY FOOD":selectedCharacter==="raccoon"&&levels[levelIndex].decor==="parachute"?"AIRBORNE SNACKS":character.collectible;
@@ -749,10 +758,13 @@
     } else {
       abilityLabel.textContent = "TONGUE READY";
     }
+    if(abilityKeyHelp)abilityKeyHelp.textContent = abilityDescriptions[selectedCharacter] || `E: ${character.ability} · R: ${character.secondary || "SPECIAL"}`;
     abilityButton.textContent = character.ability;
-    abilityButton.setAttribute("aria-label", `Use ${character.ability.toLowerCase()} ability`);
+    abilityButton.title = abilityDescriptions[selectedCharacter] || character.ability;
+    abilityButton.setAttribute("aria-label", `E: ${abilityDescriptions[selectedCharacter] || character.ability}`);
     tongueButton.textContent = character.secondary || "";
-    tongueButton.setAttribute("aria-label", character.secondary ? `Use ${character.secondary.toLowerCase()} ability` : "Secondary ability unavailable");
+    tongueButton.title = abilityDescriptions[selectedCharacter] || character.secondary || "";
+    tongueButton.setAttribute("aria-label", character.secondary ? `R: ${abilityDescriptions[selectedCharacter] || character.secondary}` : "Secondary ability unavailable");
     tongueButton.classList.toggle("hidden", !character.secondary);
     lifeLabel.textContent = "♥ ".repeat(Math.max(0, lives)).trim();
   }
@@ -814,7 +826,7 @@
   function usePowerLeap() {
     const now = performance.now();
     if (state !== "playing" || selectedCharacter !== "frog" || now < leapCooldownUntil) return;
-    leapCooldownUntil = now + 950;
+    leapCooldownUntil = now + 650;
     player.vy = levels[levelIndex].underwater ? -characters.frog.swimSpeed * 1.55 : -620;
     player.vx += player.facing * 170;
     player.grounded = false;
@@ -827,8 +839,10 @@
     if(state!=="playing"||selectedCharacter!=="chameleon"||now<camouflageCooldownUntil)return;
     const next=(Math.random()*5)|0;
     chameleonColorIndex=next===chameleonColorIndex?(next+1+(Math.random()*4|0))%5:next;
+    camouflageColorCycle=[chameleonColorIndex,...Array.from({length:3},()=>Math.floor(Math.random()*5)),next];
+    camouflageCycleStartedAt=now;
     camouflageUntil=now+2600;
-    camouflageCooldownUntil=now+750;
+    camouflageCooldownUntil=now+450;
     updateHud();tone(430,.16,"sine");
   }
 
@@ -858,7 +872,7 @@
   function useStrike(){
     const now=performance.now();
     if(state!=="playing"||selectedCharacter!=="boa"||now<strikeCooldownUntil)return;
-    strikeActiveUntil=now+300;strikeCooldownUntil=now+1150;
+    strikeActiveUntil=now+300;strikeCooldownUntil=now+700;
     const strikeBox={x:player.facing>0?player.x+player.w-12:player.x-92,y:player.y-7,w:104,h:player.h+14};
     const livingTypes=new Set(["cat","dalmatian","frenchie","fish","shark","spider","bird","server","drone"]);
     for(const hazard of levels[levelIndex].hazards){
@@ -1462,7 +1476,7 @@
       for (let x = 20; x < W; x += 48) {
         ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
       }
-      for (let y = 20; y < H; y += 48) {
+      if(level.decor!=="underwater")for (let y = 20; y < H; y += 48) {
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
       }
     }
@@ -1572,6 +1586,14 @@
         ctx.fillStyle="#3d7e42";ctx.beginPath();ctx.moveTo(wx,wy+wh);ctx.lineTo(wx+35,wy+70);ctx.lineTo(wx+68,wy+wh);ctx.lineTo(wx+108,wy+64);ctx.lineTo(wx+150,wy+wh);ctx.fill();
         ctx.strokeStyle="#b9a77e";ctx.lineWidth=7;ctx.strokeRect(wx,wy,ww,wh);ctx.beginPath();ctx.moveTo(wx+ww/2,wy);ctx.lineTo(wx+ww/2,wy+wh);ctx.stroke();
       }
+      // One continuous working kitchen: tiled backsplash, clear counter line, and matching cabinet fronts.
+      ctx.fillStyle="#d7dedb";ctx.fillRect(0,220,775,102);
+      ctx.strokeStyle="rgba(89,111,108,.28)";ctx.lineWidth=1;
+      for(let y=230;y<322;y+=23){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(775,y);ctx.stroke();}
+      for(let x=0;x<775;x+=48){ctx.beginPath();ctx.moveTo(x,220);ctx.lineTo(x,322);ctx.stroke();ctx.beginPath();ctx.moveTo(x+24,230);ctx.lineTo(x+24,322);ctx.stroke();}
+      ctx.fillStyle="#d8d5c9";ctx.fillRect(0,322,775,18);ctx.fillStyle="#f2eee3";ctx.fillRect(0,322,775,4);ctx.fillStyle="#7d8886";ctx.fillRect(0,338,775,5);
+      ctx.fillStyle="#69736f";ctx.fillRect(0,343,775,157);
+      for(let x=12;x<760;x+=128){ctx.fillStyle="#8a938d";roundedRect(x,355,112,126,5);ctx.fill();ctx.strokeStyle="#c2c8bd";ctx.lineWidth=3;ctx.stroke();ctx.strokeStyle="#4b5552";ctx.lineWidth=2;ctx.strokeRect(x+7,362,98,108);ctx.fillStyle="#e1e3db";ctx.beginPath();ctx.arc(x+56,369,3,0,Math.PI*2);ctx.fill();}
     } else if (level.decor === "house") {
       ctx.fillStyle="#292634";ctx.fillRect(0,70,W,340);ctx.fillStyle="#3a2d2c";ctx.fillRect(0,410,W,90);
       ctx.fillStyle="#ddd2bd";ctx.fillRect(0,399,W,11);
@@ -1617,11 +1639,10 @@
       for(const [x,w] of [[78,56],[310,42],[596,70],[830,48]]){ctx.beginPath();ctx.moveTo(x,55);ctx.lineTo(x+w,55);ctx.lineTo(x+w+92,420);ctx.lineTo(x+42,420);ctx.closePath();ctx.fill();}
       ctx.globalAlpha=.42;ctx.fillStyle="#174956";ctx.beginPath();ctx.moveTo(0,375);ctx.lineTo(0,260);ctx.lineTo(88,294);ctx.lineTo(145,246);ctx.lineTo(214,325);ctx.lineTo(290,282);ctx.lineTo(340,370);ctx.lineTo(340,500);ctx.lineTo(0,500);ctx.fill();
       ctx.beginPath();ctx.moveTo(960,370);ctx.lineTo(960,248);ctx.lineTo(878,287);ctx.lineTo(822,238);ctx.lineTo(758,323);ctx.lineTo(700,281);ctx.lineTo(645,390);ctx.lineTo(645,500);ctx.lineTo(960,500);ctx.fill();ctx.restore();
-      ctx.strokeStyle="rgba(196,255,245,.42)";ctx.lineWidth=3;
-      for(let x=30;x<W;x+=120){ctx.beginPath();ctx.moveTo(x,75);ctx.quadraticCurveTo(x+50,95,x+100,75);ctx.stroke();}
+      // Keep the water clean of rigid horizontal bars; depth comes from light shafts, plants, and bubbles.
       ctx.fillStyle="rgba(211,247,239,.45)";for(const [x,y,r] of [[74,186,4],[220,235,3],[345,96,3],[565,185,5],[742,130,3],[878,211,4]]){const drift=(performance.now()*.012+x)%28;ctx.beginPath();ctx.arc(x+Math.sin(performance.now()*.001+x)*4,y-drift,r,0,Math.PI*2);ctx.fill();}
       // Midwater coral and broad-leaf plants keep the playable route readable.
-      drawUnderwaterPlant(247,498,136,"#28744e");drawUnderwaterPlant(748,498,120,"#36895a");
+      drawUnderwaterPlant(247,498,136,"#28744e");drawUnderwaterPlant(748,498,120,"#36895a");drawUnderwaterPlant(535,500,110,"#397e52");drawUnderwaterPlant(900,500,128,"#2d8156");
       ctx.fillStyle="#b76554";for(const [x,y] of [[164,402],[184,390],[202,408],[848,416],[870,399]]){ctx.beginPath();ctx.arc(x,y,9,Math.PI,Math.PI*2);ctx.fill();ctx.fillRect(x-9,y,18,8);}
       ctx.fillStyle="#dd9970";for(const [x,y] of [[135,445],[222,459],[785,454],[900,452]]){ctx.beginPath();ctx.arc(x,y,7,Math.PI,Math.PI*2);ctx.fill();ctx.fillRect(x-7,y,14,7);}
       ctx.fillStyle="#253e3b";ctx.fillRect(0,500,W,40);
@@ -1669,19 +1690,25 @@
     ctx.fillStyle="#684328";ctx.beginPath();ctx.arc(-5,2,1.7,0,Math.PI*2);ctx.arc(5,2,1.7,0,Math.PI*2);ctx.fill();
   }
 
-  function drawDalmatianSprite(w=88,h=54,now=0,motion=0){
+  function drawDalmatianSprite(w=88,h=132,now=0,motion=0){
     ctx.save();
-    ctx.fillStyle="#f5f3e8";roundedRect(29,10,w-35,h-34,12);ctx.fill();
+    const moving=motion>0,stride=moving?Math.sin(now*.016)*9:0,bodyBob=moving?Math.abs(Math.sin(now*.032))*1.4:0;
+    ctx.translate(0,bodyBob);
+    // Keep the compact spotted body and head, extending the legs down for a tall, clear dog silhouette.
+    ctx.fillStyle="#f5f3e8";roundedRect(29,10,w-35,26,12);ctx.fill();
     ctx.strokeStyle="#f5f3e8";ctx.lineWidth=6;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(w-11,14);ctx.quadraticCurveTo(w+7,4,w+2,-6);ctx.stroke();
     ctx.fillStyle="#111318";ctx.beginPath();ctx.arc(w-1,-3,3,0,Math.PI*2);ctx.arc(w+3,2,2.5,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#f5f3e8";ctx.beginPath();ctx.arc(20,18,16,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#111318";ctx.beginPath();ctx.ellipse(24,8,7,12,.45,0,Math.PI*2);ctx.fill();
     [[39,15,5],[50,23,3],[56,13,4],[66,17,2.5],[70,24,5],[78,13,3],[33,26,3]].forEach(([sx,sy,r])=>{ctx.beginPath();ctx.arc(sx,sy,r,0,Math.PI*2);ctx.fill();});
-    const stride=motion?Math.sin(now*.016)*7:0;
-    ctx.strokeStyle="#f5f3e8";ctx.lineCap="round";ctx.lineWidth=5;
-    [[38,stride],[48,-stride],[w-27,-stride],[w-16,stride]].forEach(([x,swing],i)=>{
-      const hipY=Math.max(8,h*.18),kneeX=x+(i<2?1:-1)+swing*.48,kneeY=h*.60+Math.abs(swing)*.18,pawX=x+swing*1.15,pawY=h-1;
-      ctx.beginPath();ctx.moveTo(x,hipY);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();
+    const legs=[[38,0],[49,Math.PI],[w-27,Math.PI],[w-16,0]];
+    legs.forEach(([x,offset],i)=>{
+      const swing=Math.sin(now*.016+offset)*9*(moving?1:0);
+      const hipY=30,kneeX=x+(i<2?1:-1)+swing*.38,kneeY=h*.57+Math.abs(swing)*.16;
+      const pawX=x+swing,pawY=h-3;
+      ctx.strokeStyle="#f5f3e8";ctx.lineWidth=5;ctx.lineCap="round";ctx.beginPath();
+      ctx.moveTo(x,hipY);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();
+      ctx.fillStyle="#111318";roundedRect(pawX-4,pawY-2,10,4,2);ctx.fill();
       if(i===0||i===3){ctx.fillStyle="#111318";ctx.beginPath();ctx.ellipse(kneeX+(i===0?-2:2),kneeY-2,2,2.6,0,0,Math.PI*2);ctx.fill();}
     });
     ctx.fillStyle="#eee6da";ctx.beginPath();ctx.ellipse(7,25,15,9,-.08,0,Math.PI*2);ctx.fill();
@@ -1692,7 +1719,6 @@
     ctx.strokeStyle="#c84d4d";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(29,11);ctx.lineTo(30,27);ctx.stroke();
     ctx.restore();
   }
-
   function drawFrenchieSprite(w=78,h=40,now=0,motion=0){
     ctx.save();
     const stride=motion?Math.sin(now*.018)*2.4:0;
@@ -1929,7 +1955,8 @@
     ctx.bezierCurveTo(x-9,y+h*.68,x+w+9,y+h*.36,cx-1,y+4);ctx.stroke();
     for(let offset=18,index=0;offset<h-8;offset+=27,index++){
       const leafY=y+h-offset;
-      const leafX=cx+Math.sin(offset*.08)*7;
+      const foliageOffset=level.habitat==="chameleon"&&x>600?-160:0;
+      const leafX=cx+Math.sin(offset*.08)*7+foliageOffset;
       const direction=index%2===0?-1:1;
       ctx.strokeStyle=underwater?"#4d8c58":"#426b34";ctx.lineWidth=3;
       ctx.beginPath();ctx.moveTo(leafX,leafY);ctx.lineTo(leafX+direction*15,leafY-7);ctx.stroke();
@@ -2254,7 +2281,8 @@
       ctx.fillStyle="#d8f56d";ctx.fillRect(13,10,4,3);ctx.fillRect(22,10,4,3);
       ctx.strokeStyle="#151416";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(h.w-4,12);ctx.quadraticCurveTo(h.w+18,-2,h.w+12,-15);ctx.stroke();
     } else if (h.type === "dalmatian") {
-      drawDalmatianSprite(h.w,h.h,now,h.speed||0);
+      ctx.save();if(h.dir>0){ctx.translate(h.w,0);ctx.scale(-1,1);}
+      drawDalmatianSprite(h.w,h.h,now,h.speed||0);ctx.restore();
     } else if (h.type === "frenchie") {
       drawFrenchieSprite(h.w,h.h,now,h.speed||0);
     } else if(h.type==="car"){
@@ -2321,8 +2349,8 @@
       ctx.fillStyle="#242026";ctx.beginPath();ctx.ellipse(h.w/2,17,8,11,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(h.w/2,7,6,0,Math.PI*2);ctx.fill();
       ctx.fillStyle="#d66c48";ctx.beginPath();ctx.arc(h.w/2-2,5,1.3,0,Math.PI*2);ctx.arc(h.w/2+2,5,1.3,0,Math.PI*2);ctx.fill();
     } else if (h.type === "fish") {
-      ctx.save();ctx.translate(h.w/2,h.h/2+Math.sin(now*.009+h.x*.03)*1.5);ctx.scale(h.dir<0?-1:1,1);
-      const kick=Math.sin(now*.025+h.x*.045);
+      ctx.save();ctx.translate(h.w/2,h.h/2+Math.sin(now*.009+h.x*.03)*1.5);ctx.scale(h.dir<0?-1:1,1);ctx.rotate(Math.sin(now*.012+h.x*.03)*.045);
+      const kick=Math.sin(now*.025+h.x*.045)*1.25;
       ctx.fillStyle="#c99443";ctx.beginPath();ctx.ellipse(-3,0,h.w*.34,h.h*.32,0,0,Math.PI*2);ctx.fill();
       ctx.fillStyle="#e0b85f";ctx.beginPath();ctx.ellipse(0,5,h.w*.24,h.h*.13,0,0,Math.PI*2);ctx.fill();
       ctx.fillStyle="#b88338";ctx.beginPath();ctx.moveTo(-h.w*.28,0);ctx.lineTo(-h.w*.48,-h.h*.35+kick*3);ctx.lineTo(-h.w*.46,h.h*.35+kick*3);ctx.closePath();ctx.fill();
@@ -2450,7 +2478,9 @@
     if (flash) ctx.globalAlpha=.4;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
     const chameleonColors=["#79a94d","#d8aa45","#43a4a0","#a565bd","#cf654f"];
-    const green=chameleonColors[chameleonColorIndex];
+    const cycleIndex=now-camouflageCycleStartedAt<325?Math.min(camouflageColorCycle.length-1,Math.floor((now-camouflageCycleStartedAt)/65)):camouflageColorCycle.length-1;
+    const visibleColorIndex=camouflageColorCycle.length&&now-camouflageCycleStartedAt<325?camouflageColorCycle[cycleIndex]:chameleonColorIndex;
+    const green=chameleonColors[visibleColorIndex];
     const airborne=!player.grounded&&!player.climbing&&!player.ceilingClimbing;
     const speed=Math.min(1,(Math.abs(player.vx)+Math.abs(player.vy))/190),crawlDirection=player.climbing&&player.vy>0?-1:1,phase=now*(.004+speed*.018)*crawlDirection;
     const chameleonLeg=(hipX,hipY,front,far)=>{
