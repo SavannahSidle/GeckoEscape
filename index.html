@@ -7,7 +7,7 @@
     <meta name="description" content="A tiny reptile and amphibian escape game by Alien Arboreal." />
     <title>Gecko Escape</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2307150f'/%3E%3Cpath d='M13 34c7-15 22-21 35-12 7 5 3 14-5 12-5-1-5-7-1-8-9-5-17 2-20 10-2 6-7 10-12 9' fill='none' stroke='%238fe36a' stroke-width='6' stroke-linecap='round'/%3E%3Ccircle cx='48' cy='24' r='2' fill='%23fff7d6'/%3E%3C/svg%3E" />
-    <link rel="stylesheet" href="style.css?v=20261009-mobile-landscape-stack" />
+    <link rel="stylesheet" href="style.css?v=20261019-main1" />
   </head>
   <body>
     <main class="game-shell">
@@ -15,7 +15,7 @@
         <div>
           <p class="eyebrow">ALIEN ARBOREAL PRESENTS</p>
           <h1>GECKO ESCAPE</h1>
-          <nav class="edition-links" aria-label="Game editions"><span aria-current="page">GECKO ESCAPE 1</span><span class="edition-disabled" aria-disabled="true" title="Gecko Escape 2 is a separate game">GECKO ESCAPE 2 · SEPARATE GAME</span></nav>
+          <p class="game-two-note">STAY TUNED FOR GAME 2</p>
         </div>
         <button id="soundButton" class="icon-button" type="button" aria-pressed="true" aria-label="Turn sound off">SOUND: ON</button>
       </header>
@@ -117,11 +117,12 @@
           <span id="bugLabel">BUGS 0/3</span>
           <span id="abilityLabel">ABILITY READY</span>
           <span id="lifeLabel">♥ ♥ ♥</span>
+          <button id="gameBackButton" class="hud-back-button" type="button" aria-label="Back to level select">BACK</button>
         </div>
       </section>
 
       <div class="controls-row">
-        <p class="keyboard-help"><strong>MOVE</strong> WASD / ARROWS &nbsp; <strong>JUMP</strong> SPACE &nbsp; <strong>PRIMARY</strong> E &nbsp; <strong>SECONDARY</strong> R</p>
+        <p class="keyboard-help"><strong>MOVE</strong> WASD / ARROWS &nbsp; <strong>JUMP</strong> SPACE &nbsp; <span id="abilityKeyHelp">E: PRIMARY · R: SECONDARY</span></p>
         <div class="touch-controls" aria-label="Touch controls">
           <div class="touch-move">
             <span class="touch-control-label">MOVE</span>
@@ -138,6 +139,6 @@
         </div>
       </div>
     </main>
-    <script src="game.js?v=20261009-gecko-mobile-stick1"></script>
+    <script src="game.js?v=20261019-main1"></script>
   </body>
 </html>
