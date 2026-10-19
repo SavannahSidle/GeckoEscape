@@ -59,10 +59,7 @@ h1 {
   letter-spacing: -.055em;
 }
 
-.edition-links { display: flex; gap: 12px; margin-top: 9px; }
-.edition-links span { color: var(--muted); font-size: .68rem; font-weight: 850; letter-spacing: .08em; text-decoration: none; }
-.edition-links [aria-current="page"] { color: var(--acid); }
-.edition-links .edition-disabled { color: #626b64; cursor: not-allowed; }
+.game-two-note { margin: 9px 0 0; color: var(--muted); font-size: .68rem; font-weight: 850; letter-spacing: .08em; }
 
 .icon-button,
 .secondary-button {
@@ -211,6 +208,27 @@ canvas {
 }
 
 #lifeLabel { color: #f2a19b; }
+
+.hud-back-button {
+  position: absolute;
+  top: 44px;
+  right: 12px;
+  z-index: 2;
+  min-width: 62px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid rgba(169,245,118,.48);
+  border-radius: 999px;
+  background: rgba(7,21,15,.9);
+  color: #f8f4de;
+  font: inherit;
+  font-size: .65rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.hud-back-button:hover,.hud-back-button:focus-visible { border-color: var(--acid); color: var(--acid); }
 
 .controls-row {
   display: flex;
