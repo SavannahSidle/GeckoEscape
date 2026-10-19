@@ -3063,6 +3063,7 @@
     button.addEventListener("click", () => {
       selectedCharacter = button.dataset.character;
       applyCharacterHabitat();
+      updateHud();
       abilityButton.textContent = characters[selectedCharacter].ability;
       if(backstageMode)showLevelSelect();else showIntro(0);
     });
