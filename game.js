@@ -171,18 +171,18 @@
     {
       label: "LEVEL 3 · HARD",
       title: "The Kitchen",
-      intro: "Cross the long counter and open shelves. Avoid the cat and Dalmatian while gathering every last meal.",
+      intro: "Climb the left-side trash bin to reach the sink and counter. Avoid the cat and Dalmatian while gathering every last meal.",
       completeTitle: "You have breached containment.",
       completeText: "The kitchen exit is clear. Somewhere in the dark, a refrigerator hums like destiny.",
       palette: ["#0c1117", "#1d2830", "#754f31", "#f0cc62"],
-      start: [45, 445], exit: [876,88,50,82],
-      platforms: [[0,500,960,40],[375,270,120,18,"spiceShelf"],[105,322,180,18,"sink"],[40,196,210,18,"sill"],[530,206,190,18,"sill"],[775,174,185,18,"fridgeTop"]],
+      start: [30, 408], exit: [876,88,50,82],
+      platforms: [[0,500,960,40],[12,432,74,68,"kitchenBin"],[375,270,120,18,"spiceShelf"],[105,322,180,18,"sink"],[40,196,210,18,"sill"],[530,206,190,18,"sill"],[775,174,185,18,"fridgeTop"]],
       angledPlatforms: [],
       vines: [],
       insects: [[80,410],[420,355],[300,294],[510,294],[690,171],[120,161],[620,120],[875,142]],
       hazards: [
         {x:125,y:172,w:66,h:24,type:"cat",axis:"x",min:60,max:165,speed:105},
-        {x:345,y:368,w:88,h:132,type:"dalmatian",axis:"x",min:275,max:610,speed:78}
+        {x:330,y:405,w:96,h:95,type:"dalmatian",axis:"x",min:275,max:610,speed:78}
       ],
       decor: "kitchen"
     },
@@ -360,10 +360,10 @@
     },
     crested: {
       title:"The Arboreal Terrarium",habitat:"crested",palette:["#07150f","#123120","#6f4d2c","#a9f576"],
-      intro:"The glass door is open. Cross the cork and branches, then make your first terrible decision.",
+      intro:"The glass door is open. Cross the cork shelves and branches. Bright lime vines are climbable with Up or Down.",
       start:[55,433],exit:[870,410,48,90],
       platforms:[[0,500,960,40],[45,458,190,22],[76,340,150,18],[250,397,130,18,"corkStep"],[390,355,110,18,"corkStep"],[430,280,110,18,"corkStep"],[500,342,185,20],[438,315,62,16,"corkStep"],[712,270,190,20],[705,205,65,16,"corkStep"],[790,154,150,20]],
-      vines:[[215,328,20,135],[375,260,18,115],[625,210,18,125],[680,204,20,140],[675,342,20,120]],ceilingVines:[[210,92,560,26,"curved"],[350,182,280,22,"curved"],[430,255,250,20,"curved"]],insects:[[145,307],[145,132],[570,308],[840,230],[310,370],[445,253],[650,315],[735,185]],
+      vines:[[215,328,20,135],[375,260,18,115],[625,210,18,125],[680,204,20,140],[675,342,20,120]],ceilingVines:[],insects:[[145,307],[145,132],[570,308],[840,230],[310,370],[445,253],[650,315],[735,185]],
       hazards:[{x:420,y:430,w:92,h:70,type:"grab",axis:"x",min:350,max:600,speed:72}]
     },
     newt: {
@@ -546,9 +546,11 @@
   function showLevelSelect(fromGameplay=false, allowAllLevels=fromGameplay){
     resumePlayAfterLevelSelect=fromGameplay;
     state="level-select";
-    panelKicker.textContent=allowAllLevels?"DEVELOPMENT LEVEL SELECT":"BACKSTAGE MODE";
+    panelKicker.textContent=backstageMode?"BACKSTAGE MODE":"LEVEL SELECT";
     panelTitle.textContent="Choose a level.";
-    panelText.textContent=`Testing as ${characters[selectedCharacter].name}. Press L to jump to any level; Shift+U unlocks every exit.`;
+    panelText.textContent=backstageMode
+      ? `Testing as ${characters[selectedCharacter].name}. Press L to jump to any level; Shift+U unlocks every exit.`
+      : `Playing as ${characters[selectedCharacter].name}. Choose any level to replay it.`;
     primaryButton.classList.add("hidden");
     characterSelect.classList.add("hidden");
     crestedSkinSelect?.classList.add("hidden");
@@ -1690,59 +1692,77 @@
     ctx.fillStyle="#684328";ctx.beginPath();ctx.arc(-5,2,1.7,0,Math.PI*2);ctx.arc(5,2,1.7,0,Math.PI*2);ctx.fill();
   }
 
-  function drawDalmatianSprite(w=88,h=132,now=0,motion=0){
+  function drawDalmatianSprite(w=96,h=96,now=0,motion=0){
     ctx.save();
-    const moving=motion>0,stride=moving?Math.sin(now*.016)*9:0,bodyBob=moving?Math.abs(Math.sin(now*.032))*1.4:0;
-    ctx.translate(0,bodyBob);
-    // Keep the compact spotted body and head, extending the legs down for a tall, clear dog silhouette.
-    ctx.fillStyle="#f5f3e8";roundedRect(29,10,w-35,26,12);ctx.fill();
-    ctx.strokeStyle="#f5f3e8";ctx.lineWidth=6;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(w-11,14);ctx.quadraticCurveTo(w+7,4,w+2,-6);ctx.stroke();
-    ctx.fillStyle="#111318";ctx.beginPath();ctx.arc(w-1,-3,3,0,Math.PI*2);ctx.arc(w+3,2,2.5,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#f5f3e8";ctx.beginPath();ctx.arc(20,18,16,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#111318";ctx.beginPath();ctx.ellipse(24,8,7,12,.45,0,Math.PI*2);ctx.fill();
-    [[39,15,5],[50,23,3],[56,13,4],[66,17,2.5],[70,24,5],[78,13,3],[33,26,3]].forEach(([sx,sy,r])=>{ctx.beginPath();ctx.arc(sx,sy,r,0,Math.PI*2);ctx.fill();});
-    const legs=[[38,0],[49,Math.PI],[w-27,Math.PI],[w-16,0]];
-    legs.forEach(([x,offset],i)=>{
-      const swing=Math.sin(now*.016+offset)*9*(moving?1:0);
-      const hipY=30,kneeX=x+(i<2?1:-1)+swing*.38,kneeY=h*.57+Math.abs(swing)*.16;
-      const pawX=x+swing,pawY=h-3;
-      ctx.strokeStyle="#f5f3e8";ctx.lineWidth=5;ctx.lineCap="round";ctx.beginPath();
+    const moving=motion>0,cycle=now*.016;
+    const stride=moving?Math.sin(cycle)*5:0;
+    const bodyBob=moving?Math.abs(Math.sin(cycle*2))*1.2:0;
+    const legs=[[31,0],[43,Math.PI],[w-34,Math.PI],[w-21,0]];
+    ctx.strokeStyle="#f4f1e8";ctx.lineCap="round";
+    legs.forEach(([x,phase],i)=>{
+      const angle=cycle+phase+(i<2?0:Math.PI);
+      const swing=moving?Math.sin(angle)*5:0;
+      const lift=moving?Math.max(0,Math.cos(angle))*2.5:0;
+      const hipY=36+bodyBob,kneeX=x+(i<2?2:-2)+swing*.34;
+      const kneeY=h*.67+bodyBob-lift*.25,pawX=x+swing,pawY=h-4-lift;
+      ctx.lineWidth=i<2?5.4:5.8;ctx.beginPath();
       ctx.moveTo(x,hipY);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();
-      ctx.fillStyle="#111318";roundedRect(pawX-4,pawY-2,10,4,2);ctx.fill();
-      if(i===0||i===3){ctx.fillStyle="#111318";ctx.beginPath();ctx.ellipse(kneeX+(i===0?-2:2),kneeY-2,2,2.6,0,0,Math.PI*2);ctx.fill();}
+      ctx.fillStyle="#17191c";roundedRect(pawX-4,pawY-2,9,4,2);ctx.fill();
     });
-    ctx.fillStyle="#eee6da";ctx.beginPath();ctx.ellipse(7,25,15,9,-.08,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#b9a99e";ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(7,25,15,9,-.08,0,Math.PI*2);ctx.stroke();
-    ctx.fillStyle="#090a0b";ctx.beginPath();ctx.ellipse(-4,22,6,5,0,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#403735";ctx.beginPath();ctx.moveTo(1,29);ctx.quadraticCurveTo(9,34,17,28);ctx.stroke();
-    ctx.fillStyle="#74462d";ctx.beginPath();ctx.arc(15,16,2.6,0,Math.PI*2);ctx.fill();ctx.fillStyle="#17110d";ctx.beginPath();ctx.arc(15.5,16,1.2,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#c84d4d";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(29,11);ctx.lineTo(30,27);ctx.stroke();
+    ctx.strokeStyle="#f4f1e8";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(w-13,20+bodyBob);ctx.quadraticCurveTo(w+5,13+bodyBob,w+1,5+bodyBob);ctx.stroke();
+    ctx.fillStyle="#17191c";ctx.beginPath();ctx.arc(w+1,6+bodyBob,3.2,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#f5f3e8";roundedRect(22,13+bodyBob,w-31,28,14);ctx.fill();
+    ctx.beginPath();ctx.ellipse(30,28+bodyBob,17,14,0,0,Math.PI*2);ctx.fill();
+    [[39,19,4],[50,30,3],[61,18,4],[70,27,3],[81,18,3.2],[84,31,3]].forEach(([sx,sy,r])=>{ctx.fillStyle="#17191c";ctx.beginPath();ctx.arc(sx,sy+bodyBob,r,0,Math.PI*2);ctx.fill();});
+    ctx.fillStyle="#f5f3e8";ctx.beginPath();ctx.arc(19,24+bodyBob,16,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#17191c";ctx.beginPath();ctx.ellipse(23,14+bodyBob,7,11,.45,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(11,21+bodyBob,5.5,6.5,-.2,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#f5f3e8";ctx.beginPath();ctx.ellipse(5,30+bodyBob,11,6,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#111214";ctx.beginPath();ctx.ellipse(-3,28+bodyBob,4.8,3.6,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#74462d";ctx.beginPath();ctx.arc(16,20+bodyBob,2.4,0,Math.PI*2);ctx.fill();ctx.fillStyle="#17110d";ctx.beginPath();ctx.arc(16.5,20+bodyBob,1.2,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#403735";ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(1,34+bodyBob);ctx.quadraticCurveTo(8,39+bodyBob,16,33+bodyBob);ctx.stroke();
+    ctx.strokeStyle="#c84d4d";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(29,14+bodyBob);ctx.lineTo(30,31+bodyBob);ctx.stroke();
     ctx.restore();
   }
-  function drawFrenchieSprite(w=78,h=40,now=0,motion=0){
+
+  function drawFrenchieSprite(w=88,h=46,now=0,motion=0){
     ctx.save();
-    const stride=motion?Math.sin(now*.018)*2.4:0;
-    // Compact, broad Frenchie frame with a substantial chest and low, muscular legs.
-    ctx.fillStyle="#42464a";roundedRect(23,10,w-28,h-12,10);ctx.fill();
-    ctx.beginPath();ctx.ellipse(23,17,16,13,-.08,0,Math.PI*2);ctx.fill();
-    // Broad head and rounded bat ears, with the characteristic flat face.
-    ctx.beginPath();ctx.ellipse(15,12,13,12,0,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.moveTo(6,9);ctx.quadraticCurveTo(0,1,3,-5);ctx.quadraticCurveTo(10,-4,15,7);ctx.moveTo(19,7);ctx.quadraticCurveTo(24,-5,31,-3);ctx.quadraticCurveTo(34,2,25,10);ctx.fill();
-    // A broad, short muzzle, facial folds, and brindle markings read clearly as a French bulldog.
-    ctx.fillStyle="#73787a";ctx.beginPath();ctx.ellipse(5,18,7,5,0,0,Math.PI*2);ctx.fill();ctx.ellipse(16,17,7,5,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#171a1e";ctx.beginPath();ctx.ellipse(7,17,4.4,3.5,0,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#202327";ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(3,20);ctx.quadraticCurveTo(8,23,13,20);ctx.moveTo(5,11);ctx.quadraticCurveTo(10,13,15,11);ctx.moveTo(7,14);ctx.quadraticCurveTo(11,16,15,14);ctx.stroke();
-    ctx.strokeStyle="#8f9698";ctx.lineWidth=2;for(const x of [33,39,48,55]){ctx.beginPath();ctx.moveTo(x,12);ctx.lineTo(x-4,25);ctx.stroke();}
-    ctx.strokeStyle="#33363a";ctx.lineWidth=6;ctx.lineCap="round";
-    [[31,stride],[41,-stride],[w-21,-stride],[w-13,stride]].forEach(([x,swing])=>{ctx.beginPath();ctx.moveTo(x,h-12);ctx.lineTo(x+swing*.35,h-6);ctx.lineTo(x+swing,h-1);ctx.stroke();});
-    ctx.fillStyle="#171b1f";ctx.beginPath();ctx.arc(w-5,16,3.5,0,Math.PI*2);ctx.fill();
+    const moving=motion>0,stride=moving?Math.sin(now*.016)*2.5:0;
+    const bob=moving?Math.abs(Math.sin(now*.032))*1:0;
+    const coat="#b27650",highlight="#d1956c",charcoal="#626365",dark="#282a2d";
+    ctx.strokeStyle=coat;ctx.lineCap="round";ctx.lineWidth=6.5;
+    [[28,0],[39,Math.PI],[w-29,Math.PI],[w-18,0]].forEach(([x,phase],i)=>{
+      const swing=moving?Math.sin(now*.016+phase)*2.6:0;
+      const hip=h-16+bob,knee=x+swing*.25,paw=x+swing;
+      ctx.beginPath();ctx.moveTo(x,hip);ctx.lineTo(knee,h-8+bob);ctx.lineTo(paw,h-2);ctx.stroke();
+      ctx.fillStyle=dark;roundedRect(paw-4,h-4,10,4,2);ctx.fill();
+    });
+    ctx.fillStyle=coat;roundedRect(22,12+bob,w-31,h-16,13);ctx.fill();
+    ctx.fillStyle=highlight;ctx.beginPath();ctx.ellipse(28,24+bob,18,12,-.08,0,Math.PI*2);ctx.fill();
+    // Broad low chest, square head, and upright bat ears give the silhouette its Frenchie shape.
+    ctx.fillStyle=coat;ctx.beginPath();ctx.ellipse(18,19+bob,17,15,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.moveTo(4,13+bob);ctx.quadraticCurveTo(-1,3+bob,5,1+bob);ctx.quadraticCurveTo(12,0+bob,14,9+bob);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(19,10+bob);ctx.quadraticCurveTo(23,-1+bob,30,3+bob);ctx.quadraticCurveTo(32,8+bob,26,16+bob);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#d49c84";ctx.beginPath();ctx.moveTo(5,6+bob);ctx.lineTo(9,5+bob);ctx.lineTo(11,11+bob);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(23,7+bob);ctx.lineTo(27,6+bob);ctx.lineTo(25,12+bob);ctx.closePath();ctx.fill();
+    ctx.fillStyle=charcoal;ctx.beginPath();ctx.ellipse(12,19+bob,10,9,-.1,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#eee9df";ctx.beginPath();ctx.ellipse(27,28+bob,8,10,.12,0,Math.PI*2);ctx.fill();
+    // Soft brindle bars break up the warm coat without turning the dog into a grey blob.
+    ctx.save();ctx.beginPath();roundedRect(27,13+bob,w-37,23,11);ctx.clip();
+    ctx.strokeStyle="rgba(83,82,80,.72)";ctx.lineWidth=3;
+    for(const x of [37,47,58,68]){ctx.beginPath();ctx.moveTo(x,15+bob);ctx.lineTo(x-5,31+bob);ctx.stroke();}
+    ctx.restore();
+    ctx.fillStyle=dark;ctx.beginPath();ctx.ellipse(8,21+bob,4.8,3.8,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#302b29";ctx.beginPath();ctx.arc(17,15+bob,1.7,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#403532";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(3,26+bob);ctx.quadraticCurveTo(9,30+bob,15,26+bob);ctx.moveTo(8,12+bob);ctx.lineTo(13,13+bob);ctx.stroke();
+    ctx.strokeStyle="#a34848";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(30,14+bob);ctx.lineTo(31,30+bob);ctx.stroke();
     ctx.restore();
   }
 
   function drawPortraitDog(x,y,type){
     ctx.save();ctx.translate(x,y);
     if(type==="dalmatian"){ctx.scale(.7,.7);ctx.translate(-44,-27);drawDalmatianSprite();}
-    else{ctx.scale(.8,.8);ctx.translate(-39,-20);drawFrenchieSprite();}
+    else{ctx.scale(.8,.8);ctx.translate(-44,-23);drawFrenchieSprite(88,46);}
     ctx.restore();
   }
 
@@ -1926,6 +1946,18 @@
     const cx=x+w/2;
     const underwater=Boolean(level.underwater);
     ctx.save();ctx.lineCap="round";
+    if(level.habitat==="crested"){
+      ctx.strokeStyle="#4f7039";ctx.lineWidth=Math.max(10,w*.72);ctx.beginPath();ctx.moveTo(cx,y+h);
+      ctx.bezierCurveTo(x-8,y+h*.68,x+w+12,y+h*.36,cx,y);ctx.stroke();
+      ctx.strokeStyle="#c6ef7f";ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(cx-2,y+h-4);
+      ctx.bezierCurveTo(x-9,y+h*.68,x+w+9,y+h*.36,cx-1,y+4);ctx.stroke();
+      for(let offset=18,index=0;offset<h-8;offset+=27,index++){
+        const leafY=y+h-offset,leafX=cx+Math.sin(offset*.08)*6,direction=index%2===0?-1:1;
+        drawPlantLeaf(leafX+direction*9,leafY-6,direction<0?Math.PI-.22:.22,index%2?"#89bd5b":"#a6d86b",17,7);
+        if(index%2===0){ctx.fillStyle="#d6f49a";ctx.beginPath();ctx.arc(leafX,leafY,2.3,0,Math.PI*2);ctx.fill();}
+      }
+      ctx.restore();return;
+    }
     if(level.habitat==="raccoon"){
       ctx.strokeStyle="#8b969b";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(cx-10,y);ctx.lineTo(cx-10,y+h);ctx.moveTo(cx+10,y);ctx.lineTo(cx+10,y+h);ctx.stroke();
       ctx.lineWidth=3;for(let rung=y+12;rung<y+h;rung+=20){ctx.beginPath();ctx.moveTo(cx-10,rung);ctx.lineTo(cx+10,rung);ctx.stroke();}
@@ -2101,6 +2133,13 @@
         ctx.fillStyle="#745238";roundedRect(p[0]-2,p[1]-4,p[2]+4,p[3]+8,Math.min(28,p[3]/2));ctx.fill();ctx.strokeStyle="#3e3022";ctx.lineWidth=3;ctx.stroke();
         ctx.fillStyle="#33281e";for(let i=0;i<8;i++){const x=p[0]+12+(i*53)%(Math.max(20,p[2]-24));ctx.beginPath();ctx.ellipse(x,p[1]+5+(i%3)*3,10+(i%3)*4,3+(i%2)*2,(i%4)*.2,0,Math.PI*2);ctx.fill();}
         if(p[4]==="boaTunnelRoof"){ctx.fillStyle="#171713";roundedRect(p[0]+10,p[1]+p[3]-1,p[2]-20,40,18);ctx.fill();ctx.strokeStyle="#9a754e";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(p[0]+8,p[1]+p[3]);ctx.quadraticCurveTo(p[0]+p[2]*.5,p[1]+p[3]-8,p[0]+p[2]-8,p[1]+p[3]);ctx.stroke();}
+      }else if(level.decor==="kitchen"&&p[4]==="kitchenBin"){
+        ctx.fillStyle="#59665f";roundedRect(p[0]+5,p[1]+8,p[2]-10,p[3]-8,7);ctx.fill();
+        ctx.strokeStyle="#a5b5a8";ctx.lineWidth=2;roundedRect(p[0]+5,p[1]+8,p[2]-10,p[3]-8,7);ctx.stroke();
+        ctx.fillStyle="#68786b";roundedRect(p[0]+1,p[1]-2,p[2]-2,10,4);ctx.fill();
+        ctx.strokeStyle="#3c4a41";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(p[0]+9,p[1]+16);ctx.lineTo(p[0]+p[2]-9,p[1]+16);ctx.stroke();
+        ctx.fillStyle="#e1e5d9";ctx.font="900 8px system-ui";ctx.textAlign="center";ctx.fillText("TRASH",p[0]+p[2]/2,p[1]+36);
+        ctx.fillStyle="#202723";ctx.beginPath();ctx.arc(p[0]+17,p[1]+p[3]-3,5,0,Math.PI*2);ctx.arc(p[0]+p[2]-17,p[1]+p[3]-3,5,0,Math.PI*2);ctx.fill();
       }else if(level.decor==="kitchen"&&p[4]==="fridgeTop"){
         // The refrigerator artwork itself is the collision surface.
         continue;
@@ -2977,12 +3016,12 @@
       if(state==="dead"||state==="complete"){showLevelSelect();return;}
       return;
     }
-    if((shiftHeld&&(event.code==="KeyU"||keyName==="u"))||((event.code==="ShiftLeft"||event.code==="ShiftRight")&&keys.KeyU)){
+    if(backstageMode&&((shiftHeld&&(event.code==="KeyU"||keyName==="u"))||((event.code==="ShiftLeft"||event.code==="ShiftRight")&&keys.KeyU))){
       event.preventDefault();
       if(!devDoorsUnlocked){devDoorsUnlocked=true;levelLabel.textContent+=" · EXITS UNLOCKED";updateHud();tone(660,.12,"triangle");}
       return;
     }
-    if(event.code==="KeyL"){
+    if(backstageMode&&event.code==="KeyL"){
       event.preventDefault();
       if(!event.repeat&&state!=="level-select")showLevelSelect(state==="playing",true);
       return;
@@ -3103,7 +3142,7 @@
     startLevel(FOX_LAB_LEVEL);
   }else showMenu();
   if(!directFoxRoute){
-    document.title=gameEdition===1?"Gecko Escape 1 · Playtest":"Gecko Escape 2";
+    document.title=gameEdition===1?"Gecko Escape":"Gecko Escape 2";
     document.querySelector("h1").textContent=gameEdition===1?"GECKO ESCAPE 1":"GECKO ESCAPE 2";
     document.querySelector(".eyebrow").textContent=gameEdition===1?"THE ORIGINAL CREATURE ESCAPES":"THE ANIMAL GETAWAY EXPANDS";
   }
