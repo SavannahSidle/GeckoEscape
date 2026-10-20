@@ -32,6 +32,12 @@
   let state = "menu";
   let levelIndex = 0;
   let lastTime = 0;
+  let lastInputAt = performance.now();
+  let resultPanelUntil = 0;
+  let levelStartedAt = 0;
+  let damageFlashUntil = 0;
+  let actionToastText = "";
+  let actionToastUntil = 0;
   let lives = 3;
   let collected = 0;
   let tailReady = true;
@@ -169,7 +175,7 @@
       decor: "enclosure"
     },
     {
-      label: "LEVEL 3 · HARD",
+      label: "LEVEL 2 · STEADY",
       title: "The Kitchen",
       intro: "Climb the left-side trash bin to reach the sink and counter. Avoid the cat and Dalmatian while gathering every last meal.",
       completeTitle: "You have breached containment.",
@@ -187,7 +193,7 @@
       decor: "kitchen"
     },
     {
-      label: "LEVEL 4 · LAWLESS",
+      label: "LEVEL 3 · CHALLENGING",
       title: "The Living Room",
       intro: "Cross the sofa, shelves, and coffee table. The Roomba, French bulldog, cat, and ceiling spider have joined the hunt.",
       completeTitle: "The front door is open.",
@@ -208,7 +214,7 @@
       decor: "house"
     },
     {
-      label: "LEVEL 2 · UNDERWATER",
+      label: "LEVEL 4 · HARD",
       title: "The Aquarium",
       intro: "The escape route drops through an aquarium. Reptiles need air bubbles. The newt has been waiting its entire moist little life for this.",
       completeTitle: "Out through the filter.",
@@ -512,6 +518,7 @@
     levelSelect.classList.add("hidden");
     crestedSkinSelect?.classList.add("hidden");
     secondaryButton.classList.toggle("hidden", !allowSelect);
+    overlay.classList.remove("character-menu");
     if(allowSelect){secondaryButton.textContent="LEVEL SELECT";secondaryButton.onclick=()=>showLevelSelect();}
     overlay.classList.remove("hidden");
     hud.classList.add("hidden");
@@ -520,11 +527,14 @@
 
   function showMenu() {
     state = "menu";
-    showPanel("STORY MODE", "The enclosure door is open.", "This is almost certainly a trap. Choose the small criminal responsible.", "CHOOSE CHARACTER", showCharacterSelect);
+    showPanel("STORY MODE", "The enclosure door is open.", "This is almost certainly a trap. Choose an escape artist, or jump straight in as the crested gecko.", "CHOOSE CHARACTER", showCharacterSelect, true);
+    secondaryButton.textContent = "QUICK PLAY · CRESTED";
+    secondaryButton.onclick = () => showIntro(0);
   }
 
   function showCharacterSelect() {
     state = "character-select";
+    overlay.classList.add("character-menu");
     panelKicker.textContent = "CHOOSE YOUR ESCAPE ARTIST";
     panelTitle.textContent = gameEdition===1 ? "Five reptiles and amphibians. Five escapes." : "Six mammals. A truly suspicious getaway.";
     panelText.textContent = gameEdition===1 ? "Choose a reptile or amphibian and escape its enclosure." : "Choose your animal. The crime gets bigger from here.";
@@ -594,6 +604,9 @@
   function startLevel(index) {
     levelIndex = index;
     const level = levels[index];
+    levelStartedAt = performance.now();
+    resultPanelUntil = 0;
+    damageFlashUntil = 0;
     player.w = characters[selectedCharacter].w;
     player.h = characters[selectedCharacter].h;
     level.insects.forEach(insect => insect[2] = false);
@@ -680,9 +693,10 @@
   }
 
   function resetPlayer(loseLife = true) {
-    if (loseLife) lives -= 1;
+    if (loseLife) { lives -= 1; damageFlashUntil = performance.now() + 520; }
     if (lives <= 0) {
       state = "dead";
+      resultPanelUntil = performance.now() + 30000;
       if(selectedCharacter==="raccoon")showPanel("ESCAPE FAILED", "Captured by Toronto Animal Services.", "The Trash Tank has been loaded into the municipal shame van. The dog catcher appears exhausted.", "ESCAPE CUSTODY", () => startLevel(levelIndex), true);
       else if(selectedCharacter==="opossum")showPanel("ESCAPE FAILED", "Returned to wildlife rehab.", "Recovery continues. The night shift has reinforced the enrichment pen.", "TRY AGAIN", () => startLevel(levelIndex), true);
       else showPanel("ESCAPE FAILED", "Returned to your enclosure.", "Humiliating. The human has also added another clip to the door.", "TRY AGAIN", () => startLevel(levelIndex), true);
@@ -764,10 +778,16 @@
     abilityButton.textContent = character.ability;
     abilityButton.title = abilityDescriptions[selectedCharacter] || character.ability;
     abilityButton.setAttribute("aria-label", `E: ${abilityDescriptions[selectedCharacter] || character.ability}`);
+    const abilityWait = selectedCharacter==="newt" ? performance.now()<regenerateCooldownUntil : selectedCharacter==="boa" ? performance.now()<constrictCooldownUntil : performance.now()<tongueCooldownUntil;
+    abilityButton.dataset.status = abilityWait ? "WAIT" : "READY";
+    abilityButton.classList.toggle("is-cooling", abilityWait);
     tongueButton.textContent = character.secondary || "";
     tongueButton.title = abilityDescriptions[selectedCharacter] || character.secondary || "";
     tongueButton.setAttribute("aria-label", character.secondary ? `R: ${abilityDescriptions[selectedCharacter] || character.secondary}` : "Secondary ability unavailable");
     tongueButton.classList.toggle("hidden", !character.secondary);
+    const specialWait = selectedCharacter==="chameleon" ? performance.now()<camouflageCooldownUntil : selectedCharacter==="crested" ? !tailReady : selectedCharacter==="newt" ? !toxinReady : selectedCharacter==="frog" ? performance.now()<leapCooldownUntil : selectedCharacter==="boa" ? performance.now()<strikeCooldownUntil : false;
+    tongueButton.dataset.status = specialWait ? "WAIT" : "READY";
+    tongueButton.classList.toggle("is-cooling", specialWait);
     lifeLabel.textContent = "♥ ".repeat(Math.max(0, lives)).trim();
   }
 
@@ -781,6 +801,7 @@
     };
     tailReady = false;
     invulnerableUntil = performance.now() + 2400;
+    actionToastText = "TAIL DROP!"; actionToastUntil = performance.now() + 850;
     player.vx = -player.facing * 190;
     player.vy = -180;
     updateHud();
@@ -792,6 +813,7 @@
     if (state !== "playing" || !["chameleon","crested","frog"].includes(selectedCharacter) || now < tongueCooldownUntil) return;
     tongueActiveUntil = now + 230;
     tongueCooldownUntil = now + 520;
+    actionToastText = "TONGUE OUT!"; actionToastUntil = now + 650;
     tone(610, .045, "sine");
   }
 
@@ -810,6 +832,7 @@
     const now = performance.now();
     if (state !== "playing" || selectedCharacter !== "newt" || !toxinReady) return;
     toxinReady = false;
+    actionToastText = "TOXIN RELEASED!"; actionToastUntil = now + 850;
     toxinActiveUntil = now + 2600;
     updateHud();
     tone(155, .18, "sawtooth");
@@ -818,6 +841,7 @@
   function useRegenerate(){
     const now=performance.now();
     if(state!=="playing"||selectedCharacter!=="newt"||now<regenerateCooldownUntil)return;
+    actionToastText = "REGENERATING!"; actionToastUntil = now + 850;
     regenerateUntil=now+2600;
     regenerateCooldownUntil=now+5200;
     if(lives<3)lives=Math.min(3,lives+1);
@@ -829,6 +853,7 @@
     const now = performance.now();
     if (state !== "playing" || selectedCharacter !== "frog" || now < leapCooldownUntil) return;
     leapCooldownUntil = now + 650;
+    actionToastText = "POWER LEAP!"; actionToastUntil = now + 750;
     player.vy = levels[levelIndex].underwater ? -characters.frog.swimSpeed * 1.55 : -620;
     player.vx += player.facing * 170;
     player.grounded = false;
@@ -844,6 +869,7 @@
     camouflageColorCycle=[chameleonColorIndex,...Array.from({length:3},()=>Math.floor(Math.random()*5)),next];
     camouflageCycleStartedAt=now;
     camouflageUntil=now+2600;
+    actionToastText = "CAMOUFLAGE!"; actionToastUntil = now + 800;
     camouflageCooldownUntil=now+450;
     updateHud();tone(430,.16,"sine");
   }
@@ -864,7 +890,8 @@
     }
     constrictPulseUntil = now + 900;
     constrictTarget = target ? {x:target.x+target.w/2,y:target.y+target.h/2} : null;
-    if (!target) { tone(92, .08, "square"); return; }
+    if (!target) { actionToastText = "TOO FAR TO CONSTRICT"; actionToastUntil = now + 950; tone(92, .08, "square"); return; }
+    actionToastText = "WRAPPED!"; actionToastUntil = now + 850;
     target.stunnedUntil = now + 3500;
     constrictCooldownUntil = now + 4600;
     updateHud();
@@ -1046,10 +1073,14 @@
     tone(523, .1, "triangle");
     setTimeout(() => tone(659, .13, "triangle"), 100);
     const level = levels[levelIndex];
+    const elapsed = Math.max(0, Math.floor((performance.now() - levelStartedAt) / 1000));
+    const timeText = `${Math.floor(elapsed / 60)}:${String(elapsed % 60).padStart(2, "0")}`;
+    const resultText = `${level.completeText}  Run time: ${timeText} · Prey collected: ${collected}/${level.insects.length}.`;
+    resultPanelUntil = performance.now() + 30000;
     if (levelIndex < storyLevelCount() - 1) {
-      showPanel("ESCAPE SUCCESSFUL", level.completeTitle, level.completeText, "NEXT LEVEL", () => showIntro(levelIndex + 1), true);
+      showPanel("ESCAPE SUCCESSFUL · LEVEL CLEAR", level.completeTitle, resultText, "NEXT LEVEL", () => showIntro(levelIndex + 1), true);
     } else {
-      showPanel("STORY COMPLETE", level.completeTitle, level.completeText, "ESCAPE AGAIN", showMenu, true);
+      showPanel("STORY COMPLETE · ALL LEVELS CLEAR", level.completeTitle, resultText, "ESCAPE AGAIN", showMenu, true);
     }
   }
 
@@ -2211,13 +2242,13 @@
     ctx.fillStyle = glow; ctx.fillRect(x-50,y-45,w+100,h+90);
     ctx.fillStyle = "#020604"; ctx.fillRect(x,y,w,h);
     ctx.strokeStyle = locked?"#c75b4e":level.palette[3]; ctx.lineWidth = 3; ctx.strokeRect(x,y,w,h);
-    ctx.fillStyle = locked?"#df7b6c":level.palette[3];
+    ctx.fillStyle = locked?"#f4b06b":level.palette[3];
     const destination=level.decor==="torontoTower"?"OBSERVATION DECK":level.decor==="towerRestaurant"?"EMERGENCY EXIT":level.decor==="parachute"?"LAND HERE":level.decor==="cheeseGetaway"?"JANE + BOAT":level.underwater?"FILTER OUT":"EXIT";
-    const exitLabel = locked?`${remaining} PREY LEFT`:destination;
-    ctx.font = "900 12px system-ui"; ctx.textAlign = "center"; ctx.fillText(exitLabel, x+w/2, y-10);
+    const exitLabel = locked?`${remaining} MORE TO COLLECT`:destination;
+    ctx.font = "900 11px system-ui"; ctx.textAlign = "center"; ctx.fillText(exitLabel, x+w/2, y-10);
     ctx.font = "900 24px system-ui";
-    ctx.fillText(locked?"×":"↓", x+w/2, y-28);
-    if(locked){ctx.strokeStyle="#c75b4e";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x+7,y+8);ctx.lineTo(x+w-7,y+h-8);ctx.moveTo(x+w-7,y+8);ctx.lineTo(x+7,y+h-8);ctx.stroke();}
+    if(locked){ctx.strokeStyle="#f4b06b";ctx.lineWidth=3;ctx.beginPath();ctx.arc(x+w/2,y-34,7,Math.PI,Math.PI*2);ctx.stroke();ctx.fillStyle="#f4b06b";ctx.fillRect(x+w/2-9,y-34,18,15);}else ctx.fillText("↓", x+w/2, y-28);
+    if(!locked){ctx.strokeStyle=level.palette[3];ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x+w/2,y+12);ctx.lineTo(x+w/2,y+h-12);ctx.lineTo(x+w/2-6,y+h-19);ctx.moveTo(x+w/2,y+h-12);ctx.lineTo(x+w/2+6,y+h-19);ctx.stroke();}
   }
 
   function drawInsects(level, time) {
@@ -2857,6 +2888,7 @@
 
   function drawPlayer(now) {
     ctx.save();
+    if (editionCharacters[gameEdition].has(selectedCharacter)) { const cx=player.x+player.w/2,cy=player.y+player.h/2; ctx.translate(cx,cy); ctx.scale(1.08,1.08); ctx.translate(-cx,-cy); }
     const verticalClimber=player.climbing&&["chameleon","crested","boa","newt"].includes(selectedCharacter);
     if(player.ceilingClimbing&&selectedCharacter!=="bat"){ctx.translate(0,player.y*2+player.h);ctx.scale(1,-1);}
     if(verticalClimber){const cx=player.x+player.w/2,cy=player.y+player.h/2;ctx.translate(cx,cy);ctx.rotate(player.climbDirection<0?-Math.PI/2:Math.PI/2);ctx.translate(-cx,-cy);}
@@ -2976,6 +3008,16 @@
     ctx.fillStyle="#efce55";for(const [x,y,r] of [[48,-1,12],[64,5,10],[55,13,13],[73,15,9]]){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.fillStyle="#9c7623";ctx.beginPath();ctx.arc(x+3,y-2,2,0,Math.PI*2);ctx.fill();ctx.fillStyle="#efce55";}
     if(Math.abs(boatTilt)>.38){ctx.fillStyle="#fff";ctx.font="900 14px system-ui";ctx.textAlign="center";ctx.fillText("OH NO",0,-67);}
     ctx.restore();
+    const dangerTypes=["cat","dalmatian","frenchie","spider","bird","shark","car","truck"];
+    const closeToPlayer=Math.hypot(player.x+player.w/2-(h.x+h.w/2),player.y+player.h/2-(h.y+h.h/2))<145;
+    if(dangerTypes.includes(h.type)&&closeToPlayer&&now>=(h.stunnedUntil||0)){ctx.save();ctx.globalAlpha=.42+.2*Math.sin(now*.018);ctx.strokeStyle="#ff625c";ctx.lineWidth=2.5;ctx.strokeRect(h.x-3,h.y-3,h.w+6,h.h+6);ctx.fillStyle="#ff625c";ctx.font="900 12px system-ui";ctx.textAlign="center";ctx.fillText("!",h.x+h.w/2,h.y-7);ctx.restore();}
+  }
+
+  function drawRouteCues(level){
+    if(!["chameleon","crested","newt","frog","boa"].includes(selectedCharacter)||levelIndex>4)return;
+    ctx.save();ctx.globalAlpha=.46;ctx.strokeStyle="#d8ff9f";ctx.lineWidth=2;ctx.setLineDash([8,11]);
+    for(const p of level.platforms){if(p[2]>=95&&p[1]+p[3]<H-25){ctx.beginPath();ctx.moveTo(p[0]+5,p[1]+1);ctx.lineTo(p[0]+p[2]-5,p[1]+1);ctx.stroke();}}
+    ctx.restore();
   }
 
   function draw(time = 0) {
@@ -2986,6 +3028,7 @@
     drawBackdrop(level);
     if(level.decor==="boatEscape"){drawBoatEscape(time);return;}
     drawPlatforms(level);
+    drawRouteCues(level);
     drawExit(level);
     drawInsects(level, time);
     drawMice(level,time);
@@ -2994,9 +3037,13 @@
     drawDroppedTail(time);
     drawPlayer(time);
     drawCharacterPickup(time);
+    if (time < actionToastUntil && state === "playing") { ctx.save(); ctx.font="900 15px system-ui"; ctx.textAlign="center"; const tx=player.x+player.w/2,ty=Math.max(32,player.y-20); const tw=ctx.measureText(actionToastText).width+24; ctx.fillStyle="rgba(6,18,12,.9)";roundedRect(tx-tw/2,ty-21,tw,28,8);ctx.fill();ctx.strokeStyle="#a9f576";ctx.lineWidth=1.5;roundedRect(tx-tw/2,ty-21,tw,28,8);ctx.stroke();ctx.fillStyle="#e9ffd9";ctx.fillText(actionToastText,tx,ty-2);ctx.restore(); }
+    if (time < damageFlashUntil) { ctx.save(); ctx.globalAlpha = Math.min(.34, (damageFlashUntil-time)/150); ctx.strokeStyle="#ff4e4e"; ctx.lineWidth=18; ctx.strokeRect(8,8,W-16,H-16); ctx.restore(); }
   }
 
   function frame(time) {
+    if ((state === "intro" || state === "character-select") && time - lastInputAt > 90000) { lastInputAt = time; showMenu(); }
+    if ((state === "complete" || state === "dead") && resultPanelUntil && time >= resultPanelUntil) { resultPanelUntil = 0; showMenu(); }
     const dt = Math.min((time - lastTime) / 1000 || 0, .033);
     lastTime = time;
     update(dt, time);
@@ -3004,7 +3051,9 @@
     requestAnimationFrame(frame);
   }
 
+  window.addEventListener("pointerdown", () => { lastInputAt = performance.now(); }, true);
   window.addEventListener("keydown", event => {
+    lastInputAt = performance.now();
     const shiftHeld=event.shiftKey||keys.ShiftLeft||keys.ShiftRight||event.code==="ShiftLeft"||event.code==="ShiftRight";
     const keyName=event.key?.toLowerCase();
     if(event.code==="Escape"){
