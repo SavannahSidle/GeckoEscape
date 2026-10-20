@@ -7,7 +7,7 @@
     <meta name="description" content="A tiny reptile and amphibian escape game by Alien Arboreal." />
     <title>Gecko Escape</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2307150f'/%3E%3Cpath d='M13 34c7-15 22-21 35-12 7 5 3 14-5 12-5-1-5-7-1-8-9-5-17 2-20 10-2 6-7 10-12 9' fill='none' stroke='%238fe36a' stroke-width='6' stroke-linecap='round'/%3E%3Ccircle cx='48' cy='24' r='2' fill='%23fff7d6'/%3E%3C/svg%3E" />
-    <link rel="stylesheet" href="style.css?v=20261020-expo3" />
+    <link rel="stylesheet" href="style.css?v=20261020-expo4" />
   </head>
   <body>
     <main class="game-shell">
@@ -25,6 +25,7 @@
 
         <div id="overlay" class="overlay">
           <div class="panel">
+            <button id="introBackButton" class="intro-back-button hidden" type="button">← BACK TO CHARACTERS</button>
             <p id="panelKicker" class="panel-kicker">STORY MODE</p>
             <h2 id="panelTitle">The enclosure door is open.</h2>
             <p id="panelText">This is almost certainly a trap. Unfortunately, you are a gecko.</p>
@@ -46,8 +47,8 @@
               </button>
               <button type="button" class="character-card" data-character="frog">
                 <span class="character-icon frog-icon" aria-hidden="true">●</span>
-                <strong>AZUREUS DART FROG</strong>
-                <small>Power-leaps through the air and catches prey with its tongue.</small>
+                <strong>DART FROG</strong>
+                <small>Choose Azureus or the golden poison dart frog.</small>
               </button>
               <button type="button" class="character-card" data-character="boa">
                 <span class="character-icon boa-icon" aria-hidden="true">≈</span>
@@ -109,6 +110,11 @@
               <button type="button" data-crestie-skin="super-dalmatian" aria-pressed="false">Super Dalmatian</button>
               <button type="button" data-crestie-skin="halloween" aria-pressed="false">Harlequin / Halloween</button>
             </div>
+            <div id="frogSkinSelect" class="frog-skin-select hidden" role="group" aria-label="Choose dart frog species">
+              <span>DART FROG SPECIES</span>
+              <button type="button" data-frog-skin="azureus" aria-pressed="true">Azureus</button>
+              <button type="button" data-frog-skin="terribilis" aria-pressed="false">Golden poison · Phyllobates terribilis</button>
+            </div>
           </div>
         </div>
 
@@ -117,7 +123,10 @@
           <span id="bugLabel">BUGS 0/3</span>
           <span id="abilityLabel">ABILITY READY</span>
           <span id="lifeLabel">♥ ♥ ♥</span>
-          <button id="gameBackButton" class="hud-back-button" type="button" aria-label="Back to level select">BACK</button>
+          <div class="hud-actions" aria-label="Level navigation">
+            <button id="gameCharactersButton" class="hud-nav-button" type="button" aria-label="Back to characters">CHARACTERS</button>
+            <button id="gameBackButton" class="hud-nav-button" type="button" aria-label="Open level select">LEVEL SELECT</button>
+          </div>
         </div>
       </section>
 
@@ -139,6 +148,6 @@
         </div>
       </div>
     </main>
-    <script src="game.js?v=20261020-expo7"></script>
+    <script src="game.js?v=20261020-expo8"></script>
   </body>
 </html>
