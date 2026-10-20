@@ -2252,7 +2252,7 @@
     const exitLabel = locked?`${remaining} MORE TO COLLECT`:destination;
     ctx.font = "900 11px system-ui"; ctx.textAlign = "center"; ctx.fillText(exitLabel, x+w/2, y-10);
     ctx.font = "900 24px system-ui";
-    if(locked){ctx.strokeStyle="#f4b06b";ctx.lineWidth=3;ctx.beginPath();ctx.arc(x+w/2,y-34,7,Math.PI,Math.PI*2);ctx.stroke();ctx.fillStyle="#f4b06b";ctx.fillRect(x+w/2-9,y-34,18,15);}else ctx.fillText("↓", x+w/2, y-28);
+    if(locked){const lockY=y-42,cx=x+w/2;ctx.strokeStyle="#f4b06b";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(cx-6,lockY+1);ctx.lineTo(cx-6,lockY-5);ctx.quadraticCurveTo(cx,lockY-15,cx+6,lockY-5);ctx.lineTo(cx+6,lockY+1);ctx.stroke();ctx.fillStyle="#f4b06b";roundedRect(cx-10,lockY,20,16,3);ctx.fill();ctx.fillStyle="#60401e";ctx.beginPath();ctx.arc(cx,lockY+6,2,0,Math.PI*2);ctx.fill();ctx.fillRect(cx-1,lockY+7,2,4);}else ctx.fillText("↓", x+w/2, y-28);
     if(!locked){ctx.strokeStyle=level.palette[3];ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x+w/2,y+12);ctx.lineTo(x+w/2,y+h-12);ctx.lineTo(x+w/2-6,y+h-19);ctx.moveTo(x+w/2,y+h-12);ctx.lineTo(x+w/2+6,y+h-19);ctx.stroke();}
   }
 
