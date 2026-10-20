@@ -194,7 +194,7 @@
       insects: [[80,410],[420,355],[300,294],[510,294],[690,171],[120,161],[620,120],[875,142]],
       hazards: [
         {x:125,y:172,w:66,h:24,type:"cat",axis:"x",min:60,max:165,speed:105},
-        {x:330,y:386,w:96,h:114,type:"dalmatian",axis:"x",min:275,max:610,speed:78}
+        {x:330,y:400,w:96,h:100,type:"dalmatian",axis:"x",min:275,max:610,speed:78}
       ],
       decor: "kitchen"
     },
@@ -542,6 +542,8 @@
 
   function showCharacterSelect() {
     state = "character-select";
+    overlay.classList.remove("hidden");
+    hud.classList.add("hidden");
     overlay.classList.add("character-menu");
     panelKicker.textContent = "CHOOSE YOUR ESCAPE ARTIST";
     panelTitle.textContent = gameEdition===1 ? "Five reptiles and amphibians. Five escapes." : "Six mammals. A truly suspicious getaway.";
@@ -867,7 +869,7 @@
     updateHud();tone(390,.18,"sine");
   }
 
-  function frogJumpImpulse(){return selectedFrogSpecies==="terribilis" ? -410 : -535;}
+  function frogJumpImpulse(){return -410;}
 
   function useFrogPoison(){
     const now=performance.now();
@@ -1261,7 +1263,7 @@
         const vine=player.ceilingVine;
         const vineCenter=ceilingVineY(vine,player.x+player.w/2);
         player.y=vine[1]+vine[3]+2+(vineCenter-(vine[1]+vine[3]/2));player.vy=0;player.climbing=false;
-        if(left||right){player.facing=left?-1:1;player.vx=(right?1:-1)*character.climbSpeed;}
+        if(left||right){player.facing=left?-1:1;player.vx=(right?1:-1)*(selectedCharacter==="chameleon"?150:character.climbSpeed);}
         else player.vx=0;
         if(down){player.ceilingClimbing=false;player.ceilingVine=null;player.vy=100;}
         else player.x=Math.max(vine[0]-player.w+5,Math.min(vine[0]+vine[2]-5,player.x));
@@ -1294,7 +1296,7 @@
           if(raccoonMovement&&onWall&&player.vy>90&&!parachuting)player.vy=90;
         }
         if(selectedCharacter==="frog"&&player.grounded&&(left||right)&&now>=frogHopCooldownUntil){
-          player.vy=selectedFrogSpecies==="terribilis"?-125:-178;player.grounded=false;frogAutoHopping=true;frogHopCooldownUntil=now+300;
+          player.vy=-125;player.grounded=false;frogAutoHopping=true;frogHopCooldownUntil=now+300;
         }
         }
       }
@@ -1757,34 +1759,34 @@
     ctx.fillStyle="#684328";ctx.beginPath();ctx.arc(-5,2,1.7,0,Math.PI*2);ctx.arc(5,2,1.7,0,Math.PI*2);ctx.fill();
   }
 
-  function drawDalmatianSprite(w=96,h=116,now=0,motion=0){
+  function drawDalmatianSprite(w=96,h=100,now=0,motion=0){
     ctx.save();
     const moving=motion>0,cycle=now*.014;
-    const bodyBob=moving?Math.abs(Math.sin(cycle*2))*1.4:0;
+    const bob=moving?Math.abs(Math.sin(cycle*2))*1.1:0;
     const legs=[[30,0],[43,Math.PI],[w-34,Math.PI],[w-21,0]];
+    // Compact, jointed legs keep the body at a believable dog height.
     ctx.strokeStyle="#f4f1e8";ctx.lineCap="round";
     legs.forEach(([x,phase],i)=>{
-      const angle=cycle+phase+(i<2?0:Math.PI);
-      const swing=moving?Math.sin(angle)*6:0;
-      const lift=moving?Math.max(0,Math.cos(angle))*3.2:0;
-      const hipY=35+bodyBob,kneeX=x+(i<2?3:-3)+swing*.32;
-      const kneeY=h*.76+bodyBob-lift*.25,pawX=x+swing,pawY=h-4-lift;
-      ctx.lineWidth=i<2?5.6:6;ctx.beginPath();ctx.moveTo(x,hipY);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();
-      ctx.fillStyle="#17191c";roundedRect(pawX-4.5,pawY-2,10,4,2);ctx.fill();
+      const swing=moving?Math.sin(cycle+phase)*5:0;
+      const lift=moving?Math.max(0,Math.cos(cycle+phase))*2:0;
+      const hipY=39+bob,kneeX=x+(i<2?2:-2)+swing*.32,kneeY=65+bob-lift*.25;
+      const pawX=x+swing,pawY=h-5-lift;
+      ctx.lineWidth=i<2?5.4:5.8;ctx.beginPath();ctx.moveTo(x,hipY);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();
+      ctx.fillStyle="#17191c";roundedRect(pawX-4,pawY-2,9,4,2);ctx.fill();
     });
-    ctx.strokeStyle="#f4f1e8";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(w-13,22+bodyBob);ctx.quadraticCurveTo(w+22,15+bodyBob,w+16,5+bodyBob);ctx.stroke();
-    ctx.fillStyle="#17191c";ctx.beginPath();ctx.arc(w+5,6+bodyBob,3.2,0,Math.PI*2);ctx.fill();
-    // Chest and neck visibly connect the head to the longer-legged body.
-    ctx.fillStyle="#f5f3e8";ctx.beginPath();ctx.moveTo(13,23+bodyBob);ctx.quadraticCurveTo(18,17,27,20);ctx.lineTo(39,34+bodyBob);ctx.lineTo(34,47+bodyBob);ctx.lineTo(18,41+bodyBob);ctx.closePath();ctx.fill();
-    ctx.fillStyle="#f5f3e8";roundedRect(22,13+bodyBob,w-31,29,14);ctx.fill();
-    ctx.beginPath();ctx.ellipse(30,28+bodyBob,17,14,0,0,Math.PI*2);ctx.fill();
-    [[39,19,4],[50,30,3],[61,18,4],[70,27,3],[81,18,3.2],[84,31,3]].forEach(([sx,sy,r])=>{ctx.fillStyle="#17191c";ctx.beginPath();ctx.arc(sx,sy+bodyBob,r,0,Math.PI*2);ctx.fill();});
-    ctx.fillStyle="#f5f3e8";ctx.beginPath();ctx.arc(19,24+bodyBob,16,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#17191c";ctx.beginPath();ctx.ellipse(23,14+bodyBob,7,11,.45,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.ellipse(11,21+bodyBob,5.5,6,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#262326";ctx.beginPath();ctx.ellipse(7,26+bodyBob,4,2.8,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#17191c";ctx.beginPath();ctx.arc(25,22+bodyBob,2,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#b8a99b";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(11,31+bodyBob);ctx.quadraticCurveTo(18,37+bodyBob,25,32+bodyBob);ctx.stroke();
+    // A small raised tail, spotted flank, defined neck, and clean side profile.
+    ctx.strokeStyle="#f4f1e8";ctx.lineWidth=4.5;ctx.beginPath();ctx.moveTo(w-13,25+bob);ctx.quadraticCurveTo(w+4,16+bob,w+9,9+bob);ctx.stroke();
+    ctx.fillStyle="#17191c";ctx.beginPath();ctx.arc(w+9,9+bob,2.8,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#f5f3e8";ctx.beginPath();ctx.ellipse(55,32+bob,35,14,0,0,Math.PI*2);ctx.fill();
+    [[38,24,3.5],[49,37,3],[62,26,3.8],[73,35,3],[81,27,3.2]].forEach(([x,y,r])=>{ctx.fillStyle="#17191c";ctx.beginPath();ctx.arc(x,y+bob,r,0,Math.PI*2);ctx.fill();});
+    // Narrow neck joins the shoulder to the head without swallowing it.
+    ctx.fillStyle="#f5f3e8";ctx.beginPath();ctx.ellipse(28,31+bob,8,12,-.45,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#f5f3e8";ctx.beginPath();ctx.ellipse(18,31+bob,13,13,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#17191c";ctx.beginPath();ctx.ellipse(21,22+bob,5.5,8,.4,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(10,30+bob,4.5,5,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#262326";ctx.beginPath();ctx.ellipse(6,34+bob,3.8,2.5,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#17191c";ctx.beginPath();ctx.arc(23,29+bob,1.8,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#aa9d91";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(12,38+bob);ctx.quadraticCurveTo(18,42+bob,24,37+bob);ctx.stroke();
     ctx.restore();
   }
 
@@ -2523,14 +2525,14 @@
     ctx.save();
     ctx.translate(player.x + player.w/2, player.y + player.h/2);
     ctx.scale(player.facing, 1);
-    const green = selectedCrestieSkin==="halloween"?"#d9783c":characters.crested.color;
+    const green = selectedCrestieSkin==="halloween"?"#aa693f":characters.crested.color;
     const spotColor=selectedCrestieSkin==="halloween"?"#34251f":"#593a28";
     const motion=livelyMotion(now,.02);ctx.translate(0,Math.abs(motion.stride)*motion.moving*1.6+motion.landing*1.5);ctx.scale(1+motion.landing*.06,1-motion.landing*.1);
     // Long, gently tapering tail. Crested geckos are not curly-tailed chameleons.
     if (tailReady) {
       ctx.strokeStyle = green; ctx.lineWidth = 7; ctx.lineCap = "round";
       const tailWave=Math.sin(now*.011)*(2+motion.moving*3)+(motion.airborne?-player.vy*.012:0);ctx.beginPath(); ctx.moveTo(-14, 2); ctx.bezierCurveTo(-27, 3-tailWave*.2, -37, 8+tailWave, -49, 5+tailWave*.5); ctx.stroke();
-      if(selectedCrestieSkin!=="classic"){ctx.fillStyle=selectedCrestieSkin==="halloween"?"#34251f":"#593a28";for(const [x,y,r] of [[-24,2-tailWave*.2,1.4],[-32,6+tailWave*.25,1.7],[-40,6+tailWave*.4,1.2]]){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}}
+      if(selectedCrestieSkin==="super-dalmatian"){ctx.fillStyle="#593a28";for(const [x,y,r] of [[-24,2-tailWave*.2,1.4],[-32,6+tailWave*.25,1.7],[-40,6+tailWave*.4,1.2]]){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}}
     }
 
     // Four articulated side-view legs with alternating steps and adhesive toe pads.
@@ -2541,9 +2543,15 @@
     ctx.fillStyle = green;
     ctx.beginPath(); ctx.ellipse(-1,0,20+motion.breath*.35,9+motion.breath*.2,0,0,Math.PI*2); ctx.fill();
     if(selectedCrestieSkin!=="classic"){
-      ctx.save();ctx.beginPath();ctx.ellipse(-1,0,20+motion.breath*.35,9+motion.breath*.2,0,0,Math.PI*2);ctx.clip();ctx.fillStyle=spotColor;
-      const marks=selectedCrestieSkin==="super-dalmatian"?[[-16,-3,3.1,2.2],[-10,4,2.1,1.8],[-5,-4,2.7,2],[-1,3,3,2.4],[5,-3,2,1.7],[10,3,3.2,2.2],[15,-2,2.4,1.8]]:[[-15,-2,6,3.4],[-3,3,6,3],[9,-2,6,3.5]];
-      for(const [x,y,rx,ry] of marks){ctx.beginPath();ctx.ellipse(x,y,rx,ry,(x%3)*.08,0,Math.PI*2);ctx.fill();}ctx.restore();
+      ctx.save();ctx.beginPath();ctx.ellipse(-1,0,20+motion.breath*.35,9+motion.breath*.2,0,0,Math.PI*2);ctx.clip();
+      if(selectedCrestieSkin==="super-dalmatian"){
+        ctx.fillStyle=spotColor;for(const [x,y,rx,ry] of [[-16,-3,3.1,2.2],[-10,4,2.1,1.8],[-5,-4,2.7,2],[-1,3,3,2.4],[5,-3,2,1.7],[10,3,3.2,2.2],[15,-2,2.4,1.8]]){ctx.beginPath();ctx.ellipse(x,y,rx,ry,(x%3)*.08,0,Math.PI*2);ctx.fill();}
+      }else{
+        ctx.fillStyle="#ead9a5";ctx.beginPath();ctx.moveTo(-20,-3);ctx.quadraticCurveTo(-12,-10,-5,-5);ctx.lineTo(-1,-1);ctx.lineTo(-7,3);ctx.lineTo(-17,4);ctx.closePath();ctx.fill();
+        ctx.beginPath();ctx.moveTo(-3,-7);ctx.quadraticCurveTo(5,-10,11,-5);ctx.lineTo(18,-2);ctx.lineTo(12,3);ctx.lineTo(5,2);ctx.lineTo(2,7);ctx.lineTo(-4,4);ctx.closePath();ctx.fill();
+        ctx.fillStyle="#d79658";ctx.beginPath();ctx.ellipse(-1,-7,17,2.2,0,0,Math.PI*2);ctx.fill();
+      }
+      ctx.restore();
     }
     ctx.save();ctx.translate(0,motion.headBob);
     ctx.beginPath();
@@ -2647,6 +2655,7 @@
     if(flash)ctx.globalAlpha=.4;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
     const blue=selectedFrogSpecies==="terribilis"?"#f1c32b":characters.frog.color;
+    const frogShade=selectedFrogSpecies==="terribilis"?"#bc8d20":"#15569a";
     if(selectedFrogSpecies==="terribilis"&&frogPoisonUntil>now){ctx.strokeStyle="rgba(255,207,43,.82)";ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,34+Math.sin(now*.02)*4,0,Math.PI*2);ctx.stroke();}
     const airborne=!player.grounded;
     const underwater=Boolean(levels[levelIndex]?.underwater);
@@ -2672,10 +2681,10 @@
       ctx.lineWidth=near?4:3;ctx.beginPath();ctx.moveTo(10+offsetX,3+offsetY);ctx.lineTo(pose.elbowX+offsetX,pose.elbowY+offsetY);ctx.lineTo(pose.wristX+offsetX,pose.wristY+offsetY);ctx.stroke();
       ctx.lineWidth=1.8;ctx.beginPath();[-3,0,3].forEach(toe=>{ctx.moveTo(pose.toeX+offsetX,pose.toeY+offsetY);ctx.lineTo(pose.toeX+hindToeDirection*8+offsetX,pose.toeY+toe+offsetY);ctx.moveTo(pose.wristX+offsetX,pose.wristY+offsetY);ctx.lineTo(pose.wristX+7+offsetX,pose.wristY+toe*.65+offsetY);});ctx.stroke();
     };
-    drawLeg("#15569a",3,1.5,false);
+    drawLeg(frogShade,3,1.5,false);
     drawLeg(blue,0,0,true);
     ctx.fillStyle=blue;ctx.beginPath();ctx.ellipse(0,3,18,12,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(12,-5,15,10,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#0a1830";[[-8,1,4],[2,7,3],[13,1,4],[20,-7,3],[-1,-5,3]].forEach(([x,y,r])=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();});
+    if(selectedFrogSpecies==="azureus"){ctx.fillStyle="#0a1830";[[-8,1,4],[2,7,3],[13,1,4],[20,-7,3],[-1,-5,3]].forEach(([x,y,r])=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();});}
     ctx.fillStyle="#d8e9a0";ctx.beginPath();ctx.arc(18,-9,3.6,0,Math.PI*2);ctx.fill();ctx.fillStyle="#10171a";ctx.beginPath();ctx.arc(19,-9,1.7,0,Math.PI*2);ctx.fill();
     if(now<tongueActiveUntil){const progress=Math.min(1,Math.max(0,(now-(tongueActiveUntil-230))/230));const extension=Math.sin(progress*Math.PI)*92;ctx.strokeStyle="#ff86a8";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(24,-1);ctx.lineTo(24+extension,-1);ctx.stroke();ctx.fillStyle="#ff9bb7";ctx.beginPath();ctx.ellipse(26+extension,-1,5,3.5,0,0,Math.PI*2);ctx.fill();}
     ctx.restore();ctx.globalAlpha=1;
@@ -3212,8 +3221,8 @@
   frogSkinSelect?.querySelectorAll("[data-frog-skin]").forEach(button=>button.addEventListener("click",()=>{
     selectedFrogSpecies=button.dataset.frogSkin;
     frogSkinSelect.querySelectorAll("[data-frog-skin]").forEach(option=>option.setAttribute("aria-pressed",String(option===button)));
-    characters.frog.name=selectedFrogSpecies==="terribilis"?"GOLDEN POISON DART FROG":"AZUREUS DART FROG";
-    panelTitle.textContent=selectedFrogSpecies==="terribilis"?"Golden Poison Dart Frog":"Azureus Dart Frog";
+    characters.frog.name=selectedFrogSpecies==="terribilis"?"TERRIBILIS (YELLOW)":"AZUREUS (BLUE)";
+    panelTitle.textContent=selectedFrogSpecies==="terribilis"?"Terribilis (Yellow)":"Azureus (Blue)";
     updateHud();
   }));
 
@@ -3241,8 +3250,8 @@
     startLevel(FOX_LAB_LEVEL);
   }else showMenu();
   if(!directFoxRoute){
-    document.title=gameEdition===1?"Gecko Escape":"Gecko Escape 2";
-    document.querySelector("h1").textContent=gameEdition===1?"GECKO ESCAPE 1":"GECKO ESCAPE 2";
+    document.title="Gecko Escape";
+    document.querySelector("h1").textContent="GECKO ESCAPE";
     document.querySelector(".eyebrow").textContent=gameEdition===1?"THE ORIGINAL CREATURE ESCAPES":"THE ANIMAL GETAWAY EXPANDS";
   }
   requestAnimationFrame(frame);
