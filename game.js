@@ -129,7 +129,7 @@
     crested: { name: "CRESTED GECKO", ability: "SHORT TONGUE", secondary: "DROP TAIL", collectible: "CRICKETS", color: "#d29458", climbSpeed: 195, swimSpeed: 160, w: 42, h: 25 },
     newt: { name: "FIRE-BELLY NEWT", ability: "REGENERATE", secondary: "TOXIN", collectible: "WORMS", color: "#252a28", climbSpeed: 105, swimSpeed: 170, w: 46, h: 23 },
     frog: { name: "AZUREUS DART FROG", ability: "TONGUE", secondary: "POWER LEAP", collectible: "FRUIT FLIES", color: "#2679cb", climbSpeed: 120, swimSpeed: 155, w: 38, h: 27 },
-    boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", secondary: "STRIKE", collectible: "RATS", color: "#030405", climbSpeed: 155, swimSpeed: 210, w: 94, h: 36 },
+    boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", secondary: "STRIKE", collectible: "RATS", color: "#030405", climbSpeed: 200, swimSpeed: 255, w: 94, h: 36 },
     opossum: { name: "VIRGINIA OPOSSUM", ability: "HISS", secondary: "PLAY DEAD", collectible: "FORAGE", color: "#b8b2aa", climbSpeed: 182, swimSpeed: 135, w: 58, h: 31 },
     bat: { name: "EGYPTIAN FRUIT BAT", ability: "HANG", secondary: "ECHO PULSE", collectible: "FRUIT", color: "#806956", climbSpeed: 190, swimSpeed: 145, w: 54, h: 30 },
     goat: { name: "GOAT", ability: "HEADBUTT", secondary: "MOUNTAIN SCRAMBLE", collectible: "FORAGE", color: "#d9d0bb", climbSpeed: 165, swimSpeed: 130, w: 62, h: 38 },
@@ -1207,7 +1207,7 @@
     const swimming = Boolean(level.underwater || inHabitatWater);
     // Land movement is species-weighted: the boa carries more mass, the newt stays deliberate, and the geckos keep quick arboreal control.
     let speed = swimming ? (selectedCharacter==="newt"?148:character.swimSpeed) :
-      selectedCharacter==="newt" ? 108 : selectedCharacter==="boa" ? 192 :
+      selectedCharacter==="newt" ? 108 : selectedCharacter==="boa" ? 260 :
       selectedCharacter==="chameleon" ? 204 : selectedCharacter==="crested" ? 190 :
       selectedCharacter==="frog" ? 172 : selectedCharacter==="bat" ? 210 :
       level.decor === "parachute" ? 265 : level.decor === "highway" ? 245 : level.decor === "house" ? 236 : 220;
@@ -1216,7 +1216,7 @@
     if (["chameleon","newt","frog","boa","raccoon","opossum","bat","goat","highland","devilfox"].includes(selectedCharacter)) updateHud();
 
     const acceleration = swimming ? 720 :
-      selectedCharacter==="boa" ? 720 : selectedCharacter==="chameleon" ? 1080 :
+      selectedCharacter==="boa" ? 1050 : selectedCharacter==="chameleon" ? 1080 :
       selectedCharacter==="crested" ? 1180 : selectedCharacter==="raccoon" ? 1080 :
       selectedCharacter==="bat" ? 980 : level.decor==="parachute" ? 1180 :
       selectedCharacter==="frog" ? 980 : selectedCharacter==="newt" ? 760 : 1450;
@@ -1224,7 +1224,7 @@
     const playingDead=selectedCharacter==="opossum"&&now<playDeadUntil;
     if (!playingDead&&left) { player.vx -= movementAcceleration * dt; if(selectedCharacter!=="bat"||player.vx<10)player.facing = -1; }
     if (!playingDead&&right) { player.vx += movementAcceleration * dt; if(selectedCharacter!=="bat"||player.vx>-10)player.facing = 1; }
-    if (!left && !right) player.vx *= Math.pow(swimming ? .025 : selectedCharacter==="boa" ? .12 : selectedCharacter==="chameleon" ? .025 : selectedCharacter==="crested" ? .035 : selectedCharacter==="newt" ? .055 : selectedCharacter==="raccoon" ? .065 : selectedCharacter==="bat" ? .22 : level.decor==="parachute" ? .3 : selectedCharacter==="frog" ? .00008 : .0007, dt);
+    if (!left && !right) player.vx *= Math.pow(swimming ? .025 : selectedCharacter==="boa" ? .06 : selectedCharacter==="chameleon" ? .025 : selectedCharacter==="crested" ? .035 : selectedCharacter==="newt" ? .055 : selectedCharacter==="raccoon" ? .065 : selectedCharacter==="bat" ? .22 : level.decor==="parachute" ? .3 : selectedCharacter==="frog" ? .00008 : .0007, dt);
     if(playingDead)player.vx=0;
     player.vx = Math.max(-speed, Math.min(speed, player.vx));
 
