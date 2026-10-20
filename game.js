@@ -3038,7 +3038,7 @@
     drawDroppedTail(time);
     drawPlayer(time);
     drawCharacterPickup(time);
-    if (time < actionToastUntil && state === "playing") { ctx.save(); ctx.font="900 15px system-ui"; ctx.textAlign="center"; const tx=player.x+player.w/2,ty=Math.max(32,player.y-20); const tw=ctx.measureText(actionToastText).width+24; ctx.fillStyle="rgba(6,18,12,.9)";roundedRect(tx-tw/2,ty-21,tw,28,8);ctx.fill();ctx.strokeStyle="#a9f576";ctx.lineWidth=1.5;roundedRect(tx-tw/2,ty-21,tw,28,8);ctx.stroke();ctx.fillStyle="#e9ffd9";ctx.fillText(actionToastText,tx,ty-2);ctx.restore(); }
+    if (time < actionToastUntil && state === "playing") { ctx.save(); ctx.font="900 15px system-ui"; ctx.textAlign="center"; const tw=ctx.measureText(actionToastText).width+24,tx=Math.max(tw/2+12,Math.min(W-tw/2-12,player.x+player.w/2)),ty=Math.max(32,player.y-20); ctx.fillStyle="rgba(6,18,12,.9)";roundedRect(tx-tw/2,ty-21,tw,28,8);ctx.fill();ctx.strokeStyle="#a9f576";ctx.lineWidth=1.5;roundedRect(tx-tw/2,ty-21,tw,28,8);ctx.stroke();ctx.fillStyle="#e9ffd9";ctx.fillText(actionToastText,tx,ty-2);ctx.restore(); }
     if (time < damageFlashUntil) { ctx.save(); ctx.globalAlpha = Math.min(.34, (damageFlashUntil-time)/150); ctx.strokeStyle="#ff4e4e"; ctx.lineWidth=18; ctx.strokeRect(8,8,W-16,H-16); ctx.restore(); }
   }
 
