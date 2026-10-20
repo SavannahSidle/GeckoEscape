@@ -33,6 +33,7 @@
   let levelIndex = 0;
   let lastTime = 0;
   let lastInputAt = performance.now();
+  let lastHudRefreshAt = 0;
   let resultPanelUntil = 0;
   let levelStartedAt = 0;
   let damageFlashUntil = 0;
@@ -527,8 +528,8 @@
 
   function showMenu() {
     state = "menu";
-    showPanel("STORY MODE", "The enclosure door is open.", "This is almost certainly a trap. Choose an escape artist, or jump straight in as the crested gecko.", "CHOOSE CHARACTER", showCharacterSelect, true);
-    secondaryButton.textContent = "QUICK PLAY · CRESTED";
+    showPanel("STORY MODE", "The enclosure door is open.", "This is almost certainly a trap. Choose an escape artist, or jump straight into the current escape.", "CHOOSE CHARACTER", showCharacterSelect, true);
+    secondaryButton.textContent = "QUICK PLAY";
     secondaryButton.onclick = () => showIntro(0);
   }
 
@@ -3042,6 +3043,7 @@
   }
 
   function frame(time) {
+    if (state === "playing" && time - lastHudRefreshAt >= 250) { lastHudRefreshAt = time; updateHud(); }
     if ((state === "intro" || state === "character-select") && time - lastInputAt > 90000) { lastInputAt = time; showMenu(); }
     if ((state === "complete" || state === "dead") && resultPanelUntil && time >= resultPanelUntil) { resultPanelUntil = 0; showMenu(); }
     const dt = Math.min((time - lastTime) / 1000 || 0, .033);
