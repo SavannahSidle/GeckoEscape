@@ -360,7 +360,7 @@ canvas {
 @media (max-height: 600px) and (orientation: landscape) {
   .game-shell { padding-block: 8px; gap: 7px; }
   .game-header { display: none; }
-  .stage-wrap { max-height: calc(100vh - 156px); width: auto; margin-inline: auto; }
+  .stage-wrap { max-height: calc(100vh - 182px); width: auto; margin-inline: auto; }
   .touch-controls { min-height: 158px; padding-block: 4px; }
   .move-stick { width: 84px; height: 84px; }
   .move-stick-knob { width: 34px; height: 34px; }
