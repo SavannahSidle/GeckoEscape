@@ -385,3 +385,22 @@ canvas {
 
 .overlay.character-menu .panel { width: min(900px, 100%); padding: clamp(12px, 2vw, 24px); }
 .overlay.character-menu .panel h2 { font-size: clamp(2rem, 4.4vw, 3.2rem); max-width: 18ch; }
+
+.overlay.character-menu { overflow: hidden; padding: 12px; }
+.overlay.character-menu .panel { padding: 16px 22px; }
+.overlay.character-menu .panel h2 { margin: 4px 0 8px; font-size: clamp(2rem, 3.2vw, 2.8rem); }
+.overlay.character-menu .panel p:not(.panel-kicker) { margin-bottom: 8px; font-size: .94rem; }
+.overlay.character-menu .character-select { margin-top: 7px; gap: 7px; }
+.overlay.character-menu .character-card { min-height: 88px; padding: 7px 9px; }
+.overlay.character-menu .character-card strong { margin: 4px 0 2px; font-size: .7rem; }
+.overlay.character-menu .character-card small { font-size: .68rem; line-height: 1.2; }
+.overlay.character-menu .character-icon { width: 30px; height: 30px; }
+.overlay.character-menu .start-actions { margin-top: 8px; }
+@media (max-width: 760px) {
+  .overlay.character-menu { padding: 8px; }
+  .overlay.character-menu .panel { padding: 12px; }
+  .overlay.character-menu .panel h2 { font-size: clamp(1.55rem, 6vw, 2.4rem); }
+  .overlay.character-menu .character-card { min-height: 88px; display: block; padding: 7px; }
+  .overlay.character-menu .character-card strong { font-size: .63rem; }
+  .overlay.character-menu .character-card small { font-size: .61rem; }
+}
