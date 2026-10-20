@@ -176,7 +176,7 @@
       decor: "enclosure"
     },
     {
-      label: "LEVEL 2 · STEADY",
+      label: "LEVEL 3 · CHALLENGING",
       title: "The Kitchen",
       intro: "Climb the left-side trash bin to reach the sink and counter. Avoid the cat and Dalmatian while gathering every last meal.",
       completeTitle: "You have breached containment.",
@@ -194,7 +194,7 @@
       decor: "kitchen"
     },
     {
-      label: "LEVEL 3 · CHALLENGING",
+      label: "LEVEL 4 · HARD",
       title: "The Living Room",
       intro: "Cross the sofa, shelves, and coffee table. The Roomba, French bulldog, cat, and ceiling spider have joined the hunt.",
       completeTitle: "The front door is open.",
@@ -215,7 +215,7 @@
       decor: "house"
     },
     {
-      label: "LEVEL 4 · HARD",
+      label: "LEVEL 2 · STEADY",
       title: "The Aquarium",
       intro: "The escape route drops through an aquarium. Reptiles need air bubbles. The newt has been waiting its entire moist little life for this.",
       completeTitle: "Out through the filter.",
