@@ -903,16 +903,20 @@
     const now=performance.now();
     if(state!=="playing"||selectedCharacter!=="boa"||now<strikeCooldownUntil)return;
     strikeActiveUntil=now+300;strikeCooldownUntil=now+700;
+    let strikeLanded=false;
+    actionToastText="STRIKE!"; actionToastUntil=now+850;
     const strikeBox={x:player.facing>0?player.x+player.w-12:player.x-92,y:player.y-7,w:104,h:player.h+14};
     const livingTypes=new Set(["cat","dalmatian","frenchie","fish","shark","spider","bird","server","drone"]);
     for(const hazard of levels[levelIndex].hazards){
       if(hazard.defeated||!intersects(strikeBox,hazard))continue;
+      strikeLanded=true;
       if(hazard.type==="grab"||hazard.type==="hand"){
         hazard.stunnedUntil=now+1000;hazard.dir*=-1;
       }else if(livingTypes.has(hazard.type)){
         hazard.defeated=true;
       }
     }
+    if(strikeLanded){actionToastText="STRIKE HIT!";actionToastUntil=now+850;}
     updateHud();tone(190,.09,"sawtooth");
   }
 
