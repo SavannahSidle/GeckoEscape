@@ -537,7 +537,7 @@
 
   function showMenu() {
     state = "menu";
-    showPanel("STORY MODE", "The enclosure door is open.", "Choose an escape artist to begin.", "CHOOSE CHARACTER", showCharacterSelect, false);
+    showPanel("STORY MODE", "The enclosure door is open.", "Choose an escape artist to begin.", "CHOOSE CHARACTER", showCharacterSelect, true);
   }
 
   function showCharacterSelect() {
@@ -1772,7 +1772,7 @@
       ctx.lineWidth=i<2?5.6:6;ctx.beginPath();ctx.moveTo(x,hipY);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();
       ctx.fillStyle="#17191c";roundedRect(pawX-4.5,pawY-2,10,4,2);ctx.fill();
     });
-    ctx.strokeStyle="#f4f1e8";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(w-13,22+bodyBob);ctx.quadraticCurveTo(w+8,15+bodyBob,w+5,5+bodyBob);ctx.stroke();
+    ctx.strokeStyle="#f4f1e8";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(w-13,22+bodyBob);ctx.quadraticCurveTo(w+22,15+bodyBob,w+16,5+bodyBob);ctx.stroke();
     ctx.fillStyle="#17191c";ctx.beginPath();ctx.arc(w+5,6+bodyBob,3.2,0,Math.PI*2);ctx.fill();
     // Chest and neck visibly connect the head to the longer-legged body.
     ctx.fillStyle="#f5f3e8";ctx.beginPath();ctx.moveTo(13,23+bodyBob);ctx.quadraticCurveTo(18,17,27,20);ctx.lineTo(39,34+bodyBob);ctx.lineTo(34,47+bodyBob);ctx.lineTo(18,41+bodyBob);ctx.closePath();ctx.fill();
