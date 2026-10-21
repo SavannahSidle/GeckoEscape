@@ -240,6 +240,9 @@ canvas {
   cursor: pointer;
 }
 .hud-nav-button:hover,.hud-nav-button:focus-visible { border-color: var(--acid); color: var(--acid); }
+.objective-hint { width: max-content; max-width: 100%; margin: 8px auto 0; padding: 5px 10px; border: 1px solid rgba(210,255,127,.42); border-radius: 999px; background: rgba(7,21,15,.86); color: #d2ff7f; text-align: center; font-size: clamp(.58rem, 1.25vw, .7rem); font-weight: 900; letter-spacing: .045em; }
+.hud-restart-button { border-color: rgba(210,255,127,.72); }
+.browser-note { margin: 0 0 12px; color: var(--muted); text-align: center; font-size: .68rem; letter-spacing: .04em; }
 
 .controls-row {
   display: flex;
