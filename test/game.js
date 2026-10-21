@@ -2,7 +2,23 @@
   "use strict";
 
   const canvas = document.querySelector("#game");
+  const W = canvas.width;
+  const H = canvas.height;
   const ctx = canvas.getContext("2d");
+
+  function configureCanvasResolution() {
+    const scale = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+    const backingWidth = Math.round(W * scale);
+    const backingHeight = Math.round(H * scale);
+    if (canvas.width !== backingWidth || canvas.height !== backingHeight) {
+      canvas.width = backingWidth;
+      canvas.height = backingHeight;
+    }
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  }
+
+  configureCanvasResolution();
+  window.addEventListener("resize", configureCanvasResolution, { passive: true });
   const overlay = document.querySelector("#overlay");
   const panelKicker = document.querySelector("#panelKicker");
   const panelTitle = document.querySelector("#panelTitle");
@@ -22,9 +38,23 @@
   const abilityButton = document.querySelector("#abilityButton");
   const tongueButton = document.querySelector("#tongueButton");
 
-  const W = canvas.width;
-  const H = canvas.height;
   const keys = Object.create(null);
+  let resetTouchStick = () => {};
+  let caughtUntil = 0;
+  let caughtStartedAt = 0;
+  let caughtHazard = null;
+
+  function clearHeldInputs() {
+    for (const key of Object.keys(keys)) keys[key] = false;
+    resetTouchStick();
+  }
+
+  function clearHandCapture() {
+    if (caughtHazard) caughtHazard.grabbingPlayer = false;
+    caughtHazard = null;
+    caughtUntil = 0;
+    caughtStartedAt = 0;
+  }
   const routeParams = new URLSearchParams(window.location.search);
   const backstageMode = routeParams.get("tour") === "arboreal-backstage-27";
   const gameEdition = 1;
@@ -502,6 +532,8 @@
   }
 
   function showPanel(kicker, title, text, buttonText, action, allowSelect = false) {
+    clearHandCapture();
+    clearHeldInputs();
     panelKicker.textContent = kicker;
     panelTitle.textContent = title;
     panelText.textContent = text;
@@ -524,6 +556,8 @@
   }
 
   function showCharacterSelect() {
+    clearHandCapture();
+    clearHeldInputs();
     state = "character-select";
     panelKicker.textContent = "CHOOSE YOUR ESCAPE ARTIST";
     panelTitle.textContent = gameEdition===1 ? "Five reptiles and amphibians. Five escapes." : "Six mammals. A truly suspicious getaway.";
@@ -544,6 +578,8 @@
   }
 
   function showLevelSelect(fromGameplay=false, allowAllLevels=fromGameplay){
+    clearHandCapture();
+    clearHeldInputs();
     resumePlayAfterLevelSelect=fromGameplay;
     state="level-select";
     panelKicker.textContent=allowAllLevels?"DEVELOPMENT LEVEL SELECT":"BACKSTAGE MODE";
@@ -590,6 +626,8 @@
   }
 
   function startLevel(index) {
+    clearHandCapture();
+    clearHeldInputs();
     levelIndex = index;
     const level = levels[index];
     player.w = characters[selectedCharacter].w;
@@ -677,7 +715,28 @@
     tone(330, .08, "triangle");
   }
 
+  function catchPlayer(hazard, now) {
+    clearHeldInputs();
+    caughtHazard = hazard;
+    caughtStartedAt = now;
+    caughtUntil = now + 900;
+    hazard.grabbingPlayer = true;
+    player.x = hazard.x + (hazard.w - player.w) / 2;
+    player.y = hazard.y + (hazard.h - player.h) / 2;
+    player.vx = 0;
+    player.vy = 0;
+    player.grounded = false;
+    player.climbing = false;
+    player.ceilingClimbing = false;
+    player.onSwing = false;
+    actionToastText = "CAUGHT!";
+    actionToastUntil = now + 900;
+    tone(105, .18, "sawtooth");
+  }
+
   function resetPlayer(loseLife = true) {
+    clearHandCapture();
+    clearHeldInputs();
     if (loseLife) lives -= 1;
     if (lives <= 0) {
       state = "dead";
@@ -1107,6 +1166,24 @@
 
   function update(dt, now) {
     if (state !== "playing") return;
+    if (caughtUntil > 0) {
+      if (now >= caughtUntil) {
+        clearHandCapture();
+        resetPlayer();
+        return;
+      }
+      if (caughtHazard) {
+        player.x = caughtHazard.x + (caughtHazard.w - player.w) / 2;
+        player.y = caughtHazard.y + (caughtHazard.h - player.h) / 2;
+      }
+      player.vx = 0;
+      player.vy = 0;
+      player.grounded = false;
+      player.climbing = false;
+      player.ceilingClimbing = false;
+      player.onSwing = false;
+      return;
+    }
     const level = levels[levelIndex];
     const character = characters[selectedCharacter];
     const left = keys.ArrowLeft || keys.KeyA || keys.touchLeft;
@@ -1326,6 +1403,7 @@
         if(hazard.y<hazard.minY||hazard.y>hazard.maxY){hazard.y=Math.max(hazard.minY,Math.min(hazard.maxY,hazard.y));hazard.dirY*=-1;}
       }
       if (now > invulnerableUntil && intersects(player, hazard)) {
+        if ((hazard.type === "grab" || hazard.type === "hand") && now < (hazard.stunnedUntil || 0)) continue;
         if(selectedCharacter==="chameleon"&&now<camouflageUntil){
           if(now<(hazard.camouflageIgnoredUntil||0))continue;
           if(Math.random()<.76){hazard.camouflageIgnoredUntil=now+850;tone(510,.035,"sine");continue;}
@@ -1335,6 +1413,9 @@
           invulnerableUntil = now + 900;
           hazard.dir *= -1;hazard.dirX*=-1;hazard.dirY*=-1;
           tone(120, .18, "sawtooth");
+        } else if (hazard.type === "grab" || hazard.type === "hand") {
+          catchPlayer(hazard, now);
+          return;
         } else {
           tone(86, .2, "square");
           resetPlayer();
@@ -2939,6 +3020,41 @@
     ctx.restore();
   }
 
+  function drawHandCapture(now) {
+    const hand = caughtHazard;
+    if (!hand || now >= caughtUntil) return;
+    const squeeze = Math.min(1, (now - caughtStartedAt) / 180);
+    ctx.save();
+    ctx.translate(hand.x, hand.y);
+    ctx.fillStyle = "#c99072";
+    ctx.strokeStyle = "#8f5e4a";
+    ctx.lineWidth = 1.5;
+    for (let i = 0; i < 4; i++) {
+      const x = 24 + i * 11;
+      roundedRect(x, 15 + squeeze * 3, 10, 20, 5);
+      ctx.fill();
+      ctx.stroke();
+      roundedRect(x, 45 - squeeze * 3, 10, 17, 5);
+      ctx.fill();
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.moveTo(28, 29);
+    ctx.quadraticCurveTo(14, 28, 13, 39);
+    ctx.quadraticCurveTo(13, 49, 28, 51);
+    ctx.lineTo(33, 43);
+    ctx.quadraticCurveTo(24, 39, 28, 29);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#e9b69a";
+    for (let i = 0; i < 4; i++) {
+      roundedRect(25 + i * 11, 18 + squeeze * 3, 6, 5, 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
   function draw(time = 0) {
     const level = levels[levelIndex] || levels[0];
     if(selectedCharacter==="foxLab"&&level.decor==="foxMovementLab"){
@@ -2955,6 +3071,7 @@
     drawDroppedTail(time);
     drawPlayer(time);
     drawCharacterPickup(time);
+    drawHandCapture(time);
   }
 
   function frame(time) {
@@ -3007,6 +3124,7 @@
       moveStick.setAttribute("aria-valuenow","0");
       moveStick.setAttribute("aria-valuetext","Neutral");
     };
+    resetTouchStick = resetStick;
     const updateStick=(event)=>{
       const rect=moveStick.getBoundingClientRect();
       const centerX=rect.left+rect.width/2,centerY=rect.top+rect.height/2;
@@ -3038,9 +3156,19 @@
         if(stickPointer===event.pointerId||eventName==="lostpointercapture")resetStick();
       });
     }
-    window.addEventListener("blur",resetStick);
-    document.addEventListener("visibilitychange",()=>{if(document.hidden)resetStick();});
   }
+
+  window.addEventListener("blur", clearHeldInputs);
+  window.addEventListener("pagehide", clearHeldInputs);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      clearHeldInputs();
+      if (caughtUntil) {
+        clearHandCapture();
+        invulnerableUntil = Math.max(invulnerableUntil, performance.now() + 900);
+      }
+    }
+  });
 
   document.querySelectorAll("[data-control]").forEach(button => {
     const control = button.dataset.control;
