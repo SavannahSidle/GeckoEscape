@@ -2351,6 +2351,7 @@
   }
 
   function drawObjectiveMarker(level, time) {
+    if (state !== "playing") return;
     const targets = [];
     for (const prey of level.insects) if (!prey[2]) targets.push({ x: prey[0], y: prey[1] });
     for (const prey of (level.mice || [])) if (!prey[2]) targets.push({ x: prey[0], y: prey[1] });
