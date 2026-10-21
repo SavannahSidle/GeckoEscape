@@ -232,7 +232,7 @@ canvas {
 .hud-back-button:hover,.hud-back-button:focus-visible { border-color: var(--acid); color: var(--acid); }
 .hud-restart-button { position:absolute;top:44px;left:12px;z-index:2;min-width:72px;min-height:34px;padding:6px 10px;border:1px solid rgba(169,245,118,.48);border-radius:999px;background:rgba(7,21,15,.9);color:#f8f4de;font:inherit;font-size:.65rem;font-weight:900;letter-spacing:.08em;cursor:pointer;pointer-events:auto; }
 .hud-restart-button:hover,.hud-restart-button:focus-visible { border-color:var(--acid);color:var(--acid); }
-.objective-hint { position:absolute;top:auto;bottom:4px;left:50%;z-index:1;transform:translateX(-50%);max-width:calc(100% - 170px);padding:5px 10px;border:1px solid rgba(210,255,127,.42);border-radius:999px;background:rgba(7,21,15,.86);color:#d2ff7f;text-align:center;font-size:clamp(.58rem,1.25vw,.7rem);font-weight:900;letter-spacing:.045em;pointer-events:none; }
+.objective-hint { width:max-content;max-width:100%;margin:8px auto 0;padding:5px 10px;border:1px solid rgba(210,255,127,.42);border-radius:999px;background:rgba(7,21,15,.86);color:#d2ff7f;text-align:center;font-size:clamp(.58rem,1.25vw,.7rem);font-weight:900;letter-spacing:.045em;pointer-events:none; }
 .touch-controls .is-ready { border-color:var(--acid);box-shadow:0 0 0 2px rgba(210,255,127,.18),0 0 18px rgba(210,255,127,.34); }
 
 .controls-row {
