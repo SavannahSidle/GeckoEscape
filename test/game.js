@@ -3114,7 +3114,8 @@
 
   const moveStick=document.querySelector("#moveStick");
   const moveStickKnob=document.querySelector("#moveStickKnob");
-  if(moveStick&&moveStickKnob){
+  const touchMove=moveStick?.closest(".touch-move");
+  if(moveStick&&moveStickKnob&&touchMove){
     let stickPointer=null;
     const directions=["touchLeft","touchRight","touchUp","touchDown"];
     const resetStick=()=>{
@@ -3142,17 +3143,17 @@
       moveStick.setAttribute("aria-valuenow",String(Math.max(-1,Math.min(1,ny)).toFixed(2)));
       moveStick.setAttribute("aria-valuetext",value||"Neutral");
     };
-    moveStick.addEventListener("pointerdown",event=>{
+    touchMove.addEventListener("pointerdown",event=>{
       event.preventDefault();
       stickPointer=event.pointerId;
-      moveStick.setPointerCapture(event.pointerId);
+      touchMove.setPointerCapture(event.pointerId);
       updateStick(event);
     });
-    moveStick.addEventListener("pointermove",event=>{
+    touchMove.addEventListener("pointermove",event=>{
       if(event.pointerId===stickPointer){event.preventDefault();updateStick(event);}
     });
     for(const eventName of ["pointerup","pointercancel","lostpointercapture"]){
-      moveStick.addEventListener(eventName,event=>{
+      touchMove.addEventListener(eventName,event=>{
         if(stickPointer===event.pointerId||eventName==="lostpointercapture")resetStick();
       });
     }
