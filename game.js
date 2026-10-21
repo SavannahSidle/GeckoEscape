@@ -23,6 +23,8 @@
   const soundButton = document.querySelector("#soundButton");
   const abilityButton = document.querySelector("#abilityButton");
   const tongueButton = document.querySelector("#tongueButton");
+  const objectiveHint = document.querySelector("#objectiveHint");
+  const restartLevelButton = document.querySelector("#restartLevelButton");
 
   const W = canvas.width;
   const H = canvas.height;
@@ -634,7 +636,9 @@
     levelIndex = index;
     const level = levels[index];
     state = "intro";
-    showPanel(level.label, level.title, level.intro, index === 0 ? "START LEVEL" : "CONTINUE", () => startLevel(index));
+    const preyCount = level.insects.length + (level.mice || []).length;
+    const introText = `${level.intro} Catch all ${preyCount} prey to unlock the exit.`;
+    showPanel(level.label, level.title, introText, index === 0 ? "START LEVEL" : "CONTINUE", () => startLevel(index));
     crestedSkinSelect?.classList.toggle("hidden", selectedCharacter!=="crested");
     frogSkinSelect?.classList.toggle("hidden", selectedCharacter!=="frog");
     introBackButton?.classList.remove("hidden");
@@ -813,6 +817,8 @@
     const miceTotal=(levels[levelIndex].mice||[]).length;
     const collectibleLabel=selectedCharacter==="raccoon"&&levels[levelIndex].decor==="towerRestaurant"?"FANCY FOOD":selectedCharacter==="raccoon"&&levels[levelIndex].decor==="parachute"?"AIRBORNE SNACKS":character.collectible;
     bugLabel.textContent = `${collectibleLabel} ${collected}/${preyTotal}${miceTotal?` · MICE ${miceCollected}/${miceTotal}`:""}`;
+    const remaining = remainingCollectibles(levels[levelIndex]);
+    if (objectiveHint) objectiveHint.textContent = remaining ? `Catch all ${remaining} prey to unlock the exit` : "EXIT UNLOCKED · Follow the glowing doorway";
     if (levels[levelIndex]?.underwater && selectedCharacter !== "newt") {
       abilityLabel.textContent = `AIR ${Math.max(0, Math.ceil(air))}% · ${character.ability}`;
     } else if (selectedCharacter === "crested") {
@@ -2344,6 +2350,27 @@
     for(const config of (level.swings||[])){const swing=tireSwingPosition(config,performance.now());ctx.strokeStyle="#6b5945";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(swing.anchorX,swing.anchorY);ctx.lineTo(swing.centerX,swing.centerY);ctx.stroke();ctx.strokeStyle="#232625";ctx.lineWidth=16;ctx.beginPath();ctx.ellipse(swing.centerX,swing.centerY,config[4]/2,22,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle="#7c837c";ctx.lineWidth=2;ctx.stroke();}
   }
 
+  function drawObjectiveMarker(level, time) {
+    const targets = [];
+    for (const prey of level.insects) if (!prey[2]) targets.push({ x: prey[0], y: prey[1] });
+    for (const prey of (level.mice || [])) if (!prey[2]) targets.push({ x: prey[0], y: prey[1] });
+    if (!targets.length) return;
+    const px = player.x + player.w / 2, py = player.y + player.h / 2;
+    targets.sort((a, b) => Math.hypot(a.x - px, a.y - py) - Math.hypot(b.x - px, b.y - py));
+    const target = targets[0], radius = 18 + Math.sin(time * .008) * 3;
+    ctx.save();
+    ctx.strokeStyle = "rgba(210,255,127,.92)";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(target.x, target.y, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = "#d2ff7f";
+    ctx.font = "900 10px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("NEXT PREY", target.x, target.y - radius - 5);
+    ctx.restore();
+  }
+
   function drawExit(level) {
     const [x,y,w,h] = level.exit;
     const remaining=remainingCollectibles(level);
@@ -3197,6 +3224,7 @@
     drawDroppedTail(time);
     drawPlayer(time);
     drawCharacterPickup(time);
+    drawObjectiveMarker(level, time);
     drawHandCapture(time);
     if (time < actionToastUntil && state === "playing") { ctx.save(); ctx.font="900 15px system-ui"; ctx.textAlign="center"; const tw=ctx.measureText(actionToastText).width+24,tx=Math.max(tw/2+12,Math.min(W-tw/2-12,player.x+player.w/2)),ty=Math.max(32,player.y-20); ctx.fillStyle="rgba(6,18,12,.9)";roundedRect(tx-tw/2,ty-21,tw,28,8);ctx.fill();ctx.strokeStyle="#a9f576";ctx.lineWidth=1.5;roundedRect(tx-tw/2,ty-21,tw,28,8);ctx.stroke();ctx.fillStyle="#e9ffd9";ctx.fillText(actionToastText,tx,ty-2);ctx.restore(); }
     if (time < damageFlashUntil) { ctx.save(); ctx.globalAlpha = Math.min(.34, (damageFlashUntil-time)/150); ctx.strokeStyle="#ff4e4e"; ctx.lineWidth=18; ctx.strokeRect(8,8,W-16,H-16); ctx.restore(); }
@@ -3341,6 +3369,7 @@
     });
   });
   document.querySelector("#gameBackButton")?.addEventListener("click",()=>showLevelSelect(true,true));
+  restartLevelButton?.addEventListener("click",()=>startLevel(levelIndex));
   document.querySelector("#gameCharactersButton")?.addEventListener("click",()=>showCharacterSelect());
   introBackButton?.addEventListener("click",showCharacterSelect);
   frogSkinSelect?.querySelectorAll("[data-frog-skin]").forEach(button=>button.addEventListener("click",()=>{
