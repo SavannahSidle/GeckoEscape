@@ -29,8 +29,9 @@ button { font: inherit; }
 .game-shell {
   width: min(1120px, 100%);
   min-height: 100vh;
+  min-height: 100dvh;
   margin: 0 auto;
-  padding: clamp(14px, 2.5vw, 28px);
+  padding: max(clamp(14px, 2.5vw, 28px), env(safe-area-inset-top)) max(clamp(14px, 2.5vw, 28px), env(safe-area-inset-right)) max(clamp(14px, 2.5vw, 28px), env(safe-area-inset-bottom)) max(clamp(14px, 2.5vw, 28px), env(safe-area-inset-left));
   display: grid;
   align-content: center;
   gap: 14px;
@@ -311,7 +312,7 @@ canvas {
 .hidden { display: none !important; }
 
 @media (hover: none), (pointer: coarse), (max-width: 760px) {
-  .game-shell { align-content: start; padding: 12px; }
+  .game-shell { align-content: start; padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
   .game-header { align-items: center; }
   .eyebrow { font-size: .58rem; }
   .icon-button { padding: 8px 9px; }
@@ -350,7 +351,7 @@ canvas {
 @media (max-height: 600px) and (orientation: landscape) {
   .game-shell { padding-block: 8px; gap: 7px; }
   .game-header { display: none; }
-  .stage-wrap { max-height: calc(100vh - 156px); width: auto; margin-inline: auto; }
+  .stage-wrap { max-height: calc(100vh - 156px); max-height: calc(100dvh - 156px); width: auto; margin-inline: auto; }
   .touch-controls { min-height: 132px; padding-block: 4px; }
   .move-stick { width: 84px; height: 84px; }
   .move-stick-knob { width: 34px; height: 34px; }
