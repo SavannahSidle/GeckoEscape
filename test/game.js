@@ -37,12 +37,17 @@
   const soundButton = document.querySelector("#soundButton");
   const abilityButton = document.querySelector("#abilityButton");
   const tongueButton = document.querySelector("#tongueButton");
+  const objectiveHint = document.querySelector("#objectiveHint");
+  const restartLevelButton = document.querySelector("#restartLevelButton");
 
   const keys = Object.create(null);
   let resetTouchStick = () => {};
   let caughtUntil = 0;
   let caughtStartedAt = 0;
   let caughtHazard = null;
+  let lastHudRefreshAt = 0;
+  let actionToastText = "";
+  let actionToastUntil = 0;
 
   function clearHeldInputs() {
     for (const key of Object.keys(keys)) keys[key] = false;
@@ -552,7 +557,7 @@
 
   function showMenu() {
     state = "menu";
-    showPanel("STORY MODE", "The enclosure door is open.", "This is almost certainly a trap. Choose the small criminal responsible.", "CHOOSE CHARACTER", showCharacterSelect);
+    showPanel("STORY MODE", "The enclosure door is open.", "Choose an escape artist. On a phone: move with the wheel, jump with the far-right button, and tap an ability when it is ready.", "CHOOSE CHARACTER", showCharacterSelect);
   }
 
   function showCharacterSelect() {
@@ -612,7 +617,9 @@
     levelIndex = index;
     const level = levels[index];
     state = "intro";
-    showPanel(level.label, level.title, level.intro, index === 0 ? "START LEVEL" : "CONTINUE", () => startLevel(index));
+    const preyCount = level.insects.length + (level.mice || []).length;
+    const controls = " Move with WASD or arrows, jump with Space, and press E for your main ability. On touchscreens, use the movement wheel and action buttons.";
+    showPanel(level.label, level.title, `${level.intro} Catch all ${preyCount} prey to unlock the glowing exit.${controls}`, index === 0 ? "START LEVEL" : "CONTINUE", () => startLevel(index));
     crestedSkinSelect?.classList.toggle("hidden", selectedCharacter!=="crested");
     if(backstageMode){
       secondaryButton.textContent="LEVEL SELECT";
@@ -707,6 +714,7 @@
     player.spawnY = level.start[1];
     resetPlayer(false);
     levelLabel.textContent = `${level.label}${backstageMode?" · BACKSTAGE":""}${devDoorsUnlocked?" · EXITS UNLOCKED":""}`;
+    actionToastText = ""; actionToastUntil = 0;
     updateHud();
     overlay.classList.add("hidden");
     hud.classList.toggle("hidden",level.decor==="foxMovementLab");
@@ -782,6 +790,8 @@
     const miceTotal=(levels[levelIndex].mice||[]).length;
     const collectibleLabel=selectedCharacter==="raccoon"&&levels[levelIndex].decor==="towerRestaurant"?"FANCY FOOD":selectedCharacter==="raccoon"&&levels[levelIndex].decor==="parachute"?"AIRBORNE SNACKS":character.collectible;
     bugLabel.textContent = `${collectibleLabel} ${collected}/${preyTotal}${miceTotal?` · MICE ${miceCollected}/${miceTotal}`:""}`;
+    const remaining = remainingCollectibles(levels[levelIndex]);
+    if (objectiveHint) objectiveHint.textContent = remaining ? `Catch all ${remaining} prey to unlock the glowing exit` : "EXIT UNLOCKED · Follow the glowing doorway";
     if (levels[levelIndex]?.underwater && selectedCharacter !== "newt") {
       abilityLabel.textContent = `AIR ${Math.max(0, Math.ceil(air))}% · ${character.ability}`;
     } else if (selectedCharacter === "crested") {
@@ -819,6 +829,8 @@
     }
     if(abilityKeyHelp)abilityKeyHelp.textContent = abilityDescriptions[selectedCharacter] || `E: ${character.ability} · R: ${character.secondary || "SPECIAL"}`;
     abilityButton.textContent = character.ability;
+    abilityButton.classList.toggle("is-ready", !/RECHARGING|USED|GONE/.test(abilityLabel.textContent));
+    tongueButton.classList.toggle("is-ready", !!character.secondary && !/RECHARGING|USED|GONE/.test(abilityLabel.textContent));
     abilityButton.title = abilityDescriptions[selectedCharacter] || character.ability;
     abilityButton.setAttribute("aria-label", `E: ${abilityDescriptions[selectedCharacter] || character.ability}`);
     tongueButton.textContent = character.secondary || "";
@@ -1072,6 +1084,9 @@
     else if (selectedCharacter === "goat") useHeadbutt();
     else if (selectedCharacter === "highland") useHornToss();
     else if (selectedCharacter === "devilfox") useFoxPounce();
+    actionToastText = `${characters[selectedCharacter].ability.toUpperCase()}!`;
+    actionToastUntil = performance.now() + 620;
+    updateHud();
   }
 
   function useSecondaryAbility(){
@@ -1086,6 +1101,9 @@
     else if(selectedCharacter==="goat")useMountainScramble();
     else if(selectedCharacter==="highland")useHighlandCharge();
     else if(selectedCharacter==="devilfox")useMischiefBlink();
+    actionToastText = `${characters[selectedCharacter].secondary || "SPECIAL"}!`;
+    actionToastUntil = performance.now() + 620;
+    updateHud();
   }
 
   function intersects(a, b) {
@@ -1442,6 +1460,7 @@
         if ((!shieldCheese&&(intersects(player,bug)||(tongue&&intersects(tongue,bug))||(bite&&intersects(bite,bug))))||(shieldCheese&&now<trashShieldUntil&&intersects(player,bug))) {
           insect[2] = true;
           collected += 1;
+          actionToastText = "NICE CATCH!"; actionToastUntil = now + 650;
           if(selectedCharacter==="raccoon"){
             raccoonCombo=now-raccoonLastTreasureAt<2500?raccoonCombo+1:1;raccoonLastTreasureAt=now;raccoonComboUntil=now+2500;
             if(collected%4===0&&lives<3){lives+=1;invulnerableUntil=Math.max(invulnerableUntil,now+650);tone(930,.11,"sine");}
@@ -1456,7 +1475,7 @@
     (level.mice||[]).forEach(mouse=>{
       if(mouse[2])return;
       const mouseBox={x:mouse[0]-14,y:mouse[1]-10,w:28,h:20};
-      if(intersects(player,mouseBox)){mouse[2]=true;miceCollected+=1;updateHud();tone(540+miceCollected*80,.08,"triangle");}
+      if(intersects(player,mouseBox)){mouse[2]=true;miceCollected+=1;actionToastText="NICE CATCH!";actionToastUntil=performance.now()+650;updateHud();tone(540+miceCollected*80,.08,"triangle");}
     });
 
     const exit = {x:level.exit[0], y:level.exit[1], w:level.exit[2], h:level.exit[3]};
@@ -2242,6 +2261,25 @@
     for (const v of level.diagonalVines||[]) drawDiagonalVine(v);
     for (const v of level.ceilingVines||[]) drawCeilingVine(v);
     for(const config of (level.swings||[])){const swing=tireSwingPosition(config,performance.now());ctx.strokeStyle="#6b5945";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(swing.anchorX,swing.anchorY);ctx.lineTo(swing.centerX,swing.centerY);ctx.stroke();ctx.strokeStyle="#232625";ctx.lineWidth=16;ctx.beginPath();ctx.ellipse(swing.centerX,swing.centerY,config[4]/2,22,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle="#7c837c";ctx.lineWidth=2;ctx.stroke();}
+  }
+
+
+  function drawObjectiveMarker(level, time) {
+    const targets=[];
+    for(const prey of level.insects)if(!prey[2])targets.push({x:prey[0],y:prey[1]});
+    for(const prey of (level.mice||[]))if(!prey[2])targets.push({x:prey[0],y:prey[1]});
+    if(!targets.length)return;
+    const px=player.x+player.w/2,py=player.y+player.h/2;
+    targets.sort((a,b)=>Math.hypot(a.x-px,a.y-py)-Math.hypot(b.x-px,b.y-py));
+    const t=targets[0],r=18+Math.sin(time*.008)*3;
+    ctx.save();ctx.strokeStyle="rgba(210,255,127,.92)";ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(t.x,t.y,r,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle="#d2ff7f";ctx.font="900 10px system-ui";ctx.textAlign="center";ctx.fillText("NEXT PREY",t.x,t.y-r-5);ctx.restore();
+  }
+  function drawActionFeedback(time) {
+    if(time>=actionToastUntil||!actionToastText)return;
+    ctx.save();ctx.textAlign="center";ctx.font="900 16px system-ui";
+    const x=player.x+player.w/2,y=player.y-20;ctx.fillStyle="#07150f";roundedRect(x-77,y-15,154,27,12);ctx.fill();
+    ctx.strokeStyle="#d2ff7f";ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle="#d2ff7f";ctx.fillText(actionToastText,x,y+4);ctx.restore();
   }
 
   function drawExit(level) {
@@ -3071,6 +3109,8 @@
     drawDroppedTail(time);
     drawPlayer(time);
     drawCharacterPickup(time);
+    drawObjectiveMarker(level, time);
+    drawActionFeedback(time);
     drawHandCapture(time);
   }
 
@@ -3078,6 +3118,7 @@
     const dt = Math.min((time - lastTime) / 1000 || 0, .033);
     lastTime = time;
     update(dt, time);
+    if(state==="playing"&&time-lastHudRefreshAt>180){updateHud();lastHudRefreshAt=time;}
     draw(time);
     requestAnimationFrame(frame);
   }
@@ -3207,6 +3248,7 @@
     });
   });
   document.querySelector("#gameBackButton")?.addEventListener("click",()=>showLevelSelect(true,true));
+  restartLevelButton?.addEventListener("click",()=>startLevel(levelIndex));
 
   soundButton.addEventListener("click", () => {
     soundOn = !soundOn;
