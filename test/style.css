@@ -250,7 +250,17 @@ canvas {
 
 .touch-controls { display: none; }
 
-.touch-move { display: grid; justify-items: center; gap: 5px; flex: 0 0 auto; }
+.touch-move { position: relative; display: grid; justify-items: center; gap: 5px; flex: 0 0 auto; touch-action: none; }
+.touch-move::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: -20px;
+  border-radius: 50%;
+  background: transparent;
+  touch-action: none;
+}
+.touch-actions { position: relative; z-index: 2; }
 .touch-control-label { color: var(--muted); font-size: .58rem; font-weight: 900; letter-spacing: .14em; }
 .move-stick {
   position: relative;
