@@ -29,8 +29,9 @@ button { font: inherit; }
 .game-shell {
   width: min(1120px, 100%);
   min-height: 100vh;
+  min-height: 100dvh;
   margin: 0 auto;
-  padding: clamp(14px, 2.5vw, 28px);
+  padding: max(clamp(14px, 2.5vw, 28px), env(safe-area-inset-top)) max(clamp(14px, 2.5vw, 28px), env(safe-area-inset-right)) max(clamp(14px, 2.5vw, 28px), env(safe-area-inset-bottom)) max(clamp(14px, 2.5vw, 28px), env(safe-area-inset-left));
   display: grid;
   align-content: center;
   gap: 14px;
@@ -259,7 +260,17 @@ canvas {
 
 .touch-controls { display: none; }
 
-.touch-move { display: grid; justify-items: center; gap: 5px; flex: 0 0 auto; }
+.touch-move { position: relative; display: grid; justify-items: center; gap: 5px; flex: 0 0 auto; touch-action: none; }
+.touch-move::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: -20px;
+  border-radius: 50%;
+  background: transparent;
+  touch-action: none;
+}
+.touch-actions { position: relative; z-index: 2; }
 .touch-control-label { color: var(--muted); font-size: .58rem; font-weight: 900; letter-spacing: .14em; }
 .move-stick {
   position: relative;
@@ -323,7 +334,7 @@ canvas {
 .hidden { display: none !important; }
 
 @media (hover: none), (pointer: coarse), (max-width: 760px) {
-  .game-shell { align-content: start; padding: 12px; }
+  .game-shell { align-content: start; padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
   .game-header { align-items: center; }
   .eyebrow { font-size: .58rem; }
   .icon-button { padding: 8px 9px; }
@@ -370,7 +381,7 @@ canvas {
 @media (max-height: 600px) and (orientation: landscape) {
   .game-shell { padding-block: 8px; gap: 7px; }
   .game-header { display: none; }
-  .stage-wrap { max-height: calc(100vh - 182px); width: auto; margin-inline: auto; }
+  .stage-wrap { max-height: calc(100vh - 182px); max-height: calc(100dvh - 182px); width: auto; margin-inline: auto; }
   .touch-controls { min-height: 158px; padding-block: 4px; }
   .move-stick { width: 84px; height: 84px; }
   .move-stick-knob { width: 34px; height: 34px; }
@@ -381,7 +392,7 @@ canvas {
 }
 
 @media (max-width: 420px) {
-  .game-shell { padding-inline: 8px; gap: 9px; }
+  .game-shell { padding-inline: max(8px, env(safe-area-inset-left)) max(8px, env(safe-area-inset-right)); gap: 9px; }
   .move-stick { width: 98px; height: 98px; }
   .move-stick-knob { width: 38px; height: 38px; }
   .touch-controls { padding-inline: 8px; gap: 8px; }
