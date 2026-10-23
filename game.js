@@ -3256,12 +3256,12 @@
       if(state==="dead"||state==="complete"){showLevelSelect();return;}
       return;
     }
-    if(backstageMode&&((shiftHeld&&(event.code==="KeyU"||keyName==="u"))||((event.code==="ShiftLeft"||event.code==="ShiftRight")&&keys.KeyU))){
+    if((shiftHeld&&(event.code==="KeyU"||keyName==="u"))||((event.code==="ShiftLeft"||event.code==="ShiftRight")&&keys.KeyU)){
       event.preventDefault();
       if(!devDoorsUnlocked){devDoorsUnlocked=true;levelLabel.textContent+=" · EXITS UNLOCKED";updateHud();tone(660,.12,"triangle");}
       return;
     }
-    if(backstageMode&&event.code==="KeyL"){
+    if((backstageMode&&event.code==="KeyL")||(shiftHeld&&event.code==="KeyL")){
       event.preventDefault();
       if(!event.repeat&&state!=="level-select")showLevelSelect(state==="playing",true);
       return;
