@@ -1903,8 +1903,8 @@
     ctx.save();
     // The selected E design is taller and more compact than the old flattened sprite.
     // Keep its feet on the existing floor/hitbox line while letting the body fill a natural silhouette.
-    const unit=w/88, verticalOffset=h/unit-56;
-    ctx.scale(unit,unit);
+    const unit=w/88,verticalScale=unit*1.28,verticalOffset=h/verticalScale-56;
+    ctx.scale(unit,verticalScale);
     ctx.translate(0,verticalOffset);
     const moving=motion>4,cycle=now*.016;
     const bob=moving?Math.abs(Math.sin(cycle*2))*1.1:0;
