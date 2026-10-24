@@ -1964,7 +1964,7 @@
   function drawPortraitDog(x,y,type){
     ctx.save();ctx.translate(x,y);
     if(type==="dalmatian"){ctx.scale(.7,.7);ctx.translate(-44,-27);drawDalmatianSprite();}
-    else{ctx.scale(.8,.8);ctx.translate(-44,-23);drawFrenchieSprite(88,46);}
+    else{ctx.scale(.8,.8);ctx.translate(-44,-18);drawFrenchieSprite(88,46);}
     ctx.restore();
   }
 
