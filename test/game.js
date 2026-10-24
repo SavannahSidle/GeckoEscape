@@ -1790,55 +1790,111 @@
     ctx.fillStyle="#684328";ctx.beginPath();ctx.arc(-5,2,1.7,0,Math.PI*2);ctx.arc(5,2,1.7,0,Math.PI*2);ctx.fill();
   }
 
-  function drawDalmatianSprite(w=88,h=132,now=0,motion=0){
+  function drawDalmatianSprite(w=96,h=100,now=0,motion=0){
     ctx.save();
-    const moving=motion>0,stride=moving?Math.sin(now*.016)*9:0,bodyBob=moving?Math.abs(Math.sin(now*.032))*1.4:0;
-    ctx.translate(0,bodyBob);
-    // Keep the compact spotted body and head, extending the legs down for a tall, clear dog silhouette.
-    ctx.fillStyle="#f5f3e8";roundedRect(29,10,w-35,26,12);ctx.fill();
-    ctx.strokeStyle="#f5f3e8";ctx.lineWidth=6;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(w-11,14);ctx.quadraticCurveTo(w+7,4,w+2,-6);ctx.stroke();
-    ctx.fillStyle="#111318";ctx.beginPath();ctx.arc(w-1,-3,3,0,Math.PI*2);ctx.arc(w+3,2,2.5,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#f5f3e8";ctx.beginPath();ctx.arc(20,18,16,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#111318";ctx.beginPath();ctx.ellipse(24,8,7,12,.45,0,Math.PI*2);ctx.fill();
-    [[39,15,5],[50,23,3],[56,13,4],[66,17,2.5],[70,24,5],[78,13,3],[33,26,3]].forEach(([sx,sy,r])=>{ctx.beginPath();ctx.arc(sx,sy,r,0,Math.PI*2);ctx.fill();});
-    const legs=[[38,0],[49,Math.PI],[w-27,Math.PI],[w-16,0]];
-    legs.forEach(([x,offset],i)=>{
-      const swing=Math.sin(now*.016+offset)*9*(moving?1:0);
-      const hipY=30,kneeX=x+(i<2?1:-1)+swing*.38,kneeY=h*.57+Math.abs(swing)*.16;
-      const pawX=x+swing,pawY=h-3;
-      ctx.strokeStyle="#f5f3e8";ctx.lineWidth=5;ctx.lineCap="round";ctx.beginPath();
-      ctx.moveTo(x,hipY);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();
-      ctx.fillStyle="#111318";roundedRect(pawX-4,pawY-2,10,4,2);ctx.fill();
-      if(i===0||i===3){ctx.fillStyle="#111318";ctx.beginPath();ctx.ellipse(kneeX+(i===0?-2:2),kneeY-2,2,2.6,0,0,Math.PI*2);ctx.fill();}
-    });
-    ctx.fillStyle="#eee6da";ctx.beginPath();ctx.ellipse(7,25,15,9,-.08,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#b9a99e";ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(7,25,15,9,-.08,0,Math.PI*2);ctx.stroke();
-    ctx.fillStyle="#090a0b";ctx.beginPath();ctx.ellipse(-4,22,6,5,0,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#403735";ctx.beginPath();ctx.moveTo(1,29);ctx.quadraticCurveTo(9,34,17,28);ctx.stroke();
-    ctx.fillStyle="#74462d";ctx.beginPath();ctx.arc(15,16,2.6,0,Math.PI*2);ctx.fill();ctx.fillStyle="#17110d";ctx.beginPath();ctx.arc(15.5,16,1.2,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#c84d4d";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(29,11);ctx.lineTo(30,27);ctx.stroke();
-    ctx.restore();
-  }
-  function drawFrenchieSprite(w=78,h=40,now=0,motion=0){
-    ctx.save();
-    const stride=motion?Math.sin(now*.018)*2.4:0;
-    // Compact, broad Frenchie frame with a substantial chest and low, muscular legs.
-    ctx.fillStyle="#42464a";roundedRect(23,10,w-28,h-12,10);ctx.fill();
-    ctx.beginPath();ctx.ellipse(23,17,16,13,-.08,0,Math.PI*2);ctx.fill();
-    // Broad head and rounded bat ears, with the characteristic flat face.
-    ctx.beginPath();ctx.ellipse(15,12,13,12,0,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.moveTo(6,9);ctx.quadraticCurveTo(0,1,3,-5);ctx.quadraticCurveTo(10,-4,15,7);ctx.moveTo(19,7);ctx.quadraticCurveTo(24,-5,31,-3);ctx.quadraticCurveTo(34,2,25,10);ctx.fill();
-    // A broad, short muzzle, facial folds, and brindle markings read clearly as a French bulldog.
-    ctx.fillStyle="#73787a";ctx.beginPath();ctx.ellipse(5,18,7,5,0,0,Math.PI*2);ctx.fill();ctx.ellipse(16,17,7,5,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#171a1e";ctx.beginPath();ctx.ellipse(7,17,4.4,3.5,0,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#202327";ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(3,20);ctx.quadraticCurveTo(8,23,13,20);ctx.moveTo(5,11);ctx.quadraticCurveTo(10,13,15,11);ctx.moveTo(7,14);ctx.quadraticCurveTo(11,16,15,14);ctx.stroke();
-    ctx.strokeStyle="#8f9698";ctx.lineWidth=2;for(const x of [33,39,48,55]){ctx.beginPath();ctx.moveTo(x,12);ctx.lineTo(x-4,25);ctx.stroke();}
-    ctx.strokeStyle="#33363a";ctx.lineWidth=6;ctx.lineCap="round";
-    [[31,stride],[41,-stride],[w-21,-stride],[w-13,stride]].forEach(([x,swing])=>{ctx.beginPath();ctx.moveTo(x,h-12);ctx.lineTo(x+swing*.35,h-6);ctx.lineTo(x+swing,h-1);ctx.stroke();});
-    ctx.fillStyle="#171b1f";ctx.beginPath();ctx.arc(w-5,16,3.5,0,Math.PI*2);ctx.fill();
+    ctx.scale(w/96,h/100);
+    const moving=motion>4, cycle=now*.018;
+    const bob=moving?Math.abs(Math.sin(cycle*2))*1.15:0;
+    const coat="#f8f7f1", farCoat="#deddd8", ink="#17191c";
+    // Lean, long-legged outline based on the selected D sprite.
+    const leg=(hipX,phase,isNear,isFront)=>{
+      const swing=moving?Math.sin(cycle+phase)*(isFront?9.5:8.5):0;
+      const lift=moving?Math.max(0,Math.cos(cycle+phase))*3.8:0;
+      const hipY=(isFront?53:54)+bob;
+      const kneeX=hipX+swing*.53+(isFront?-1:2);
+      const kneeY=74+bob-lift*.38;
+      const pawX=hipX+swing;
+      const pawY=96-lift;
+      ctx.strokeStyle=isNear?coat:farCoat;
+      ctx.lineWidth=isFront?5.1:4.8;
+      ctx.lineCap="round";ctx.lineJoin="round";
+      ctx.beginPath();ctx.moveTo(hipX,hipY);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();
+      // White paws and small toe marks keep the feet soft rather than boot-shaped.
+      ctx.fillStyle=isNear?coat:farCoat;
+      ctx.beginPath();ctx.ellipse(pawX-1,pawY,4.5,2.6,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=ink;ctx.beginPath();ctx.ellipse(pawX-3,pawY-1.1,1.15,1.4,0,0,Math.PI*2);ctx.fill();
+    };
+    // Far pair first, then body and the near pair over the body edge.
+    leg(39,Math.PI,false,true);leg(75,0,false,false);
+    // Slim, athletic Dalmatian torso: deep chest, tucked waist, and rounded rump.
+    ctx.fillStyle=coat;
+    ctx.beginPath();ctx.ellipse(57,47+bob,29.5,13,-.025,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(39,48+bob,12.3,15.5,-.08,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(76,47+bob,13.2,12,.07,0,Math.PI*2);ctx.fill();
+    // Long tapered neck and clean hound head profile.
+    ctx.beginPath();ctx.moveTo(35,50+bob);ctx.quadraticCurveTo(32,39+bob,27,33+bob);ctx.lineTo(37,31+bob);ctx.quadraticCurveTo(43,39+bob,46,48+bob);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.ellipse(22,29+bob,13.4,12,-.08,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(10,34+bob,10.5,5.8,-.04,0,Math.PI*2);ctx.fill();
+    // Black floppy ear, dark nose, brown eye, and a few small natural head spots.
+    ctx.fillStyle=ink;
+    ctx.beginPath();ctx.moveTo(20,20+bob);ctx.bezierCurveTo(13,13+bob,6,17+bob,8,26+bob);ctx.bezierCurveTo(9,32+bob,15,34+bob,21,28+bob);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.ellipse(1.8,33+bob,3.2,2.5,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#17191c";ctx.beginPath();ctx.ellipse(27,24+bob,2.3,1.8,-.2,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(30.5,29+bob,1.6,2,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#765033";ctx.beginPath();ctx.arc(24.5,26+bob,2.9,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=ink;ctx.beginPath();ctx.arc(25.1,26+bob,1.5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(25.8,25.2+bob,.65,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#625a52";ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(5,38+bob);ctx.quadraticCurveTo(12,41+bob,18,38+bob);ctx.stroke();
+    // Distinct, irregular spots in a varied natural pattern over the back and flanks.
+    const spots=[[39,43,2.7,2],[43,51,2,2.7],[48,41,3.5,2.4],[52,48,2.6,2],[57,42,2.4,3],[61,51,3.1,2.2],[66,44,3.6,2.5],[70,53,2.1,2.6],[75,41,3,2.2],[79,48,2.4,2.9],[83,44,1.6,2],[50,56,1.6,1.8],[64,57,1.8,1.5],[36,43,1.4,2]];
+    ctx.fillStyle=ink;
+    for(const [x,y,rx,ry] of spots){ctx.beginPath();ctx.ellipse(x,y+bob,rx,ry,.16,0,Math.PI*2);ctx.fill();}
+    // Lightly raised tail with the characteristic black tip and a small spot.
+    ctx.strokeStyle=coat;ctx.lineWidth=4;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(85,44+bob);ctx.quadraticCurveTo(92,39+bob,92,29+bob);ctx.stroke();
+    ctx.fillStyle=ink;ctx.beginPath();ctx.arc(92,29+bob,2.5,0,Math.PI*2);ctx.fill();
+    // Option D's extended walking pose animates the feet in opposing phases.
+    leg(42,0,true,true);leg(76,Math.PI,true,false);
     ctx.restore();
   }
 
+  function drawFrenchieSprite(w=88,h=46,now=0,motion=0){
+    ctx.save();
+    ctx.scale(w/88,h/46);
+    const moving=motion>4,cycle=now*.019;
+    const bob=moving?Math.abs(Math.sin(cycle*2))*1.05:0;
+    const coat="#66696f",shadow="#51545a",light="#8b8d91",tan="#c89b70",cream="#dfb68e",ear="#b87c74",ink="#27292d";
+    // Frenchie E keeps the compact broad chest and adds a clear, lively step.
+    const leg=(hipX,phase,isNear)=>{
+      const swing=moving?Math.sin(cycle+phase)*4.8:0;
+      const lift=moving?Math.max(0,Math.cos(cycle+phase))*2.5:0;
+      const hipY=27+bob,kneeX=hipX+swing*.48,pawX=hipX+swing,pawY=45-lift;
+      ctx.strokeStyle=isNear?coat:shadow;ctx.lineWidth=5.4;ctx.lineCap="round";ctx.lineJoin="round";
+      ctx.beginPath();ctx.moveTo(hipX,hipY);ctx.lineTo(kneeX,36+bob-lift*.4);ctx.lineTo(pawX,pawY);ctx.stroke();
+      ctx.fillStyle=tan;ctx.beginPath();ctx.ellipse(pawX,41.5-lift,2.1,3.2,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=ink;roundedRect(pawX-4,42.5-lift,8.5,3.5,1.8);ctx.fill();
+    };
+    // Far legs behind body, staggered for a readable trot at character scale.
+    leg(32,Math.PI,false);leg(59,0,false);
+    // Low, wide blue-grey body, rounded shoulders, and the tan chest blaze.
+    ctx.fillStyle=coat;roundedRect(24,15+bob,44,20,9.5);ctx.fill();
+    ctx.beginPath();ctx.ellipse(30,25+bob,15.5,10.8,.05,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(57,24+bob,12.5,10.8,-.02,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=light;ctx.beginPath();ctx.ellipse(50,17.4+bob,16,2.3,-.03,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=tan;ctx.beginPath();ctx.ellipse(31,27+bob,7.1,8.1,-.12,0,Math.PI*2);ctx.fill();
+    // Large rounded bat ears with muted warm inner ear.
+    ctx.fillStyle=coat;
+    ctx.beginPath();ctx.ellipse(10.8,8+bob,5.6,8,-.16,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(28.2,8+bob,5.7,8,.16,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=ear;
+    ctx.beginPath();ctx.ellipse(11,8.2+bob,2.5,4.7,-.16,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(28,8.2+bob,2.5,4.7,.16,0,Math.PI*2);ctx.fill();
+    // Broad, softly squared head, short muzzle, tan cheeks, and expressive brows.
+    ctx.fillStyle=coat;ctx.beginPath();ctx.ellipse(20,20+bob,15.7,13.7,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=ink;ctx.beginPath();ctx.ellipse(11.3,23.2+bob,8.5,6,-.06,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=cream;ctx.beginPath();ctx.ellipse(17,14.2+bob,3,1.45,-.1,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=tan;ctx.beginPath();ctx.ellipse(14.2,24.2+bob,3.25,2.9,-.12,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(21.5,27+bob,4.8,4.1,.08,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#75472b";ctx.beginPath();ctx.arc(19,18.4+bob,2.5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=ink;ctx.beginPath();ctx.arc(19.5,18.4+bob,1.28,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(20.1,17.8+bob,.58,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#202124";ctx.beginPath();ctx.ellipse(4.5,22.5+bob,3.2,2.2,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#302b29";ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(5,28.5+bob);ctx.quadraticCurveTo(11,31.3+bob,17,27.8+bob);ctx.stroke();
+    // Near pair overlaps the lower body; short tail ends in a dark tip.
+    leg(36,0,true);leg(62,Math.PI,true);
+    ctx.strokeStyle=coat;ctx.lineWidth=3.2;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(67,23+bob);ctx.quadraticCurveTo(71,21+bob,70.5,18+bob+Math.sin(cycle)*.8);ctx.stroke();
+    ctx.fillStyle=ink;ctx.beginPath();ctx.arc(70.5,18+bob+Math.sin(cycle)*.8,1.55,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
   function drawPortraitDog(x,y,type){
     ctx.save();ctx.translate(x,y);
     if(type==="dalmatian"){ctx.scale(.7,.7);ctx.translate(-44,-27);drawDalmatianSprite();}
