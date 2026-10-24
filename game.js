@@ -1846,10 +1846,10 @@
     ctx.save();
     ctx.scale(w/96,h/100);
     const moving=motion>4,cycle=now*.014;
-    const bob=moving?Math.abs(Math.sin(cycle*2))*1.2:0;
+    const bob=moving?Math.abs(Math.sin(cycle*2))*1.45:0;
     const leg=(x,phase,near,front)=>{
-      const swing=moving?Math.sin(cycle+phase)*5.5:0;
-      const lift=moving?Math.max(0,Math.cos(cycle+phase))*2.4:0;
+      const swing=moving?Math.sin(cycle+phase)*6.3:0;
+      const lift=moving?Math.max(0,Math.cos(cycle+phase))*3.1:0;
       const hipY=(front?43:44)+bob;
       const kneeX=x+(front?-2:2)+swing*.38;
       const kneeY=68+bob-lift*.3;
@@ -1867,7 +1867,7 @@
     ctx.beginPath();ctx.ellipse(72,37+bob,13,12,.06,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.ellipse(35,38+bob,12,16,-.12,0,Math.PI*2);ctx.fill();
     // A soft black-spotted coat continues across the flank and rump.
-    const spots=[[39,29,3.2,2.8],[44,40,2.5,2.2],[50,32,2.8,3.3],[56,43,3,2.2],[62,28,3.4,2.6],[68,38,2.5,3.1],[74,30,3.2,2.5],[78,41,2.4,2],[53,25,2,1.8],[64,46,2,1.6],[82,35,1.8,2.2]];
+    const spots=[[39,29,3.7,2.7],[44,40,2.1,2.8],[50,32,3.1,2.5],[56,43,3.4,2],[62,28,2.5,3.4],[68,38,3,2.2],[74,30,3.7,2.5],[78,41,2,2.8],[53,25,1.8,2.2],[64,46,2.5,1.8],[82,35,2.2,2.5]];
     ctx.fillStyle="#17191c";
     for(const [x,y,rx,ry] of spots){ctx.beginPath();ctx.ellipse(x,y+bob,rx,ry,.15,0,Math.PI*2);ctx.fill();}
     // Short neck, recognizable projecting muzzle, and the requested black floppy ear.
