@@ -1921,14 +1921,13 @@
     ctx.fillStyle=cream;ctx.beginPath();ctx.moveTo(29,29+bob);ctx.quadraticCurveTo(34,28+bob,37,32+bob);ctx.quadraticCurveTo(41,36+bob,43,41+bob);ctx.quadraticCurveTo(44,45+bob,39,46+bob);ctx.quadraticCurveTo(33,45+bob,30,41+bob);ctx.quadraticCurveTo(27,37+bob,28,33+bob);ctx.quadraticCurveTo(28,30+bob,29,29+bob);ctx.closePath();ctx.fill();
     ctx.fillStyle=coat;ctx.beginPath();ctx.ellipse(11.5,10+bob,6.2,9.4,-.13,0,Math.PI*2);ctx.ellipse(30.8,9.5+bob,6.3,9.6,.14,0,Math.PI*2);ctx.fill();
     ctx.fillStyle=pink;ctx.beginPath();ctx.ellipse(11.6,10.2+bob,3.2,6.1,-.13,0,Math.PI*2);ctx.ellipse(30.8,9.8+bob,3.2,6.2,.14,0,Math.PI*2);ctx.fill();
+    // Simple face: one broad head, one muzzle, one eye, two cheek spots.
     ctx.fillStyle=coat;ctx.beginPath();ctx.ellipse(22.5,23.5+bob,16.7,15.7,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=ink;ctx.beginPath();ctx.ellipse(13.5,27.5+bob,12.1,7.6,-.05,0,Math.PI*2);ctx.arc(2.9,26.8+bob,3.6,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=tan;ctx.beginPath();ctx.ellipse(17,15.3+bob,4.1,2,-.1,0,Math.PI*2);ctx.ellipse(27,14.8+bob,3.7,1.9,.08,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#765034";ctx.beginPath();ctx.arc(23.2,21.9+bob,3.2,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=ink;ctx.beginPath();ctx.arc(23.8,21.9+bob,1.65,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(24.6,20.9+bob,.75,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=cream;ctx.beginPath();ctx.ellipse(15.7,29.8+bob,5.5,4.8,-.06,0,Math.PI*2);ctx.ellipse(27.2,32+bob,6,5.5,.08,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#393638";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(4,32+bob);ctx.quadraticCurveTo(10,36+bob,16,33+bob);ctx.stroke();
+    ctx.fillStyle=ink;ctx.beginPath();ctx.ellipse(11.5,27.5+bob,10.2,6.8,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(3.4,26.7+bob,3.2,2.5,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=tan;ctx.beginPath();ctx.ellipse(22.7,18.2+bob,3.2,1.7,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#4a3327";ctx.beginPath();ctx.arc(23.2,22.2+bob,2.5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=cream;ctx.beginPath();ctx.ellipse(15.5,29.8+bob,5.2,4.5,0,0,Math.PI*2);ctx.ellipse(27,31.5+bob,5.5,5,0,0,Math.PI*2);ctx.fill();
     leg(42,0,true);leg(72,Math.PI,true);ctx.restore();
   }
   function drawPortraitDog(x,y,type){
