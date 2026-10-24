@@ -1844,66 +1844,98 @@
 
   function drawDalmatianSprite(w=96,h=100,now=0,motion=0){
     ctx.save();
-    const moving=motion>0,cycle=now*.014;
-    const bob=moving?Math.abs(Math.sin(cycle*2))*1.1:0;
-    const legs=[[30,0],[43,Math.PI],[w-34,Math.PI],[w-21,0]];
-    // Compact, jointed legs keep the body at a believable dog height.
-    ctx.strokeStyle="#f4f1e8";ctx.lineCap="round";
-    legs.forEach(([x,phase],i)=>{
-      const swing=moving?Math.sin(cycle+phase)*5:0;
-      const lift=moving?Math.max(0,Math.cos(cycle+phase))*2:0;
-      const hipY=39+bob,kneeX=x+(i<2?2:-2)+swing*.32,kneeY=65+bob-lift*.25;
-      const pawX=x+swing,pawY=h-5-lift;
-      ctx.lineWidth=i<2?5.4:5.8;ctx.beginPath();ctx.moveTo(x,hipY);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();
-      ctx.fillStyle="#17191c";roundedRect(pawX-4,pawY-2,9,4,2);ctx.fill();
-    });
-    // A small raised tail, spotted flank, defined neck, and clean side profile.
-    ctx.strokeStyle="#f4f1e8";ctx.lineWidth=4.5;ctx.beginPath();ctx.moveTo(w-13,25+bob);ctx.quadraticCurveTo(w+4,16+bob,w+9,9+bob);ctx.stroke();
-    ctx.fillStyle="#17191c";ctx.beginPath();ctx.arc(w+9,9+bob,2.8,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#f5f3e8";ctx.beginPath();ctx.ellipse(55,32+bob,35,14,0,0,Math.PI*2);ctx.fill();
-    [[38,24,3.5],[49,37,3],[62,26,3.8],[73,35,3],[81,27,3.2]].forEach(([x,y,r])=>{ctx.fillStyle="#17191c";ctx.beginPath();ctx.arc(x,y+bob,r,0,Math.PI*2);ctx.fill();});
-    // Narrow neck joins the shoulder to the head without swallowing it.
-    ctx.fillStyle="#f5f3e8";ctx.beginPath();ctx.ellipse(28,31+bob,8,12,-.45,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#f5f3e8";ctx.beginPath();ctx.ellipse(18,31+bob,13,13,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#17191c";ctx.beginPath();ctx.ellipse(21,22+bob,5.5,8,.4,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.ellipse(10,30+bob,4.5,5,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#262326";ctx.beginPath();ctx.ellipse(6,34+bob,3.8,2.5,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#17191c";ctx.beginPath();ctx.arc(23,29+bob,1.8,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#aa9d91";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(12,38+bob);ctx.quadraticCurveTo(18,42+bob,24,37+bob);ctx.stroke();
+    ctx.scale(w/96,h/100);
+    const moving=motion>4,cycle=now*.014;
+    const bob=moving?Math.abs(Math.sin(cycle*2))*1.2:0;
+    const leg=(x,phase,near,front)=>{
+      const swing=moving?Math.sin(cycle+phase)*5.5:0;
+      const lift=moving?Math.max(0,Math.cos(cycle+phase))*2.4:0;
+      const hipY=(front?43:44)+bob;
+      const kneeX=x+(front?-2:2)+swing*.38;
+      const kneeY=68+bob-lift*.3;
+      const pawX=x+swing,pawY=95-lift;
+      ctx.strokeStyle=near?"#f5f2e9":"#d8d7cf";
+      ctx.lineWidth=near?5.4:4.6;
+      ctx.lineCap="round";
+      ctx.beginPath();ctx.moveTo(x,hipY);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();
+      ctx.fillStyle="#17191c";roundedRect(pawX-4.5,pawY-2,9,4,2);ctx.fill();
+    };
+    // Far legs sit behind the shorter, spotted body.
+    leg(37,0,false,true);leg(68,Math.PI,false,false);
+    // A shorter, deeper torso and a fuller chest give her a taller stance.
+    ctx.fillStyle="#f5f3e9";ctx.beginPath();ctx.ellipse(57,36+bob,29,14,-.025,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(72,37+bob,13,12,.06,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(35,38+bob,12,16,-.12,0,Math.PI*2);ctx.fill();
+    // A soft black-spotted coat continues across the flank and rump.
+    const spots=[[39,29,3.2,2.8],[44,40,2.5,2.2],[50,32,2.8,3.3],[56,43,3,2.2],[62,28,3.4,2.6],[68,38,2.5,3.1],[74,30,3.2,2.5],[78,41,2.4,2],[53,25,2,1.8],[64,46,2,1.6],[82,35,1.8,2.2]];
+    ctx.fillStyle="#17191c";
+    for(const [x,y,rx,ry] of spots){ctx.beginPath();ctx.ellipse(x,y+bob,rx,ry,.15,0,Math.PI*2);ctx.fill();}
+    // Short neck, recognizable projecting muzzle, and the requested black floppy ear.
+    ctx.fillStyle="#f5f3e9";ctx.beginPath();ctx.ellipse(30,34+bob,10,14,-.28,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(19,31+bob,13,13.5,-.05,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#17191c";ctx.beginPath();ctx.moveTo(17,22+bob);ctx.bezierCurveTo(11,15+bob,5,20+bob,9,29+bob);ctx.bezierCurveTo(11,34+bob,16,33+bob,19,28+bob);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#f5f3e9";ctx.beginPath();ctx.ellipse(8,35+bob,10,6.2,-.06,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#17191c";ctx.beginPath();ctx.ellipse(0.8,34+bob,3.2,2.5,0,0,Math.PI*2);ctx.fill();
+    // Warm brown eye with a small highlight.
+    ctx.fillStyle="#7a4a2a";ctx.beginPath();ctx.arc(22,27+bob,3.1,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#17191c";ctx.beginPath();ctx.arc(22.7,27+bob,1.55,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(23.4,26.2+bob,.7,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#85786d";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(4,39+bob);ctx.quadraticCurveTo(11,43+bob,17,39+bob);ctx.stroke();
+    // A quiet rose collar and tag distinguish her without changing the clean style.
+    ctx.strokeStyle="#bc7180";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(28,33+bob);ctx.quadraticCurveTo(31,39+bob,37,42+bob);ctx.stroke();
+    ctx.fillStyle="#d4ad74";ctx.beginPath();ctx.arc(36,44+bob,2.2,0,Math.PI*2);ctx.fill();
+    // Raised, spotted tail.
+    ctx.strokeStyle="#f5f3e9";ctx.lineWidth=4.5;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(82,31+bob);ctx.quadraticCurveTo(91,27+bob,91,17+bob);ctx.stroke();
+    ctx.fillStyle="#17191c";ctx.beginPath();ctx.arc(91,17+bob,2.7,0,Math.PI*2);ctx.fill();
+    // Near legs are drawn over the body with bent knees and a relaxed stride.
+    leg(45,Math.PI,true,true);leg(77,0,true,false);
     ctx.restore();
   }
 
   function drawFrenchieSprite(w=88,h=46,now=0,motion=0){
     ctx.save();
-    const moving=motion>0,stride=moving?Math.sin(now*.016)*2.5:0;
-    const bob=moving?Math.abs(Math.sin(now*.032))*1:0;
-    const coat="#b27650",highlight="#d1956c",charcoal="#626365",dark="#282a2d";
-    ctx.strokeStyle=coat;ctx.lineCap="round";ctx.lineWidth=6.5;
-    [[28,0],[39,Math.PI],[w-29,Math.PI],[w-18,0]].forEach(([x,phase],i)=>{
-      const swing=moving?Math.sin(now*.016+phase)*2.6:0;
-      const hip=h-16+bob,knee=x+swing*.25,paw=x+swing;
-      ctx.beginPath();ctx.moveTo(x,hip);ctx.lineTo(knee,h-8+bob);ctx.lineTo(paw,h-2);ctx.stroke();
-      ctx.fillStyle=dark;roundedRect(paw-4,h-4,10,4,2);ctx.fill();
-    });
-    ctx.fillStyle=coat;roundedRect(22,12+bob,w-31,h-16,13);ctx.fill();
-    ctx.fillStyle=highlight;ctx.beginPath();ctx.ellipse(28,24+bob,18,12,-.08,0,Math.PI*2);ctx.fill();
-    // Broad low chest, square head, and upright bat ears give the silhouette its Frenchie shape.
-    ctx.fillStyle=coat;ctx.beginPath();ctx.ellipse(18,19+bob,17,15,0,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.moveTo(4,13+bob);ctx.quadraticCurveTo(-1,3+bob,5,1+bob);ctx.quadraticCurveTo(12,0+bob,14,9+bob);ctx.closePath();ctx.fill();
-    ctx.beginPath();ctx.moveTo(19,10+bob);ctx.quadraticCurveTo(23,-1+bob,30,3+bob);ctx.quadraticCurveTo(32,8+bob,26,16+bob);ctx.closePath();ctx.fill();
-    ctx.fillStyle="#d49c84";ctx.beginPath();ctx.moveTo(5,6+bob);ctx.lineTo(9,5+bob);ctx.lineTo(11,11+bob);ctx.closePath();ctx.fill();
-    ctx.beginPath();ctx.moveTo(23,7+bob);ctx.lineTo(27,6+bob);ctx.lineTo(25,12+bob);ctx.closePath();ctx.fill();
-    ctx.fillStyle=charcoal;ctx.beginPath();ctx.ellipse(12,19+bob,10,9,-.1,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#eee9df";ctx.beginPath();ctx.ellipse(27,28+bob,8,10,.12,0,Math.PI*2);ctx.fill();
-    // Soft brindle bars break up the warm coat without turning the dog into a grey blob.
-    ctx.save();ctx.beginPath();roundedRect(27,13+bob,w-37,23,11);ctx.clip();
-    ctx.strokeStyle="rgba(83,82,80,.72)";ctx.lineWidth=3;
-    for(const x of [37,47,58,68]){ctx.beginPath();ctx.moveTo(x,15+bob);ctx.lineTo(x-5,31+bob);ctx.stroke();}
-    ctx.restore();
-    ctx.fillStyle=dark;ctx.beginPath();ctx.ellipse(8,21+bob,4.8,3.8,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#302b29";ctx.beginPath();ctx.arc(17,15+bob,1.7,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#403532";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(3,26+bob);ctx.quadraticCurveTo(9,30+bob,15,26+bob);ctx.moveTo(8,12+bob);ctx.lineTo(13,13+bob);ctx.stroke();
-    ctx.strokeStyle="#a34848";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(30,14+bob);ctx.lineTo(31,30+bob);ctx.stroke();
+    ctx.scale(w/88,h/46);
+    const moving=motion>4,cycle=now*.016;
+    const bob=moving?Math.abs(Math.sin(cycle*2))*.8:0;
+    const stride=moving?Math.sin(cycle)*2.6:0;
+    const coat="#62656a",highlight="#86898c",tan="#c69a70",lightTan="#d7b18a",dark="#303236";
+    const leg=(x,phase,near)=>{
+      const swing=moving?Math.sin(cycle+phase)*2.8:0;
+      const lift=moving?Math.max(0,Math.cos(cycle+phase))*1.2:0;
+      const hipY=32+bob,kneeX=x+swing*.45,pawX=x+swing,pawY=44-lift;
+      ctx.strokeStyle=near?coat:"#4e5156";ctx.lineWidth=5.5;ctx.lineCap="round";
+      ctx.beginPath();ctx.moveTo(x,hipY);ctx.lineTo(kneeX,38+bob-lift*.4);ctx.lineTo(pawX,pawY);ctx.stroke();
+      ctx.strokeStyle=tan;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(pawX-1,40);ctx.lineTo(pawX,43);ctx.stroke();
+      ctx.fillStyle=dark;roundedRect(pawX-4,42,9,3.5,2);ctx.fill();
+    };
+    // Compact legs keep the body low while giving it a little more height off the floor.
+    leg(31,0,false);leg(58,Math.PI,false);
+    // Short, muscular smoky-grey body with a warm tan chest and points.
+    ctx.fillStyle=coat;roundedRect(25,18+bob,42,18,10);ctx.fill();
+    ctx.beginPath();ctx.ellipse(29,27+bob,15,11,.04,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=highlight;ctx.beginPath();ctx.ellipse(51,21+bob,17,3.2,-.04,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=tan;ctx.beginPath();ctx.ellipse(30,29+bob,7.2,8,-.18,0,Math.PI*2);ctx.fill();
+    // Rounded upright bat ears, with soft tips instead of sharp points.
+    ctx.fillStyle=coat;ctx.beginPath();ctx.ellipse(11,9+bob,5.7,8,-.18,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(28,9+bob,5.8,8,.18,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#b98279";ctx.beginPath();ctx.ellipse(11.5,9+bob,2.4,4.6,-.18,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(27.5,9+bob,2.4,4.6,.18,0,Math.PI*2);ctx.fill();
+    // Broad, gently squared head and short muzzle.
+    ctx.fillStyle=coat;ctx.beginPath();ctx.ellipse(20,21+bob,15.5,14,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=dark;ctx.beginPath();ctx.ellipse(12,24+bob,8.7,6.2,-.08,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=tan;ctx.beginPath();ctx.ellipse(17,15+bob,3.8,1.8,-.15,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(14,25+bob,3.5,3.1,-.15,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=tan;ctx.beginPath();ctx.ellipse(22,28+bob,5,4.5,.1,0,Math.PI*2);ctx.fill();
+    // Brown eye, dark nose, and a single clean mouth line read clearly in profile.
+    ctx.fillStyle="#7a4a2a";ctx.beginPath();ctx.arc(18.5,19+bob,2.6,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#161719";ctx.beginPath();ctx.arc(19.1,19+bob,1.35,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(19.7,18.4+bob,.6,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#202124";ctx.beginPath();ctx.ellipse(4.8,23+bob,3.2,2.3,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#302b29";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(5,29+bob);ctx.quadraticCurveTo(11,32+bob,17,28+bob);ctx.stroke();
+    // Near legs add warm tan points; the tail stays short and naturally tucked.
+    leg(36,Math.PI,true);leg(62,0,true);
+    ctx.fillStyle=coat;ctx.beginPath();ctx.ellipse(67,23+bob,4,2.7,-.15,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=dark;ctx.beginPath();ctx.arc(70,22+bob,1.7,0,Math.PI*2);ctx.fill();
     ctx.restore();
   }
 
