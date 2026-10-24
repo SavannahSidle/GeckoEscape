@@ -1901,50 +1901,64 @@
 
   function drawFrenchieSprite(w=88,h=46,now=0,motion=0){
     ctx.save();
-    ctx.scale(w/88,h/46);
-    const moving=motion>4,cycle=now*.019;
-    const bob=moving?Math.abs(Math.sin(cycle*2))*1.05:0;
-    const coat="#66696f",shadow="#51545a",light="#8b8d91",tan="#c89b70",cream="#dfb68e",ear="#b87c74",ink="#27292d";
-    // Frenchie E keeps the compact broad chest and adds a clear, lively step.
-    const leg=(hipX,phase,isNear)=>{
-      const swing=moving?Math.sin(cycle+phase)*4.8:0;
-      const lift=moving?Math.max(0,Math.cos(cycle+phase))*2.5:0;
-      const hipY=27+bob,kneeX=hipX+swing*.48,pawX=hipX+swing,pawY=45-lift;
-      ctx.strokeStyle=isNear?coat:shadow;ctx.lineWidth=5.4;ctx.lineCap="round";ctx.lineJoin="round";
-      ctx.beginPath();ctx.moveTo(hipX,hipY);ctx.lineTo(kneeX,36+bob-lift*.4);ctx.lineTo(pawX,pawY);ctx.stroke();
-      ctx.fillStyle=tan;ctx.beginPath();ctx.ellipse(pawX,41.5-lift,2.1,3.2,0,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle=ink;roundedRect(pawX-4,42.5-lift,8.5,3.5,1.8);ctx.fill();
+    // The selected E design is taller and more compact than the old flattened sprite.
+    // Keep its feet on the existing floor/hitbox line while letting the body fill a natural silhouette.
+    const unit=w/88, verticalOffset=h/unit-56;
+    ctx.scale(unit,unit);
+    ctx.translate(0,verticalOffset);
+    const moving=motion>4,cycle=now*.016;
+    const bob=moving?Math.abs(Math.sin(cycle*2))*1.1:0;
+    const coat="#64686f",shade="#54585f",highlight="#858990",tan="#c99a70",cream="#dfb58d",earInner="#c98579",ink="#292b2f";
+    const leg=(hipX,phase,isNear,isFront)=>{
+      const swing=moving?Math.sin(cycle+phase)*5.4:0;
+      const lift=moving?Math.max(0,Math.cos(cycle+phase))*3:0;
+      const hipY=(isFront?37:38)+bob,kneeX=hipX+swing*.42+(isFront?0:1);
+      const kneeY=47+bob-lift*.35,pawX=hipX+swing,pawY=55-lift;
+      ctx.strokeStyle=isNear?coat:shade;ctx.lineWidth=isFront?6.7:6.2;ctx.lineCap="round";ctx.lineJoin="round";
+      ctx.beginPath();ctx.moveTo(hipX,hipY);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY-1);ctx.stroke();
+      // Warm socks and small oval paws read as feet, not wheels.
+      ctx.strokeStyle=tan;ctx.lineWidth=3.4;ctx.beginPath();ctx.moveTo(kneeX,kneeY+1);ctx.lineTo(pawX,pawY-1);ctx.stroke();
+      ctx.fillStyle=ink;ctx.beginPath();ctx.ellipse(pawX-1,pawY-1,4.8,2.5,-.04,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#474a50";ctx.beginPath();ctx.ellipse(pawX-3,pawY-1.2,1.3,.65,0,0,Math.PI*2);ctx.fill();
     };
-    // Far legs behind body, staggered for a readable trot at character scale.
-    leg(32,Math.PI,false);leg(59,0,false);
-    // Low, wide blue-grey body, rounded shoulders, and the tan chest blaze.
-    ctx.fillStyle=coat;roundedRect(24,15+bob,44,20,9.5);ctx.fill();
-    ctx.beginPath();ctx.ellipse(30,25+bob,15.5,10.8,.05,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.ellipse(57,24+bob,12.5,10.8,-.02,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=light;ctx.beginPath();ctx.ellipse(50,17.4+bob,16,2.3,-.03,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=tan;ctx.beginPath();ctx.ellipse(31,27+bob,7.1,8.1,-.12,0,Math.PI*2);ctx.fill();
-    // Large rounded bat ears with muted warm inner ear.
-    ctx.fillStyle=coat;
-    ctx.beginPath();ctx.ellipse(10.8,8+bob,5.6,8,-.16,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.ellipse(28.2,8+bob,5.7,8,.16,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=ear;
-    ctx.beginPath();ctx.ellipse(11,8.2+bob,2.5,4.7,-.16,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.ellipse(28,8.2+bob,2.5,4.7,.16,0,Math.PI*2);ctx.fill();
-    // Broad, softly squared head, short muzzle, tan cheeks, and expressive brows.
-    ctx.fillStyle=coat;ctx.beginPath();ctx.ellipse(20,20+bob,15.7,13.7,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=ink;ctx.beginPath();ctx.ellipse(11.3,23.2+bob,8.5,6,-.06,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=cream;ctx.beginPath();ctx.ellipse(17,14.2+bob,3,1.45,-.1,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=tan;ctx.beginPath();ctx.ellipse(14.2,24.2+bob,3.25,2.9,-.12,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.ellipse(21.5,27+bob,4.8,4.1,.08,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#75472b";ctx.beginPath();ctx.arc(19,18.4+bob,2.5,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=ink;ctx.beginPath();ctx.arc(19.5,18.4+bob,1.28,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(20.1,17.8+bob,.58,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#202124";ctx.beginPath();ctx.ellipse(4.5,22.5+bob,3.2,2.2,0,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#302b29";ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(5,28.5+bob);ctx.quadraticCurveTo(11,31.3+bob,17,27.8+bob);ctx.stroke();
-    // Near pair overlaps the lower body; short tail ends in a dark tip.
-    leg(36,0,true);leg(62,Math.PI,true);
-    ctx.strokeStyle=coat;ctx.lineWidth=3.2;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(67,23+bob);ctx.quadraticCurveTo(71,21+bob,70.5,18+bob+Math.sin(cycle)*.8);ctx.stroke();
-    ctx.fillStyle=ink;ctx.beginPath();ctx.arc(70.5,18+bob+Math.sin(cycle)*.8,1.55,0,Math.PI*2);ctx.fill();
+    // Back legs are drawn first to keep all four feet distinct in the walk cycle.
+    leg(40,Math.PI,false,true);leg(69,0,false,false);
+    // Short tail nub behind the broad, low Frenchie body.
+    ctx.strokeStyle=coat;ctx.lineWidth=5.2;ctx.lineCap="round";ctx.beginPath();
+    ctx.moveTo(76,24+bob);ctx.quadraticCurveTo(82,22+bob,83,20+bob+Math.sin(cycle)*.8);ctx.stroke();
+    ctx.fillStyle=ink;ctx.beginPath();ctx.ellipse(83.2,20+bob+Math.sin(cycle)*.8,2.7,2.3,.2,0,Math.PI*2);ctx.fill();
+    // Broad muscular torso with the slightly higher rump and flat back from option E.
+    ctx.fillStyle=coat;ctx.beginPath();
+    ctx.moveTo(31,20+bob);ctx.quadraticCurveTo(43,14+bob,57,16+bob);
+    ctx.lineTo(73,18+bob);ctx.quadraticCurveTo(82,20+bob,82,28+bob);
+    ctx.quadraticCurveTo(82,38+bob,76,43+bob);ctx.quadraticCurveTo(68,47+bob,54,44+bob);
+    ctx.lineTo(39,44+bob);ctx.quadraticCurveTo(31,42+bob,29,35+bob);ctx.closePath();ctx.fill();
+    ctx.fillStyle=highlight;ctx.beginPath();ctx.ellipse(60,18.1+bob,14.5,2.4,-.04,0,Math.PI*2);ctx.fill();
+    // Strong shoulder and the broad cream/tan chest patch.
+    ctx.fillStyle=coat;ctx.beginPath();ctx.ellipse(39,31+bob,11.5,13.8,-.08,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=cream;ctx.beginPath();ctx.moveTo(31,30+bob);ctx.quadraticCurveTo(35,32+bob,38,35+bob);
+    ctx.lineTo(43,42+bob);ctx.quadraticCurveTo(39,46+bob,34,43+bob);ctx.quadraticCurveTo(31,39+bob,29,35+bob);ctx.closePath();ctx.fill();
+    // Large rounded upright ears, with muted rose interiors.
+    ctx.fillStyle=coat;ctx.beginPath();ctx.ellipse(11.5,10+bob,6.2,9.4,-.13,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(30.8,9.5+bob,6.3,9.6,.14,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=earInner;ctx.beginPath();ctx.ellipse(11.6,10.2+bob,3.2,6.1,-.13,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(30.8,9.8+bob,3.2,6.2,.14,0,Math.PI*2);ctx.fill();
+    // Broad Frenchie head with a short dark mask and soft cheek shapes.
+    ctx.fillStyle=coat;ctx.beginPath();ctx.ellipse(22.5,23.5+bob,16.2,16.1,-.02,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=ink;ctx.beginPath();ctx.ellipse(13.5,27.5+bob,12.1,7.6,-.05,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(2.9,26.8+bob,4,3.3,-.04,0,Math.PI*2);ctx.fill();
+    // Tan brows, eye patch, and twin cheeks give the face the same expression as E.
+    ctx.fillStyle=tan;ctx.beginPath();ctx.ellipse(17.1,15.3+bob,4.2,2.1,-.13,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(27.2,14.7+bob,3.7,1.9,.08,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=shade;ctx.beginPath();ctx.ellipse(22.7,22.2+bob,5.4,4.5,.03,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#765034";ctx.beginPath();ctx.arc(23.2,21.9+bob,3.25,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=ink;ctx.beginPath();ctx.arc(23.8,21.9+bob,1.7,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(24.6,20.9+bob,.8,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=cream;ctx.beginPath();ctx.ellipse(15.7,29.7+bob,5.6,5,-.06,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(27.2,32.2+bob,6.3,5.8,.08,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#393638";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(4,32+bob);ctx.quadraticCurveTo(10,36+bob,16,33+bob);ctx.stroke();
+    // Near legs sit over the lower body, with alternating phases for a compact trot.
+    leg(43,0,true,true);leg(73,Math.PI,true,false);
     ctx.restore();
   }
   function drawPortraitDog(x,y,type){
