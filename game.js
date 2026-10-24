@@ -1896,25 +1896,25 @@
     ctx.save();
     ctx.scale(w/88,h/46);
     const moving=motion>4,cycle=now*.016;
-    const bob=moving?Math.abs(Math.sin(cycle*2))*.8:0;
-    const stride=moving?Math.sin(cycle)*2.6:0;
+    const bob=moving?Math.abs(Math.sin(cycle*2))*1.05:0;
+    const stride=moving?Math.sin(cycle)*3.8:0;
     const coat="#62656a",highlight="#86898c",tan="#c69a70",lightTan="#d7b18a",dark="#303236";
     const leg=(x,phase,near)=>{
-      const swing=moving?Math.sin(cycle+phase)*2.8:0;
-      const lift=moving?Math.max(0,Math.cos(cycle+phase))*1.2:0;
-      const hipY=32+bob,kneeX=x+swing*.45,pawX=x+swing,pawY=44-lift;
+      const swing=moving?Math.sin(cycle+phase)*4:0;
+      const lift=moving?Math.max(0,Math.cos(cycle+phase))*1.8:0;
+      const hipY=29+bob,kneeX=x+swing*.5,pawX=x+swing,pawY=45-lift;
       ctx.strokeStyle=near?coat:"#4e5156";ctx.lineWidth=5.5;ctx.lineCap="round";
       ctx.beginPath();ctx.moveTo(x,hipY);ctx.lineTo(kneeX,38+bob-lift*.4);ctx.lineTo(pawX,pawY);ctx.stroke();
-      ctx.strokeStyle=tan;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(pawX-1,40);ctx.lineTo(pawX,43);ctx.stroke();
-      ctx.fillStyle=dark;roundedRect(pawX-4,42,9,3.5,2);ctx.fill();
+      ctx.strokeStyle=tan;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(pawX-1,40);ctx.lineTo(pawX,44);ctx.stroke();
+      ctx.fillStyle=dark;roundedRect(pawX-4,43,9,3.5,2);ctx.fill();
     };
     // Compact legs keep the body low while giving it a little more height off the floor.
     leg(31,0,false);leg(58,Math.PI,false);
     // Short, muscular smoky-grey body with a warm tan chest and points.
-    ctx.fillStyle=coat;roundedRect(25,18+bob,42,18,10);ctx.fill();
-    ctx.beginPath();ctx.ellipse(29,27+bob,15,11,.04,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=highlight;ctx.beginPath();ctx.ellipse(51,21+bob,17,3.2,-.04,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=tan;ctx.beginPath();ctx.ellipse(30,29+bob,7.2,8,-.18,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=coat;roundedRect(25,16+bob,42,19,10);ctx.fill();
+    ctx.beginPath();ctx.ellipse(29,26+bob,15,11,.04,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=highlight;ctx.beginPath();ctx.ellipse(51,19+bob,17,3.2,-.04,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=tan;ctx.beginPath();ctx.ellipse(30,28+bob,7.2,8,-.18,0,Math.PI*2);ctx.fill();
     // Rounded upright bat ears, with soft tips instead of sharp points.
     ctx.fillStyle=coat;ctx.beginPath();ctx.ellipse(11,9+bob,5.7,8,-.18,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.ellipse(28,9+bob,5.8,8,.18,0,Math.PI*2);ctx.fill();
