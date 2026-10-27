@@ -1840,8 +1840,8 @@
     ctx.fillStyle=ink;
     for(const [x,y,rx,ry] of spots){ctx.beginPath();ctx.ellipse(x,y+bob,rx,ry,.16,0,Math.PI*2);ctx.fill();}
     // Lightly raised tail with the characteristic black tip and a small spot.
-    ctx.strokeStyle=coat;ctx.lineWidth=4;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(85,44+bob);ctx.quadraticCurveTo(92,39+bob,92,29+bob);ctx.stroke();
-    ctx.fillStyle=ink;ctx.beginPath();ctx.arc(92,29+bob,2.5,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle=coat;ctx.lineWidth=4;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(85,44+bob);ctx.quadraticCurveTo(99,39+bob,99,14+bob);ctx.stroke();
+    ctx.fillStyle=ink;ctx.beginPath();ctx.moveTo(96,17+bob);ctx.lineTo(99,11+bob);ctx.lineTo(102,17+bob);ctx.closePath();ctx.fill();
     // Option D's extended walking pose animates the feet in opposing phases.
     leg(42,0,true,true);leg(76,Math.PI,true,false);
     ctx.restore();
