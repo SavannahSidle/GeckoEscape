@@ -1831,17 +1831,18 @@
     ctx.beginPath();ctx.ellipse(1.8,33+bob,3.2,2.5,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#17191c";ctx.beginPath();ctx.ellipse(27,24+bob,2.3,1.8,-.2,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.ellipse(30.5,29+bob,1.6,2,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#765033";ctx.beginPath();ctx.arc(17.5,26+bob,2.9,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=ink;ctx.beginPath();ctx.arc(18.1,26+bob,1.5,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(18.8,25.2+bob,.65,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#765033";ctx.beginPath();ctx.arc(11.5,26+bob,2.8,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=ink;ctx.beginPath();ctx.arc(12,26+bob,1.45,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(12.6,25.3+bob,.6,0,Math.PI*2);ctx.fill();
     ctx.strokeStyle="#625a52";ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(5,38+bob);ctx.quadraticCurveTo(12,41+bob,18,38+bob);ctx.stroke();
     // Distinct, irregular spots in a varied natural pattern over the back and flanks.
     const spots=[[39,43,2.7,2],[43,51,2,2.7],[48,41,3.5,2.4],[52,48,2.6,2],[57,42,2.4,3],[61,51,3.1,2.2],[66,44,3.6,2.5],[70,53,2.1,2.6],[75,41,3,2.2],[79,48,2.4,2.9],[83,44,1.6,2],[50,56,1.6,1.8],[64,57,1.8,1.5],[36,43,1.4,2]];
     ctx.fillStyle=ink;
     for(const [x,y,rx,ry] of spots){ctx.beginPath();ctx.ellipse(x,y+bob,rx,ry,.16,0,Math.PI*2);ctx.fill();}
-    // Lightly raised tail with the characteristic black tip and a small spot.
-    ctx.strokeStyle=coat;ctx.lineWidth=4;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(85,44+bob);ctx.quadraticCurveTo(99,39+bob,99,14+bob);ctx.stroke();
-    ctx.fillStyle=ink;ctx.beginPath();ctx.moveTo(96,17+bob);ctx.lineTo(99,11+bob);ctx.lineTo(102,17+bob);ctx.closePath();ctx.fill();
+    // Long, smooth tail carried low, ending in a small dark tip.
+    ctx.strokeStyle=coat;ctx.lineWidth=3.8;ctx.lineCap="round";ctx.lineJoin="round";
+    ctx.beginPath();ctx.moveTo(84,48+bob);ctx.quadraticCurveTo(94,51+bob,98,61+bob);ctx.quadraticCurveTo(100,66+bob,101,70+bob);ctx.stroke();
+    ctx.strokeStyle=ink;ctx.lineWidth=2.1;ctx.beginPath();ctx.moveTo(98,62+bob);ctx.quadraticCurveTo(100,66+bob,101,70+bob);ctx.stroke();
     // Option D's extended walking pose animates the feet in opposing phases.
     leg(42,0,true,true);leg(76,Math.PI,true,false);
     ctx.restore();
