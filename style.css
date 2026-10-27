@@ -149,24 +149,18 @@ canvas {
 .crest-skin-select { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin: 9px 0 0; }
 .crest-skin-select span { margin-right: 3px; color: #b8c9bc; font-size: .62rem; font-weight: 900; letter-spacing: .07em; }
 .crest-skin-select button { padding: 4px 8px; border: 1px solid var(--line); border-radius: 999px; background: rgba(16,37,26,.72); color: var(--ink); font: inherit; font-size: .66rem; line-height: 1.2; cursor: pointer; }
-.crest-skin-select button[aria-pressed="true"],
-.frog-skin-select button[aria-pressed="true"] { border-color: var(--acid); color: var(--acid); }
-.frog-skin-select { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin: 8px 0 0; }
-.frog-skin-select span { margin-right: 3px; color: #b8c9bc; font-size: .62rem; font-weight: 900; letter-spacing: .07em; }
-.frog-skin-select button { padding: 4px 8px; border: 1px solid var(--line); border-radius: 999px; background: rgba(16,37,26,.72); color: var(--ink); font: inherit; font-size: .66rem; line-height: 1.2; cursor: pointer; }
-.intro-back-button { display: inline-flex; min-height: 32px; margin: 0 0 9px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 999px; background: rgba(16,37,26,.72); color: var(--ink); font: inherit; font-size: .67rem; font-weight: 900; letter-spacing: .05em; cursor: pointer; }
-.intro-back-button:hover,.intro-back-button:focus-visible { border-color: var(--acid); color: var(--acid); }
+.crest-skin-select button[aria-pressed="true"] { border-color: var(--acid); color: var(--acid); }
 
 .character-select {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  margin: 12px 0 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0 0;
 }
 
 .character-card {
-  min-height: 112px;
-  padding: 10px 11px;
+  min-height: 148px;
+  padding: 15px 13px;
   border: 1px solid var(--line);
   border-radius: 7px;
   background: rgba(7, 21, 15, .88);
@@ -176,8 +170,7 @@ canvas {
 }
 
 .character-card:hover,
-.character-card:focus-visible,
-.character-card.is-selected {
+.character-card:focus-visible {
   border-color: var(--acid);
   background: #10251a;
   transform: translateY(-2px);
@@ -185,7 +178,7 @@ canvas {
 
 .character-card strong,
 .character-card small { display: block; }
-.character-card strong { margin: 6px 0 4px; font-size: .75rem; letter-spacing: .05em; }
+.character-card strong { margin: 9px 0 6px; font-size: .78rem; letter-spacing: .06em; }
 .character-card small { color: #b8c9bc; font-size: .76rem; line-height: 1.35; }
 .character-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; font-size: 1.2rem; }
 .chameleon-icon { background: #567d35; color: #efffb4; }
@@ -217,32 +210,30 @@ canvas {
 
 #lifeLabel { color: #f2a19b; }
 
-.hud-actions {
+.hud-back-button {
   position: absolute;
   top: 44px;
   right: 12px;
   z-index: 2;
-  display: flex;
-  gap: 6px;
-  pointer-events: auto;
-}
-.hud-nav-button {
+  min-width: 62px;
   min-height: 34px;
   padding: 6px 10px;
   border: 1px solid rgba(169,245,118,.48);
   border-radius: 999px;
-  background: rgba(7,21,15,.92);
+  background: rgba(7,21,15,.9);
   color: #f8f4de;
   font: inherit;
-  font-size: .62rem;
+  font-size: .65rem;
   font-weight: 900;
-  letter-spacing: .06em;
+  letter-spacing: .08em;
   cursor: pointer;
+  pointer-events: auto;
 }
-.hud-nav-button:hover,.hud-nav-button:focus-visible { border-color: var(--acid); color: var(--acid); }
-.objective-hint { width: max-content; max-width: 100%; margin: 8px auto 0; padding: 5px 10px; border: 1px solid rgba(210,255,127,.42); border-radius: 999px; background: rgba(7,21,15,.86); color: #d2ff7f; text-align: center; font-size: clamp(.58rem, 1.25vw, .7rem); font-weight: 900; letter-spacing: .045em; }
-.hud-restart-button { border-color: rgba(210,255,127,.72); }
-.browser-note { margin: 0 0 12px; color: var(--muted); text-align: center; font-size: .68rem; letter-spacing: .04em; }
+.hud-back-button:hover,.hud-back-button:focus-visible { border-color: var(--acid); color: var(--acid); }
+.hud-restart-button { position:absolute;top:44px;left:12px;z-index:2;min-width:72px;min-height:34px;padding:6px 10px;border:1px solid rgba(169,245,118,.48);border-radius:999px;background:rgba(7,21,15,.9);color:#f8f4de;font:inherit;font-size:.65rem;font-weight:900;letter-spacing:.08em;cursor:pointer;pointer-events:auto; }
+.hud-restart-button:hover,.hud-restart-button:focus-visible { border-color:var(--acid);color:var(--acid); }
+.objective-hint { width:max-content;max-width:100%;margin:8px auto 0;padding:5px 10px;border:1px solid rgba(210,255,127,.42);border-radius:999px;background:rgba(7,21,15,.86);color:#d2ff7f;text-align:center;font-size:clamp(.58rem,1.25vw,.7rem);font-weight:900;letter-spacing:.045em;pointer-events:none; }
+.touch-controls .is-ready { border-color:var(--acid);box-shadow:0 0 0 2px rgba(210,255,127,.18),0 0 18px rgba(210,255,127,.34); }
 
 .controls-row {
   display: flex;
@@ -332,8 +323,6 @@ canvas {
 .touch-controls .ability-control { color: #ffcab0; }
 .touch-controls .tongue-control { color: #ff9eb8; }
 .touch-controls button:active { background: var(--acid-dark); transform: translateY(1px); }
-.touch-controls button::after { content: attr(data-status); display: block; margin-top: 3px; font-size: .52rem; letter-spacing: .12em; opacity: .72; }
-.touch-controls button.is-cooling { opacity: .58; border-style: dashed; filter: saturate(.65); }
 .hidden { display: none !important; }
 
 @media (hover: none), (pointer: coarse), (max-width: 760px) {
@@ -345,7 +334,7 @@ canvas {
   .touch-controls {
     display: flex;
     width: 100%;
-    min-height: 158px;
+    min-height: 132px;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
@@ -355,78 +344,60 @@ canvas {
     background: linear-gradient(135deg, rgba(10,25,18,.96), rgba(5,14,10,.96));
     touch-action: none;
   }
-  .touch-actions { grid-template-columns: minmax(84px,1fr); grid-auto-rows: 44px; gap: 6px; min-width: 84px; }
-  .touch-actions [data-control="jump"] { grid-column: 1; grid-row: 1; }
-  .touch-controls button { min-width: 84px; min-height: 44px; font-size: .7rem; }
+  .touch-actions { grid-template-columns: repeat(2,minmax(64px,1fr)); gap: 7px; }
+  .touch-actions [data-control="jump"] { grid-column: 2; grid-row: 1; }
+  .touch-controls button { min-width: 64px; min-height: 48px; }
   .controls-row { justify-content: stretch; }
   .overlay { padding: 10px; }
   .panel { padding: 18px; }
-  .overlay.character-menu { position: fixed; inset: 0; z-index: 30; background: rgba(2,9,6,.97); }
-  .overlay.character-menu .panel { width: min(680px, 100%); max-height: 100%; overflow-y: auto; padding: 14px; }
-  .overlay.character-menu .panel h2 { font-size: clamp(1.55rem, 6vw, 2.4rem); max-width: none; }
-  .overlay.character-menu .character-select { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 7px; }
-  .overlay.character-menu .character-card { min-height: 92px; display: block; padding: 8px; }
-  .overlay.character-menu .character-icon { width: 28px; height: 28px; }
-  .overlay.character-menu .character-card strong { margin: 4px 0 2px; font-size: .63rem; }
-  .overlay.character-menu .character-card small { font-size: .61rem; line-height: 1.2; }
   .panel h2 { font-size: clamp(1.6rem, 7vw, 3.2rem); margin-bottom: 8px; }
   .panel p:not(.panel-kicker) { margin-bottom: 14px; line-height: 1.35; }
   .primary-button { padding: 11px 14px; }
-  .character-select { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; margin-top: 8px; }
+  .character-select { grid-template-columns: 1fr; gap: 6px; margin-top: 10px; }
   .crest-skin-select { gap: 4px; }
   .crest-skin-select span { flex-basis: 100%; }
   .crest-skin-select button { flex: 0 1 auto; padding: 4px 7px; font-size: .63rem; }
-  .character-card { min-height: 88px; display: block; padding: 8px; }
-  .character-card .character-icon { width: 30px; height: 30px; }
+  .character-card { min-height: 0; display: grid; grid-template-columns: 34px 1fr; column-gap: 10px; padding: 9px 10px; }
+  .character-card .character-icon { grid-row: 1 / 3; }
   .character-card strong { margin: 1px 0 2px; }
 }
 
 @media (max-height: 600px) and (orientation: landscape) {
   .game-shell { padding-block: 8px; gap: 7px; }
   .game-header { display: none; }
-  /* Keep the playfield's 16:9 width tied to the viewport. An auto width in
-     this height-constrained grid can shrink the whole game when menus change. */
-  .stage-wrap { width: 100%; max-height: none; margin-inline: 0; }
-  .touch-controls { min-height: 158px; padding-block: 4px; }
+  .stage-wrap { max-height: calc(100vh - 156px); max-height: calc(100dvh - 156px); width: auto; margin-inline: auto; }
+  .touch-controls { min-height: 132px; padding-block: 4px; }
   .move-stick { width: 84px; height: 84px; }
   .move-stick-knob { width: 34px; height: 34px; }
-  .touch-actions { grid-template-columns: minmax(84px,1fr); grid-auto-rows: 42px; gap: 4px; min-width: 84px; }
+  .touch-actions { grid-template-columns: minmax(74px,1fr); grid-auto-rows: 38px; gap: 5px; min-width: 74px; }
   .touch-actions [data-control="jump"] { grid-column: 1; grid-row: 1; }
-  .touch-controls button { min-width: 84px; min-height: 42px; padding: 3px; font-size: .62rem; }
+  .touch-controls button { min-width: 74px; min-height: 38px; padding: 4px; font-size: .58rem; }
   .controls-row { min-height: 132px; }
 }
 
 @media (max-width: 420px) {
-  .game-shell { padding-inline: max(8px, env(safe-area-inset-left)) max(8px, env(safe-area-inset-right)); gap: 9px; }
+  .game-shell { padding-inline: 8px; gap: 9px; }
   .move-stick { width: 98px; height: 98px; }
   .move-stick-knob { width: 38px; height: 38px; }
   .touch-controls { padding-inline: 8px; gap: 8px; }
-  .touch-actions { grid-template-columns: minmax(84px,1fr); gap: 6px; }
-  .touch-controls button { min-width: 84px; min-height: 44px; padding: 5px; font-size: .62rem; }
+  .touch-actions { grid-template-columns: repeat(2,minmax(62px,1fr)); gap: 6px; }
+  .touch-controls button { min-width: 62px; min-height: 46px; padding: 6px; font-size: .62rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
 }
 
-.overlay.character-menu .panel { width: min(900px, 100%); padding: clamp(12px, 2vw, 24px); }
-.overlay.character-menu .panel h2 { font-size: clamp(2rem, 4.4vw, 3.2rem); max-width: 18ch; }
 
-.overlay.character-menu { overflow: hidden; padding: 12px; }
-.overlay.character-menu .panel { padding: 16px 22px; }
-.overlay.character-menu .panel h2 { margin: 4px 0 8px; font-size: clamp(2rem, 3.2vw, 2.8rem); }
-.overlay.character-menu .panel p:not(.panel-kicker) { margin-bottom: 8px; font-size: .94rem; }
-.overlay.character-menu .character-select { margin-top: 7px; gap: 7px; }
-.overlay.character-menu .character-card { min-height: 88px; padding: 7px 9px; }
-.overlay.character-menu .character-card strong { margin: 4px 0 2px; font-size: .7rem; }
-.overlay.character-menu .character-card small { font-size: .68rem; line-height: 1.2; }
-.overlay.character-menu .character-icon { width: 30px; height: 30px; }
-.overlay.character-menu .start-actions { margin-top: 8px; }
-@media (max-width: 760px) {
-  .overlay.character-menu { padding: 8px; }
-  .overlay.character-menu .panel { padding: 12px; }
-  .overlay.character-menu .panel h2 { font-size: clamp(1.55rem, 6vw, 2.4rem); }
-  .overlay.character-menu .character-card { min-height: 88px; display: block; padding: 7px; }
-  .overlay.character-menu .character-card strong { font-size: .63rem; }
-  .overlay.character-menu .character-card small { font-size: .61rem; }
-}
+/* Merged frog species and in-game navigation controls. */
+.frog-skin-select { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin: 8px 0 0; }
+.frog-skin-select span { margin-right: 3px; color: #b8c9bc; font-size: .62rem; font-weight: 900; letter-spacing: .07em; }
+.frog-skin-select button { padding: 4px 8px; border: 1px solid var(--line); border-radius: 999px; background: rgba(16,37,26,.72); color: var(--ink); font: inherit; font-size: .66rem; line-height: 1.2; cursor: pointer; }
+.frog-skin-select button[aria-pressed="true"] { border-color: var(--acid); color: var(--acid); }
+.intro-back-button { display: inline-flex; min-height: 32px; margin: 0 0 9px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 999px; background: rgba(16,37,26,.72); color: var(--ink); font: inherit; font-size: .67rem; font-weight: 900; letter-spacing: .05em; cursor: pointer; }
+.intro-back-button:hover,.intro-back-button:focus-visible { border-color: var(--acid); color: var(--acid); }
+.character-card.is-selected { border-color: var(--acid); background: #10251a; transform: translateY(-2px); }
+.hud-actions { position: absolute; top: 44px; right: 12px; z-index: 2; display: flex; gap: 6px; pointer-events: auto; }
+.hud-nav-button { min-height: 34px; padding: 6px 10px; border: 1px solid rgba(169,245,118,.48); border-radius: 999px; background: rgba(7,21,15,.92); color: #f8f4de; font: inherit; font-size: .62rem; font-weight: 900; letter-spacing: .06em; cursor: pointer; }
+.hud-nav-button:hover,.hud-nav-button:focus-visible { border-color: var(--acid); color: var(--acid); }
+.hud-restart-button { border-color: rgba(210,255,127,.72); }

@@ -21,4 +21,4 @@ Collect the required prey, avoid hazards, and reach the exit. If a grabbing hand
 5. The Highway
 6. Boat Escape
 
-Playable characters: chameleon, crested gecko, fire-belly newt, Azureus dart frog, and black Colombian boa.
+Playable characters: chameleon, crested gecko, fire-belly newt, Azureus dart frog, golden poison dart frog, and black Colombian boa.

@@ -2,7 +2,23 @@
   "use strict";
 
   const canvas = document.querySelector("#game");
+  const W = canvas.width;
+  const H = canvas.height;
   const ctx = canvas.getContext("2d");
+
+  function configureCanvasResolution() {
+    const scale = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+    const backingWidth = Math.round(W * scale);
+    const backingHeight = Math.round(H * scale);
+    if (canvas.width !== backingWidth || canvas.height !== backingHeight) {
+      canvas.width = backingWidth;
+      canvas.height = backingHeight;
+    }
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  }
+
+  configureCanvasResolution();
+  window.addEventListener("resize", configureCanvasResolution, { passive: true });
   const overlay = document.querySelector("#overlay");
   const panelKicker = document.querySelector("#panelKicker");
   const panelTitle = document.querySelector("#panelTitle");
@@ -26,25 +42,14 @@
   const objectiveHint = document.querySelector("#objectiveHint");
   const restartLevelButton = document.querySelector("#restartLevelButton");
 
-  const W = canvas.width;
-  const H = canvas.height;
-  function configureCanvasResolution() {
-    const scale = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
-    const backingWidth = Math.round(W * scale);
-    const backingHeight = Math.round(H * scale);
-    if (canvas.width !== backingWidth || canvas.height !== backingHeight) {
-      canvas.width = backingWidth;
-      canvas.height = backingHeight;
-    }
-    ctx.setTransform(scale, 0, 0, scale, 0, 0);
-  }
-  configureCanvasResolution();
-  window.addEventListener("resize", configureCanvasResolution, { passive: true });
   const keys = Object.create(null);
   let resetTouchStick = () => {};
   let caughtUntil = 0;
   let caughtStartedAt = 0;
   let caughtHazard = null;
+  let lastHudRefreshAt = 0;
+  let actionToastText = "";
+  let actionToastUntil = 0;
 
   function clearHeldInputs() {
     for (const key of Object.keys(keys)) keys[key] = false;
@@ -64,13 +69,6 @@
   let state = "menu";
   let levelIndex = 0;
   let lastTime = 0;
-  let lastInputAt = performance.now();
-  let lastHudRefreshAt = 0;
-  let resultPanelUntil = 0;
-  let levelStartedAt = 0;
-  let damageFlashUntil = 0;
-  let actionToastText = "";
-  let actionToastUntil = 0;
   let lives = 3;
   let collected = 0;
   let tailReady = true;
@@ -156,10 +154,10 @@
 
   const characters = {
     chameleon: { name: "CHAMELEON", ability: "TONGUE", secondary: "CAMOUFLAGE", collectible: "CRICKETS", color: "#79a94d", climbSpeed: 135, swimSpeed: 150, w: 42, h: 25 },
-    crested: { name: "CRESTED GECKO", ability: "SHORT TONGUE", secondary: "DROP TAIL", collectible: "CRICKETS", color: "#d29458", climbSpeed: 195, swimSpeed: 160, w: 42, h: 25 },
+    crested: { name: "CRESTED GECKO", ability: "SHORT TONGUE", secondary: "DROP TAIL", collectible: "ROACHES", color: "#d29458", climbSpeed: 195, swimSpeed: 160, w: 42, h: 25 },
     newt: { name: "FIRE-BELLY NEWT", ability: "REGENERATE", secondary: "TOXIN", collectible: "WORMS", color: "#252a28", climbSpeed: 105, swimSpeed: 170, w: 46, h: 23 },
     frog: { name: "AZUREUS DART FROG", ability: "TONGUE", secondary: "POWER LEAP", collectible: "FRUIT FLIES", color: "#2679cb", climbSpeed: 120, swimSpeed: 155, w: 38, h: 27 },
-    boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", secondary: "STRIKE", collectible: "RATS", color: "#030405", climbSpeed: 200, swimSpeed: 255, w: 94, h: 36 },
+    boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", secondary: "STRIKE", collectible: "RATS", color: "#030405", climbSpeed: 155, swimSpeed: 190, w: 94, h: 36 },
     opossum: { name: "VIRGINIA OPOSSUM", ability: "HISS", secondary: "PLAY DEAD", collectible: "FORAGE", color: "#b8b2aa", climbSpeed: 182, swimSpeed: 135, w: 58, h: 31 },
     bat: { name: "EGYPTIAN FRUIT BAT", ability: "HANG", secondary: "ECHO PULSE", collectible: "FRUIT", color: "#806956", climbSpeed: 190, swimSpeed: 145, w: 54, h: 30 },
     goat: { name: "GOAT", ability: "HEADBUTT", secondary: "MOUNTAIN SCRAMBLE", collectible: "FORAGE", color: "#d9d0bb", climbSpeed: 165, swimSpeed: 130, w: 62, h: 38 },
@@ -211,25 +209,25 @@
       decor: "enclosure"
     },
     {
-      label: "LEVEL 3 · CHALLENGING",
+      label: "LEVEL 3 · HARD",
       title: "The Kitchen",
-      intro: "Climb the left-side trash bin to reach the sink and counter. Avoid the cat and Dalmatian while gathering every last meal.",
+      intro: "Cross the long counter and open shelves. Avoid the cat and Dalmatian while gathering every last meal.",
       completeTitle: "You have breached containment.",
       completeText: "The kitchen exit is clear. Somewhere in the dark, a refrigerator hums like destiny.",
       palette: ["#0c1117", "#1d2830", "#754f31", "#f0cc62"],
-      start: [30, 408], exit: [876,88,50,82],
-      platforms: [[0,500,960,40],[12,432,74,68,"kitchenBin"],[375,270,120,18,"spiceShelf"],[105,322,180,18,"sink"],[40,196,210,18,"sill"],[530,206,190,18,"sill"],[775,174,185,18,"fridgeTop"]],
+      start: [45, 445], exit: [876,88,50,82],
+      platforms: [[0,500,960,40],[375,270,120,18,"spiceShelf"],[105,322,180,18,"sink"],[40,196,210,18,"sill"],[530,206,190,18,"sill"],[775,174,185,18,"fridgeTop"]],
       angledPlatforms: [],
       vines: [],
       insects: [[80,410],[420,355],[300,294],[510,294],[690,171],[120,161],[620,120],[875,142]],
       hazards: [
         {x:125,y:172,w:66,h:24,type:"cat",axis:"x",min:60,max:165,speed:105},
-        {x:330,y:400,w:96,h:100,type:"dalmatian",axis:"x",min:275,max:610,speed:78}
+        {x:345,y:368,w:88,h:132,type:"dalmatian",axis:"x",min:275,max:610,speed:78}
       ],
       decor: "kitchen"
     },
     {
-      label: "LEVEL 4 · HARD",
+      label: "LEVEL 4 · LAWLESS",
       title: "The Living Room",
       intro: "Cross the sofa, shelves, and coffee table. The Roomba, French bulldog, cat, and ceiling spider have joined the hunt.",
       completeTitle: "The front door is open.",
@@ -250,7 +248,7 @@
       decor: "house"
     },
     {
-      label: "LEVEL 2 · STEADY",
+      label: "LEVEL 2 · UNDERWATER",
       title: "The Aquarium",
       intro: "The escape route drops through an aquarium. Reptiles need air bubbles. The newt has been waiting its entire moist little life for this.",
       completeTitle: "Out through the filter.",
@@ -402,10 +400,10 @@
     },
     crested: {
       title:"The Arboreal Terrarium",habitat:"crested",palette:["#07150f","#123120","#6f4d2c","#a9f576"],
-      intro:"The glass door is open. Cross the cork shelves and branches. Bright lime vines are climbable with Up or Down.",
+      intro:"The glass door is open. Cross the cork and branches, then make your first terrible decision.",
       start:[55,433],exit:[870,410,48,90],
       platforms:[[0,500,960,40],[45,458,190,22],[76,340,150,18],[250,397,130,18,"corkStep"],[390,355,110,18,"corkStep"],[430,280,110,18,"corkStep"],[500,342,185,20],[438,315,62,16,"corkStep"],[712,270,190,20],[705,205,65,16,"corkStep"],[790,154,150,20]],
-      vines:[[215,328,20,135],[375,260,18,115],[625,210,18,125],[680,204,20,140],[675,342,20,120]],ceilingVines:[[130,82,700,24,"curved"]],insects:[[145,307],[145,132],[570,308],[840,230],[310,370],[445,253],[650,315],[735,185]],
+      vines:[[215,328,20,135],[375,260,18,115],[625,210,18,125],[680,204,20,140],[675,342,20,120]],ceilingVines:[[210,92,560,26,"curved"],[350,182,280,22,"curved"],[430,255,250,20,"curved"]],insects:[[145,307],[145,132],[570,308],[840,230],[310,370],[445,253],[650,315],[735,185]],
       hazards:[{x:420,y:430,w:92,h:70,type:"grab",axis:"x",min:350,max:600,speed:72}]
     },
     newt: {
@@ -504,8 +502,6 @@
     levels[0].angledPlatforms=[];
     levels[0].mice=[];
     Object.assign(levels[0], JSON.parse(JSON.stringify(habitat)), {label:"LEVEL 1 · EASY",decor:"enclosure",completeTitle:habitat.completeTitle||"The room is larger than expected.",completeText:habitat.completeText||"Freedom contains shelves, suspicious noises, and absolutely no climate control."});
-    if(selectedCharacter==="chameleon") levels[0].ceilingVines=[[150,92,680,18,"curved"]];
-    if(selectedCharacter==="crested") levels[0].ceilingVines=[[130,82,700,24,"curved"]];
     standardStoryLayouts.forEach((layout,index)=>{
       const level=levels[index+1];
       level.platforms=layout.platforms.map(platform=>[...platform]);
@@ -546,7 +542,8 @@
   }
 
   function showPanel(kicker, title, text, buttonText, action, allowSelect = false) {
-    introBackButton?.classList.add("hidden");
+    clearHandCapture();
+    clearHeldInputs();
     panelKicker.textContent = kicker;
     panelTitle.textContent = title;
     panelText.textContent = text;
@@ -557,8 +554,8 @@
     levelSelect.classList.add("hidden");
     crestedSkinSelect?.classList.add("hidden");
     frogSkinSelect?.classList.add("hidden");
+    introBackButton?.classList.add("hidden");
     secondaryButton.classList.toggle("hidden", !allowSelect);
-    overlay.classList.remove("character-menu");
     if(allowSelect){secondaryButton.textContent="LEVEL SELECT";secondaryButton.onclick=()=>showLevelSelect();}
     overlay.classList.remove("hidden");
     hud.classList.add("hidden");
@@ -566,17 +563,14 @@
   }
 
   function showMenu() {
-    clearHandCapture();
-    clearHeldInputs();
     state = "menu";
-    showPanel("STORY MODE", "The enclosure door is open.", "Choose an escape artist to begin.", "CHOOSE CHARACTER", showCharacterSelect, true);
+    showPanel("STORY MODE", "The enclosure door is open.", "Choose an escape artist. On a phone: move with the wheel, jump with the far-right button, and tap an ability when it is ready.", "CHOOSE CHARACTER", showCharacterSelect);
   }
 
   function showCharacterSelect() {
+    clearHandCapture();
+    clearHeldInputs();
     state = "character-select";
-    overlay.classList.remove("hidden");
-    hud.classList.add("hidden");
-    overlay.classList.add("character-menu");
     panelKicker.textContent = "CHOOSE YOUR ESCAPE ARTIST";
     panelTitle.textContent = gameEdition===1 ? "Five reptiles and amphibians. Five escapes." : "Six mammals. A truly suspicious getaway.";
     panelText.textContent = gameEdition===1 ? "Choose a reptile or amphibian and escape its enclosure." : "Choose your animal. The crime gets bigger from here.";
@@ -587,12 +581,11 @@
     levelSelect.classList.add("hidden");
     crestedSkinSelect?.classList.add("hidden");
     frogSkinSelect?.classList.add("hidden");
+    introBackButton?.classList.add("hidden");
     characterSelect.querySelectorAll("[data-character]").forEach(button=>{
       const id=button.dataset.character;
       const developerFox=id==="foxLab"||id==="foxAlt";
       button.classList.toggle("hidden",developerFox?!backstageMode:!editionCharacters[gameEdition].has(id));
-      button.classList.toggle("is-selected", id===selectedCharacter);
-      button.setAttribute("aria-pressed", String(id===selectedCharacter));
     });
     characterSelect.classList.remove("hidden");
     characterSelect.querySelector("button:not(.hidden)")?.focus();
@@ -603,15 +596,14 @@
     clearHeldInputs();
     resumePlayAfterLevelSelect=fromGameplay;
     state="level-select";
-    panelKicker.textContent=backstageMode?"BACKSTAGE MODE":"LEVEL SELECT";
+    panelKicker.textContent=allowAllLevels?"DEVELOPMENT LEVEL SELECT":"BACKSTAGE MODE";
     panelTitle.textContent="Choose a level.";
-    panelText.textContent=backstageMode
-      ? `Testing as ${characters[selectedCharacter].name}. Press L to jump to any level; Shift+U unlocks every exit.`
-      : `Playing as ${characters[selectedCharacter].name}. Choose any level to replay it.`;
+    panelText.textContent=`Testing as ${characters[selectedCharacter].name}. Press L to jump to any level; Shift+U unlocks every exit.`;
     primaryButton.classList.add("hidden");
     characterSelect.classList.add("hidden");
     crestedSkinSelect?.classList.add("hidden");
     frogSkinSelect?.classList.add("hidden");
+    introBackButton?.classList.add("hidden");
     levelSelect.classList.remove("hidden");
     levelSelect.querySelectorAll("[data-level]").forEach(button=>{
       const index=Number(button.dataset.level);const level=levels[index];
@@ -637,8 +629,8 @@
     const level = levels[index];
     state = "intro";
     const preyCount = level.insects.length + (level.mice || []).length;
-    const introText = `${level.intro} Catch all ${preyCount} prey to unlock the exit.`;
-    showPanel(level.label, level.title, introText, index === 0 ? "START LEVEL" : "CONTINUE", () => startLevel(index));
+    const controls = " Move with WASD or arrows, jump with Space, and press E for your main ability. On touchscreens, use the movement wheel and action buttons.";
+    showPanel(level.label, level.title, `${level.intro} Catch all ${preyCount} prey to unlock the glowing exit.${controls}`, index === 0 ? "START LEVEL" : "CONTINUE", () => startLevel(index));
     crestedSkinSelect?.classList.toggle("hidden", selectedCharacter!=="crested");
     frogSkinSelect?.classList.toggle("hidden", selectedCharacter!=="frog");
     introBackButton?.classList.remove("hidden");
@@ -659,9 +651,6 @@
     clearHeldInputs();
     levelIndex = index;
     const level = levels[index];
-    levelStartedAt = performance.now();
-    resultPanelUntil = 0;
-    damageFlashUntil = 0;
     player.w = characters[selectedCharacter].w;
     player.h = characters[selectedCharacter].h;
     level.insects.forEach(insect => insect[2] = false);
@@ -741,6 +730,7 @@
     player.spawnY = level.start[1];
     resetPlayer(false);
     levelLabel.textContent = `${level.label}${backstageMode?" · BACKSTAGE":""}${devDoorsUnlocked?" · EXITS UNLOCKED":""}`;
+    actionToastText = ""; actionToastUntil = 0;
     updateHud();
     overlay.classList.add("hidden");
     hud.classList.toggle("hidden",level.decor==="foxMovementLab");
@@ -771,10 +761,9 @@
   function resetPlayer(loseLife = true) {
     clearHandCapture();
     clearHeldInputs();
-    if (loseLife) { lives -= 1; damageFlashUntil = performance.now() + 520; }
+    if (loseLife) lives -= 1;
     if (lives <= 0) {
       state = "dead";
-      resultPanelUntil = performance.now() + 30000;
       if(selectedCharacter==="raccoon")showPanel("ESCAPE FAILED", "Captured by Toronto Animal Services.", "The Trash Tank has been loaded into the municipal shame van. The dog catcher appears exhausted.", "ESCAPE CUSTODY", () => startLevel(levelIndex), true);
       else if(selectedCharacter==="opossum")showPanel("ESCAPE FAILED", "Returned to wildlife rehab.", "Recovery continues. The night shift has reinforced the enrichment pen.", "TRY AGAIN", () => startLevel(levelIndex), true);
       else showPanel("ESCAPE FAILED", "Returned to your enclosure.", "Humiliating. The human has also added another clip to the door.", "TRY AGAIN", () => startLevel(levelIndex), true);
@@ -809,7 +798,7 @@
     const abilityDescriptions={
       chameleon:"E Tongue catches prey · R Camouflage hides from hazards",
       crested:"E Short tongue catches close prey · R Drop tail to escape",
-      newt:"E Regeneration shield heals and protects · R Toxin stuns hazards once",
+      newt:"E Regenerate heals and protects · R Toxin stuns hazards once",
       frog:selectedFrogSpecies==="terribilis"?"E Tongue catches flies · R Poison stuns nearby hazards":"E Tongue catches flies · R Power leap launches you forward",
       boa:"E Constrict stuns close threats · R Strike knocks enemies back"
     };
@@ -818,13 +807,13 @@
     const collectibleLabel=selectedCharacter==="raccoon"&&levels[levelIndex].decor==="towerRestaurant"?"FANCY FOOD":selectedCharacter==="raccoon"&&levels[levelIndex].decor==="parachute"?"AIRBORNE SNACKS":character.collectible;
     bugLabel.textContent = `${collectibleLabel} ${collected}/${preyTotal}${miceTotal?` · MICE ${miceCollected}/${miceTotal}`:""}`;
     const remaining = remainingCollectibles(levels[levelIndex]);
-    if (objectiveHint) objectiveHint.textContent = remaining ? `Catch all ${remaining} prey to unlock the exit` : "EXIT UNLOCKED · Follow the glowing doorway";
+    if (objectiveHint) objectiveHint.textContent = remaining ? `Catch all ${remaining} prey to unlock the glowing exit` : "EXIT UNLOCKED · Follow the glowing doorway";
     if (levels[levelIndex]?.underwater && selectedCharacter !== "newt") {
       abilityLabel.textContent = `AIR ${Math.max(0, Math.ceil(air))}% · ${character.ability}`;
     } else if (selectedCharacter === "crested") {
       abilityLabel.textContent = `SHORT TONGUE · TAIL ${tailReady ? "READY" : "GONE"}`;
     } else if (selectedCharacter === "newt") {
-      const regenerateState = performance.now() >= regenerateCooldownUntil ? "REGENERATION SHIELD READY" : "SHIELD RECHARGING";
+      const regenerateState = performance.now() >= regenerateCooldownUntil ? "REGENERATE READY" : "REGENERATE RECHARGING";
       abilityLabel.textContent = `${regenerateState} · TOXIN ${toxinReady ? "READY" : "USED"}`;
     } else if (selectedCharacter === "frog") {
       const frogPowerReady = selectedFrogSpecies==="terribilis" ? performance.now()>=frogPoisonCooldownUntil : performance.now()>=leapCooldownUntil;
@@ -857,18 +846,14 @@
     }
     if(abilityKeyHelp)abilityKeyHelp.textContent = abilityDescriptions[selectedCharacter] || `E: ${character.ability} · R: ${character.secondary || "SPECIAL"}`;
     abilityButton.textContent = character.ability;
+    abilityButton.classList.toggle("is-ready", !/RECHARGING|USED|GONE/.test(abilityLabel.textContent));
+    tongueButton.classList.toggle("is-ready", !!character.secondary && !/RECHARGING|USED|GONE/.test(abilityLabel.textContent));
     abilityButton.title = abilityDescriptions[selectedCharacter] || character.ability;
     abilityButton.setAttribute("aria-label", `E: ${abilityDescriptions[selectedCharacter] || character.ability}`);
-    const abilityWait = selectedCharacter==="newt" ? performance.now()<regenerateCooldownUntil : selectedCharacter==="boa" ? performance.now()<constrictCooldownUntil : performance.now()<tongueCooldownUntil;
-    abilityButton.dataset.status = abilityWait ? "WAIT" : "READY";
-    abilityButton.classList.toggle("is-cooling", abilityWait);
     tongueButton.textContent = character.secondary || "";
     tongueButton.title = abilityDescriptions[selectedCharacter] || character.secondary || "";
     tongueButton.setAttribute("aria-label", character.secondary ? `R: ${abilityDescriptions[selectedCharacter] || character.secondary}` : "Secondary ability unavailable");
     tongueButton.classList.toggle("hidden", !character.secondary);
-    const specialWait = selectedCharacter==="chameleon" ? performance.now()<camouflageCooldownUntil : selectedCharacter==="crested" ? !tailReady : selectedCharacter==="newt" ? !toxinReady : selectedCharacter==="frog" ? performance.now()<leapCooldownUntil : selectedCharacter==="boa" ? performance.now()<strikeCooldownUntil : false;
-    tongueButton.dataset.status = specialWait ? "WAIT" : "READY";
-    tongueButton.classList.toggle("is-cooling", specialWait);
     lifeLabel.textContent = "♥ ".repeat(Math.max(0, lives)).trim();
   }
 
@@ -882,7 +867,6 @@
     };
     tailReady = false;
     invulnerableUntil = performance.now() + 2400;
-    actionToastText = "TAIL DROP!"; actionToastUntil = performance.now() + 850;
     player.vx = -player.facing * 190;
     player.vy = -180;
     updateHud();
@@ -894,7 +878,6 @@
     if (state !== "playing" || !["chameleon","crested","frog"].includes(selectedCharacter) || now < tongueCooldownUntil) return;
     tongueActiveUntil = now + 230;
     tongueCooldownUntil = now + 520;
-    actionToastText = ""; actionToastUntil = 0;
     tone(610, .045, "sine");
   }
 
@@ -913,7 +896,6 @@
     const now = performance.now();
     if (state !== "playing" || selectedCharacter !== "newt" || !toxinReady) return;
     toxinReady = false;
-    actionToastText = "TOXIN RELEASED!"; actionToastUntil = now + 850;
     toxinActiveUntil = now + 2600;
     updateHud();
     tone(155, .18, "sawtooth");
@@ -922,15 +904,12 @@
   function useRegenerate(){
     const now=performance.now();
     if(state!=="playing"||selectedCharacter!=="newt"||now<regenerateCooldownUntil)return;
-    actionToastText = "REGENERATION SHIELD!"; actionToastUntil = now + 850;
     regenerateUntil=now+2600;
     regenerateCooldownUntil=now+5200;
     if(lives<3)lives=Math.min(3,lives+1);
     invulnerableUntil=Math.max(invulnerableUntil,regenerateUntil);
     updateHud();tone(390,.18,"sine");
   }
-
-  function frogJumpImpulse(){return -410;}
 
   function useFrogPoison(){
     const now=performance.now();
@@ -946,7 +925,6 @@
     const now = performance.now();
     if (state !== "playing" || selectedCharacter !== "frog" || selectedFrogSpecies==="terribilis" || now < leapCooldownUntil) return;
     leapCooldownUntil = now + 650;
-    actionToastText = "POWER LEAP!"; actionToastUntil = now + 750;
     player.vy = levels[levelIndex].underwater ? -characters.frog.swimSpeed * 1.55 : -620;
     player.vx += player.facing * 170;
     player.grounded = false;
@@ -962,7 +940,6 @@
     camouflageColorCycle=[chameleonColorIndex,...Array.from({length:3},()=>Math.floor(Math.random()*5)),next];
     camouflageCycleStartedAt=now;
     camouflageUntil=now+2600;
-    actionToastText = "CAMOUFLAGE!"; actionToastUntil = now + 800;
     camouflageCooldownUntil=now+450;
     updateHud();tone(430,.16,"sine");
   }
@@ -983,8 +960,7 @@
     }
     constrictPulseUntil = now + 900;
     constrictTarget = target ? {x:target.x+target.w/2,y:target.y+target.h/2} : null;
-    if (!target) { actionToastText = "TOO FAR TO CONSTRICT"; actionToastUntil = now + 950; tone(92, .08, "square"); return; }
-    actionToastText = "WRAPPED!"; actionToastUntil = now + 850;
+    if (!target) { tone(92, .08, "square"); return; }
     target.stunnedUntil = now + 3500;
     constrictCooldownUntil = now + 4600;
     updateHud();
@@ -995,20 +971,16 @@
     const now=performance.now();
     if(state!=="playing"||selectedCharacter!=="boa"||now<strikeCooldownUntil)return;
     strikeActiveUntil=now+300;strikeCooldownUntil=now+700;
-    let strikeLanded=false;
-    actionToastText="STRIKE!"; actionToastUntil=now+850;
     const strikeBox={x:player.facing>0?player.x+player.w-12:player.x-92,y:player.y-7,w:104,h:player.h+14};
     const livingTypes=new Set(["cat","dalmatian","frenchie","fish","shark","spider","bird","server","drone"]);
     for(const hazard of levels[levelIndex].hazards){
       if(hazard.defeated||!intersects(strikeBox,hazard))continue;
-      strikeLanded=true;
       if(hazard.type==="grab"||hazard.type==="hand"){
         hazard.stunnedUntil=now+1000;hazard.dir*=-1;
       }else if(livingTypes.has(hazard.type)){
         hazard.defeated=true;
       }
     }
-    if(strikeLanded){actionToastText="STRIKE HIT!";actionToastUntil=now+850;}
     updateHud();tone(190,.09,"sawtooth");
   }
 
@@ -1139,6 +1111,9 @@
     else if (selectedCharacter === "goat") useHeadbutt();
     else if (selectedCharacter === "highland") useHornToss();
     else if (selectedCharacter === "devilfox") useFoxPounce();
+    actionToastText = `${characters[selectedCharacter].ability.toUpperCase()}!`;
+    actionToastUntil = performance.now() + 620;
+    updateHud();
   }
 
   function useSecondaryAbility(){
@@ -1153,6 +1128,9 @@
     else if(selectedCharacter==="goat")useMountainScramble();
     else if(selectedCharacter==="highland")useHighlandCharge();
     else if(selectedCharacter==="devilfox")useMischiefBlink();
+    actionToastText = `${characters[selectedCharacter].secondary || "SPECIAL"}!`;
+    actionToastUntil = performance.now() + 620;
+    updateHud();
   }
 
   function intersects(a, b) {
@@ -1170,14 +1148,10 @@
     tone(523, .1, "triangle");
     setTimeout(() => tone(659, .13, "triangle"), 100);
     const level = levels[levelIndex];
-    const elapsed = Math.max(0, Math.floor((performance.now() - levelStartedAt) / 1000));
-    const timeText = `${Math.floor(elapsed / 60)}:${String(elapsed % 60).padStart(2, "0")}`;
-    const resultText = `${level.completeText}  Run time: ${timeText} · Prey collected: ${collected}/${level.insects.length}.`;
-    resultPanelUntil = performance.now() + 30000;
     if (levelIndex < storyLevelCount() - 1) {
-      showPanel("ESCAPE SUCCESSFUL · LEVEL CLEAR", level.completeTitle, resultText, "NEXT LEVEL", () => showIntro(levelIndex + 1), true);
+      showPanel("ESCAPE SUCCESSFUL", level.completeTitle, level.completeText, "NEXT LEVEL", () => showIntro(levelIndex + 1), true);
     } else {
-      showPanel("STORY COMPLETE · ALL LEVELS CLEAR", level.completeTitle, resultText, "ESCAPE AGAIN", showMenu, true);
+      showPanel("STORY COMPLETE", level.completeTitle, level.completeText, "ESCAPE AGAIN", showMenu, true);
     }
   }
 
@@ -1286,8 +1260,8 @@
     const swimming = Boolean(level.underwater || inHabitatWater);
     // Land movement is species-weighted: the boa carries more mass, the newt stays deliberate, and the geckos keep quick arboreal control.
     let speed = swimming ? (selectedCharacter==="newt"?148:character.swimSpeed) :
-      selectedCharacter==="newt" ? 108 : selectedCharacter==="boa" ? 260 :
-      selectedCharacter==="chameleon" ? 204 : selectedCharacter==="crested" ? 190 :
+      selectedCharacter==="newt" ? 108 : selectedCharacter==="boa" ? 158 :
+      selectedCharacter==="chameleon" ? 190 : selectedCharacter==="crested" ? 190 :
       selectedCharacter==="frog" ? 172 : selectedCharacter==="bat" ? 210 :
       level.decor === "parachute" ? 265 : level.decor === "highway" ? 245 : level.decor === "house" ? 236 : 220;
     if(selectedCharacter==="opossum"&&now>playDeadUntil&&now<opossumRecoveryUntil)speed+=72;
@@ -1295,7 +1269,7 @@
     if (["chameleon","newt","frog","boa","raccoon","opossum","bat","goat","highland","devilfox"].includes(selectedCharacter)) updateHud();
 
     const acceleration = swimming ? 720 :
-      selectedCharacter==="boa" ? 1050 : selectedCharacter==="chameleon" ? 1080 :
+      selectedCharacter==="boa" ? 720 : selectedCharacter==="chameleon" ? 1080 :
       selectedCharacter==="crested" ? 1180 : selectedCharacter==="raccoon" ? 1080 :
       selectedCharacter==="bat" ? 980 : level.decor==="parachute" ? 1180 :
       selectedCharacter==="frog" ? 980 : selectedCharacter==="newt" ? 760 : 1450;
@@ -1303,7 +1277,7 @@
     const playingDead=selectedCharacter==="opossum"&&now<playDeadUntil;
     if (!playingDead&&left) { player.vx -= movementAcceleration * dt; if(selectedCharacter!=="bat"||player.vx<10)player.facing = -1; }
     if (!playingDead&&right) { player.vx += movementAcceleration * dt; if(selectedCharacter!=="bat"||player.vx>-10)player.facing = 1; }
-    if (!left && !right) player.vx *= Math.pow(swimming ? .025 : selectedCharacter==="boa" ? .06 : selectedCharacter==="chameleon" ? .025 : selectedCharacter==="crested" ? .035 : selectedCharacter==="newt" ? .055 : selectedCharacter==="raccoon" ? .065 : selectedCharacter==="bat" ? .22 : level.decor==="parachute" ? .3 : selectedCharacter==="frog" ? .00008 : .0007, dt);
+    if (!left && !right) player.vx *= Math.pow(swimming ? .025 : selectedCharacter==="boa" ? .12 : selectedCharacter==="chameleon" ? .025 : selectedCharacter==="crested" ? .035 : selectedCharacter==="newt" ? .055 : selectedCharacter==="raccoon" ? .065 : selectedCharacter==="bat" ? .22 : level.decor==="parachute" ? .3 : selectedCharacter==="frog" ? .00008 : .0007, dt);
     if(playingDead)player.vx=0;
     player.vx = Math.max(-speed, Math.min(speed, player.vx));
 
@@ -1342,7 +1316,7 @@
         const vine=player.ceilingVine;
         const vineCenter=ceilingVineY(vine,player.x+player.w/2);
         player.y=vine[1]+vine[3]+2+(vineCenter-(vine[1]+vine[3]/2));player.vy=0;player.climbing=false;
-        if(left||right){player.facing=left?-1:1;player.vx=(right?1:-1)*(selectedCharacter==="chameleon"?150:character.climbSpeed);}
+        if(left||right){player.facing=left?-1:1;player.vx=(right?1:-1)*character.climbSpeed;}
         else player.vx=0;
         if(down){player.ceilingClimbing=false;player.ceilingVine=null;player.vy=100;}
         else player.x=Math.max(vine[0]-player.w+5,Math.min(vine[0]+vine[2]-5,player.x));
@@ -1375,7 +1349,7 @@
           if(raccoonMovement&&onWall&&player.vy>90&&!parachuting)player.vy=90;
         }
         if(selectedCharacter==="frog"&&player.grounded&&(left||right)&&now>=frogHopCooldownUntil){
-          player.vy=-125;player.grounded=false;frogAutoHopping=true;frogHopCooldownUntil=now+300;
+          player.vy=-178;player.grounded=false;frogAutoHopping=true;frogHopCooldownUntil=now+300;
         }
         }
       }
@@ -1430,7 +1404,7 @@
     if(player.grounded){
       groundedGraceUntil=now+115;
       if(jumpBufferUntil>now){
-        player.vy=selectedCharacter==="frog"?frogJumpImpulse():-455;
+        player.vy=selectedCharacter==="frog"?-535:-455;
         player.grounded=false;
         jumpBufferUntil=0;
         groundedGraceUntil=0;
@@ -1513,6 +1487,7 @@
         if ((!shieldCheese&&(intersects(player,bug)||(tongue&&intersects(tongue,bug))||(bite&&intersects(bite,bug))))||(shieldCheese&&now<trashShieldUntil&&intersects(player,bug))) {
           insect[2] = true;
           collected += 1;
+          actionToastText = "NICE CATCH!"; actionToastUntil = now + 650;
           if(selectedCharacter==="raccoon"){
             raccoonCombo=now-raccoonLastTreasureAt<2500?raccoonCombo+1:1;raccoonLastTreasureAt=now;raccoonComboUntil=now+2500;
             if(collected%4===0&&lives<3){lives+=1;invulnerableUntil=Math.max(invulnerableUntil,now+650);tone(930,.11,"sine");}
@@ -1527,7 +1502,7 @@
     (level.mice||[]).forEach(mouse=>{
       if(mouse[2])return;
       const mouseBox={x:mouse[0]-14,y:mouse[1]-10,w:28,h:20};
-      if(intersects(player,mouseBox)){mouse[2]=true;miceCollected+=1;updateHud();tone(540+miceCollected*80,.08,"triangle");}
+      if(intersects(player,mouseBox)){mouse[2]=true;miceCollected+=1;actionToastText="NICE CATCH!";actionToastUntil=performance.now()+650;updateHud();tone(540+miceCollected*80,.08,"triangle");}
     });
 
     const exit = {x:level.exit[0], y:level.exit[1], w:level.exit[2], h:level.exit[3]};
@@ -1575,7 +1550,7 @@
     }
     const raccoonMovement=selectedCharacter==="raccoon"||selectedCharacter==="devilfox";
     if (player.grounded || now<groundedGraceUntil || (raccoonMovement&&now<raccoonCoyoteUntil) || (selectedCharacter === "frog" && frogAutoHopping)) {
-      player.vy = selectedCharacter === "frog" ? frogJumpImpulse() : -455;
+      player.vy = selectedCharacter === "frog" ? -535 : -455;
       if(raccoonMovement)raccoonLaunchUntil=now+130;
       player.grounded = false;
       groundedGraceUntil=0;
@@ -1879,21 +1854,22 @@
     ctx.beginPath();ctx.ellipse(10,34+bob,10.5,5.8,-.04,0,Math.PI*2);ctx.fill();
     // Black floppy ear, dark nose, brown eye, and a few small natural head spots.
     ctx.fillStyle=ink;
-    ctx.beginPath();ctx.moveTo(20,20+bob);ctx.bezierCurveTo(13,13+bob,6,17+bob,8,26+bob);ctx.bezierCurveTo(9,32+bob,15,34+bob,21,28+bob);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(29,20+bob);ctx.bezierCurveTo(22,13+bob,15,17+bob,17,26+bob);ctx.bezierCurveTo(18,32+bob,24,34+bob,30,28+bob);ctx.closePath();ctx.fill();
     ctx.beginPath();ctx.ellipse(1.8,33+bob,3.2,2.5,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#17191c";ctx.beginPath();ctx.ellipse(27,24+bob,2.3,1.8,-.2,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.ellipse(30.5,29+bob,1.6,2,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#765033";ctx.beginPath();ctx.arc(24.5,26+bob,2.9,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=ink;ctx.beginPath();ctx.arc(25.1,26+bob,1.5,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(25.8,25.2+bob,.65,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#765033";ctx.beginPath();ctx.arc(11.5,26+bob,2.8,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=ink;ctx.beginPath();ctx.arc(12,26+bob,1.45,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(12.6,25.3+bob,.6,0,Math.PI*2);ctx.fill();
     ctx.strokeStyle="#625a52";ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(5,38+bob);ctx.quadraticCurveTo(12,41+bob,18,38+bob);ctx.stroke();
     // Distinct, irregular spots in a varied natural pattern over the back and flanks.
     const spots=[[39,43,2.7,2],[43,51,2,2.7],[48,41,3.5,2.4],[52,48,2.6,2],[57,42,2.4,3],[61,51,3.1,2.2],[66,44,3.6,2.5],[70,53,2.1,2.6],[75,41,3,2.2],[79,48,2.4,2.9],[83,44,1.6,2],[50,56,1.6,1.8],[64,57,1.8,1.5],[36,43,1.4,2]];
     ctx.fillStyle=ink;
     for(const [x,y,rx,ry] of spots){ctx.beginPath();ctx.ellipse(x,y+bob,rx,ry,.16,0,Math.PI*2);ctx.fill();}
-    // Lightly raised tail with the characteristic black tip and a small spot.
-    ctx.strokeStyle=coat;ctx.lineWidth=4;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(85,44+bob);ctx.quadraticCurveTo(92,39+bob,92,29+bob);ctx.stroke();
-    ctx.fillStyle=ink;ctx.beginPath();ctx.arc(92,29+bob,2.5,0,Math.PI*2);ctx.fill();
+    // Long, smooth tail carried low, ending in a small dark tip.
+    ctx.strokeStyle=coat;ctx.lineWidth=3.8;ctx.lineCap="round";ctx.lineJoin="round";
+    ctx.beginPath();ctx.moveTo(84,48+bob);ctx.quadraticCurveTo(94,51+bob,98,61+bob);ctx.quadraticCurveTo(100,66+bob,101,70+bob);ctx.stroke();
+    ctx.strokeStyle=ink;ctx.lineWidth=2.1;ctx.beginPath();ctx.moveTo(98,62+bob);ctx.quadraticCurveTo(100,66+bob,101,70+bob);ctx.stroke();
     // Option D's extended walking pose animates the feet in opposing phases.
     leg(42,0,true,true);leg(76,Math.PI,true,false);
     ctx.restore();
@@ -1901,34 +1877,70 @@
 
   function drawFrenchieSprite(w=88,h=46,now=0,motion=0){
     ctx.save();
+    // Option E: broad expressive head, compact low body, natural legs, and clean paws.
     const unit=w/88,verticalScale=unit*1.28,verticalOffset=h/verticalScale-56;
-    ctx.scale(unit,verticalScale);ctx.translate(0,verticalOffset);
-    const moving=motion>4,cycle=now*.014,bob=moving?Math.abs(Math.sin(cycle*2))*.8:0;
-    const coat="#64686f",shade="#55595f",highlight="#858990",tan="#c99a70",cream="#dfb58d",pink="#c98579",ink="#292b2f";
-    const leg=(x,phase,near)=>{
-      const swing=moving?Math.sin(cycle+phase)*3.2:0,lift=moving?Math.max(0,Math.cos(cycle+phase))*2:0;
-      const footX=x+swing,footY=54-lift;
-      ctx.strokeStyle=near?coat:shade;ctx.lineWidth=near?6:5.4;ctx.lineCap="round";
-      ctx.beginPath();ctx.moveTo(x,37+bob);ctx.quadraticCurveTo(x+swing*.35,46+bob-lift*.3,footX,footY-1.5);ctx.stroke();
-      ctx.strokeStyle=tan;ctx.lineWidth=2.8;ctx.beginPath();ctx.moveTo(x+(footX-x)*.55,49+bob-lift*.2);ctx.lineTo(footX,footY-1);ctx.stroke();
-      ctx.fillStyle=ink;ctx.beginPath();ctx.ellipse(footX-.4,footY-.8,4,2.25,0,0,Math.PI*2);ctx.fill();
+    ctx.scale(unit,verticalScale);
+    ctx.translate(0,verticalOffset);
+    const moving=motion>4,cycle=now*.016;
+    const bob=moving?Math.abs(Math.sin(cycle*2))*.8:0;
+    const coat="#64686f",shade="#54585f",highlight="#858990",tan="#c99a70",cream="#dfb58d",earInner="#c98579",ink="#292b2f";
+    const leg=(hipX,phase,isNear,isFront)=>{
+      const swing=moving?Math.sin(cycle+phase)*4.2:0;
+      const lift=moving?Math.max(0,Math.cos(cycle+phase))*2.8:0;
+      const hipY=(isFront?37:38)+bob,kneeX=hipX+swing*.42+(isFront?0:1);
+      const kneeY=46.5+bob-lift*.35,pawX=hipX+swing,pawY=55-lift;
+      ctx.strokeStyle=isNear?coat:shade;ctx.lineWidth=isFront?6.5:6;ctx.lineCap="round";ctx.lineJoin="round";
+      ctx.beginPath();ctx.moveTo(hipX,hipY);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY-1);ctx.stroke();
+      // Short warm socks finish in one soft paw shape, with no inset mark.
+      const sockX=kneeX+(pawX-kneeX)*.48,sockY=kneeY+(pawY-1-kneeY)*.48;
+      ctx.strokeStyle=tan;ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(sockX,sockY);ctx.lineTo(pawX,pawY-1);ctx.stroke();
+      ctx.fillStyle=ink;ctx.beginPath();ctx.ellipse(pawX-1,pawY-1,4.2,2.35,-.04,0,Math.PI*2);ctx.fill();
     };
-    leg(34,Math.PI,false);leg(63,0,false);
-    ctx.strokeStyle=coat;ctx.lineWidth=5;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(77,24+bob);ctx.quadraticCurveTo(81,22+bob,82,20+bob+Math.sin(cycle)*.6);ctx.stroke();
-    ctx.fillStyle=ink;ctx.beginPath();ctx.arc(82.5,20+bob+Math.sin(cycle)*.6,2.4,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=coat;ctx.beginPath();ctx.moveTo(35,21+bob);ctx.quadraticCurveTo(44,15+bob,57,16+bob);ctx.lineTo(72,18+bob);ctx.quadraticCurveTo(81,19+bob,83,25+bob);ctx.quadraticCurveTo(84,34+bob,78,40+bob);ctx.quadraticCurveTo(73,44+bob,64,43+bob);ctx.lineTo(43,43+bob);ctx.quadraticCurveTo(36,42+bob,34,36+bob);ctx.closePath();ctx.fill();
-    ctx.fillStyle=highlight;ctx.beginPath();ctx.ellipse(62,18+bob,12,2,-.03,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=cream;ctx.beginPath();ctx.moveTo(29,29+bob);ctx.quadraticCurveTo(34,28+bob,37,32+bob);ctx.quadraticCurveTo(41,36+bob,43,41+bob);ctx.quadraticCurveTo(44,45+bob,39,46+bob);ctx.quadraticCurveTo(33,45+bob,30,41+bob);ctx.quadraticCurveTo(27,37+bob,28,33+bob);ctx.quadraticCurveTo(28,30+bob,29,29+bob);ctx.closePath();ctx.fill();
-    ctx.fillStyle=coat;ctx.beginPath();ctx.ellipse(11.5,10+bob,6.2,9.4,-.13,0,Math.PI*2);ctx.ellipse(30.8,9.5+bob,6.3,9.6,.14,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=pink;ctx.beginPath();ctx.ellipse(11.6,10.2+bob,3.2,6.1,-.13,0,Math.PI*2);ctx.ellipse(30.8,9.8+bob,3.2,6.2,.14,0,Math.PI*2);ctx.fill();
-    // Simple face: one broad head, one muzzle, one eye, two cheek spots.
-    ctx.fillStyle=coat;ctx.beginPath();ctx.ellipse(22.5,23.5+bob,16.7,15.7,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=ink;ctx.beginPath();ctx.ellipse(11.5,27.5+bob,10.2,6.8,0,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.ellipse(3.4,26.7+bob,3.2,2.5,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=tan;ctx.beginPath();ctx.ellipse(22.7,18.2+bob,3.2,1.7,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#4a3327";ctx.beginPath();ctx.arc(23.2,22.2+bob,2.5,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=cream;ctx.beginPath();ctx.ellipse(15.5,29.8+bob,5.2,4.5,0,0,Math.PI*2);ctx.ellipse(27,31.5+bob,5.5,5,0,0,Math.PI*2);ctx.fill();
-    leg(42,0,true);leg(72,Math.PI,true);ctx.restore();
+    // The two depth planes keep all four legs readable through the trot.
+    leg(34,Math.PI,false,true);leg(64,0,false,false);
+    // Small upright tail nub.
+    ctx.strokeStyle=coat;ctx.lineWidth=5.2;ctx.lineCap="round";ctx.beginPath();
+    ctx.moveTo(76,24+bob);ctx.quadraticCurveTo(81,22+bob,82,20+bob+Math.sin(cycle)*.7);ctx.stroke();
+    ctx.fillStyle=ink;ctx.beginPath();ctx.ellipse(82.4,20+bob+Math.sin(cycle)*.7,2.5,2.2,.2,0,Math.PI*2);ctx.fill();
+    // Low, fairly flat back and rounded rump.
+    ctx.fillStyle=coat;ctx.beginPath();
+    ctx.moveTo(33,20+bob);ctx.quadraticCurveTo(43,14.5+bob,56,15.5+bob);
+    ctx.lineTo(72,17+bob);ctx.quadraticCurveTo(80,18+bob,82,23+bob);
+    ctx.quadraticCurveTo(84,30+bob,79,37.5+bob);ctx.quadraticCurveTo(75,42.5+bob,65,42.5+bob);
+    ctx.lineTo(42,42+bob);ctx.quadraticCurveTo(34,41+bob,32,35+bob);ctx.closePath();ctx.fill();
+    ctx.fillStyle=highlight;ctx.beginPath();ctx.ellipse(60,17.7+bob,13.2,2.2,-.04,0,Math.PI*2);ctx.fill();
+    // Rounded shoulder flowing into a wide cream chest bib.
+    ctx.fillStyle=coat;ctx.beginPath();ctx.ellipse(38.5,30.5+bob,10.7,12.8,-.08,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=cream;ctx.beginPath();ctx.moveTo(30,28+bob);
+    ctx.quadraticCurveTo(34,29+bob,37,32+bob);ctx.quadraticCurveTo(41,36+bob,43,41+bob);
+    ctx.quadraticCurveTo(44,44+bob,40,45+bob);ctx.quadraticCurveTo(34,45+bob,31,41+bob);
+    ctx.quadraticCurveTo(28,37+bob,28,33+bob);ctx.quadraticCurveTo(28,30+bob,30,28+bob);ctx.closePath();ctx.fill();
+    // Tall rounded bat ears with muted pink centers.
+    ctx.fillStyle=coat;ctx.beginPath();ctx.ellipse(11.5,10+bob,6.2,9.4,-.13,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(30.8,9.5+bob,6.3,9.6,.14,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=earInner;ctx.beginPath();ctx.ellipse(11.6,10.2+bob,3.2,6.1,-.13,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(30.8,9.8+bob,3.2,6.2,.14,0,Math.PI*2);ctx.fill();
+    // Broad softly squared skull, short dark muzzle, and warm cheek patches.
+    ctx.fillStyle=coat;ctx.beginPath();ctx.moveTo(7.5,24.5+bob);
+    ctx.quadraticCurveTo(7,14+bob,14.5,8.5+bob);ctx.quadraticCurveTo(20,5.5+bob,27.5,7.2+bob);
+    ctx.quadraticCurveTo(36,9.3+bob,38.4,18+bob);ctx.quadraticCurveTo(41,27+bob,36.2,33.8+bob);
+    ctx.quadraticCurveTo(32,39+bob,24,39.3+bob);ctx.quadraticCurveTo(14,39.5+bob,8.5,33.7+bob);
+    ctx.quadraticCurveTo(5.5,30.2+bob,7.5,24.5+bob);ctx.closePath();ctx.fill();
+    ctx.fillStyle=ink;ctx.beginPath();ctx.ellipse(13.5,27.5+bob,12.1,7.6,-.05,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(2.9,26.8+bob,4,3.3,-.04,0,Math.PI*2);ctx.fill();
+    // Tan brows and one bright, expressive brown eye.
+    ctx.fillStyle=tan;ctx.beginPath();ctx.ellipse(17.1,15.3+bob,4.2,2.1,-.13,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(27.2,14.7+bob,3.7,1.9,.08,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=shade;ctx.beginPath();ctx.ellipse(22.7,22.2+bob,5.4,4.5,.03,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#765034";ctx.beginPath();ctx.arc(23.2,21.9+bob,3.25,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=ink;ctx.beginPath();ctx.arc(23.8,21.9+bob,1.7,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(24.6,20.9+bob,.8,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=cream;ctx.beginPath();ctx.ellipse(15.7,29.7+bob,5.6,5,-.06,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(27.2,32.2+bob,6.3,5.8,.08,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#393638";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(4,32+bob);ctx.quadraticCurveTo(10,36+bob,16,33+bob);ctx.stroke();
+    // Front legs sit over the torso; opposing phases make the walk cycle clear.
+    leg(43,0,true,true);leg(73,Math.PI,true,false);
+    ctx.restore();
   }
   function drawPortraitDog(x,y,type){
     ctx.save();ctx.translate(x,y);
@@ -2117,18 +2129,6 @@
     const cx=x+w/2;
     const underwater=Boolean(level.underwater);
     ctx.save();ctx.lineCap="round";
-    if(level.habitat==="crested"){
-      ctx.strokeStyle="#4f7039";ctx.lineWidth=Math.max(10,w*.72);ctx.beginPath();ctx.moveTo(cx,y+h);
-      ctx.bezierCurveTo(x-8,y+h*.68,x+w+12,y+h*.36,cx,y);ctx.stroke();
-      ctx.strokeStyle="#c6ef7f";ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(cx-2,y+h-4);
-      ctx.bezierCurveTo(x-9,y+h*.68,x+w+9,y+h*.36,cx-1,y+4);ctx.stroke();
-      for(let offset=18,index=0;offset<h-8;offset+=27,index++){
-        const leafY=y+h-offset,leafX=cx+Math.sin(offset*.08)*6,direction=index%2===0?-1:1;
-        drawPlantLeaf(leafX+direction*9,leafY-6,direction<0?Math.PI-.22:.22,index%2?"#89bd5b":"#a6d86b",17,7);
-        if(index%2===0){ctx.fillStyle="#d6f49a";ctx.beginPath();ctx.arc(leafX,leafY,2.3,0,Math.PI*2);ctx.fill();}
-      }
-      ctx.restore();return;
-    }
     if(level.habitat==="raccoon"){
       ctx.strokeStyle="#8b969b";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(cx-10,y);ctx.lineTo(cx-10,y+h);ctx.moveTo(cx+10,y);ctx.lineTo(cx+10,y+h);ctx.stroke();
       ctx.lineWidth=3;for(let rung=y+12;rung<y+h;rung+=20){ctx.beginPath();ctx.moveTo(cx-10,rung);ctx.lineTo(cx+10,rung);ctx.stroke();}
@@ -2304,13 +2304,6 @@
         ctx.fillStyle="#745238";roundedRect(p[0]-2,p[1]-4,p[2]+4,p[3]+8,Math.min(28,p[3]/2));ctx.fill();ctx.strokeStyle="#3e3022";ctx.lineWidth=3;ctx.stroke();
         ctx.fillStyle="#33281e";for(let i=0;i<8;i++){const x=p[0]+12+(i*53)%(Math.max(20,p[2]-24));ctx.beginPath();ctx.ellipse(x,p[1]+5+(i%3)*3,10+(i%3)*4,3+(i%2)*2,(i%4)*.2,0,Math.PI*2);ctx.fill();}
         if(p[4]==="boaTunnelRoof"){ctx.fillStyle="#171713";roundedRect(p[0]+10,p[1]+p[3]-1,p[2]-20,40,18);ctx.fill();ctx.strokeStyle="#9a754e";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(p[0]+8,p[1]+p[3]);ctx.quadraticCurveTo(p[0]+p[2]*.5,p[1]+p[3]-8,p[0]+p[2]-8,p[1]+p[3]);ctx.stroke();}
-      }else if(level.decor==="kitchen"&&p[4]==="kitchenBin"){
-        ctx.fillStyle="#59665f";roundedRect(p[0]+5,p[1]+8,p[2]-10,p[3]-8,7);ctx.fill();
-        ctx.strokeStyle="#a5b5a8";ctx.lineWidth=2;roundedRect(p[0]+5,p[1]+8,p[2]-10,p[3]-8,7);ctx.stroke();
-        ctx.fillStyle="#68786b";roundedRect(p[0]+1,p[1]-2,p[2]-2,10,4);ctx.fill();
-        ctx.strokeStyle="#3c4a41";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(p[0]+9,p[1]+16);ctx.lineTo(p[0]+p[2]-9,p[1]+16);ctx.stroke();
-        ctx.fillStyle="#e1e5d9";ctx.font="900 8px system-ui";ctx.textAlign="center";ctx.fillText("TRASH",p[0]+p[2]/2,p[1]+36);
-        ctx.fillStyle="#202723";ctx.beginPath();ctx.arc(p[0]+17,p[1]+p[3]-3,5,0,Math.PI*2);ctx.arc(p[0]+p[2]-17,p[1]+p[3]-3,5,0,Math.PI*2);ctx.fill();
       }else if(level.decor==="kitchen"&&p[4]==="fridgeTop"){
         // The refrigerator artwork itself is the collision surface.
         continue;
@@ -2373,26 +2366,23 @@
     for(const config of (level.swings||[])){const swing=tireSwingPosition(config,performance.now());ctx.strokeStyle="#6b5945";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(swing.anchorX,swing.anchorY);ctx.lineTo(swing.centerX,swing.centerY);ctx.stroke();ctx.strokeStyle="#232625";ctx.lineWidth=16;ctx.beginPath();ctx.ellipse(swing.centerX,swing.centerY,config[4]/2,22,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle="#7c837c";ctx.lineWidth=2;ctx.stroke();}
   }
 
+
   function drawObjectiveMarker(level, time) {
-    if (state !== "playing") return;
-    const targets = [];
-    for (const prey of level.insects) if (!prey[2]) targets.push({ x: prey[0], y: prey[1] });
-    for (const prey of (level.mice || [])) if (!prey[2]) targets.push({ x: prey[0], y: prey[1] });
-    if (!targets.length) return;
-    const px = player.x + player.w / 2, py = player.y + player.h / 2;
-    targets.sort((a, b) => Math.hypot(a.x - px, a.y - py) - Math.hypot(b.x - px, b.y - py));
-    const target = targets[0], radius = 18 + Math.sin(time * .008) * 3;
-    ctx.save();
-    ctx.strokeStyle = "rgba(210,255,127,.92)";
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.arc(target.x, target.y, radius, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.fillStyle = "#d2ff7f";
-    ctx.font = "900 10px system-ui";
-    ctx.textAlign = "center";
-    ctx.fillText("NEXT PREY", target.x, target.y - radius - 5);
-    ctx.restore();
+    const targets=[];
+    for(const prey of level.insects)if(!prey[2])targets.push({x:prey[0],y:prey[1]});
+    for(const prey of (level.mice||[]))if(!prey[2])targets.push({x:prey[0],y:prey[1]});
+    if(!targets.length)return;
+    const px=player.x+player.w/2,py=player.y+player.h/2;
+    targets.sort((a,b)=>Math.hypot(a.x-px,a.y-py)-Math.hypot(b.x-px,b.y-py));
+    const t=targets[0],r=18+Math.sin(time*.008)*3;
+    ctx.save();ctx.strokeStyle="rgba(210,255,127,.92)";ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(t.x,t.y,r,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle="#d2ff7f";ctx.font="900 10px system-ui";ctx.textAlign="center";ctx.fillText("NEXT PREY",t.x,t.y-r-5);ctx.restore();
+  }
+  function drawActionFeedback(time) {
+    if(time>=actionToastUntil||!actionToastText)return;
+    ctx.save();ctx.textAlign="center";ctx.font="900 16px system-ui";
+    const x=player.x+player.w/2,y=player.y-20;ctx.fillStyle="#07150f";roundedRect(x-77,y-15,154,27,12);ctx.fill();
+    ctx.strokeStyle="#d2ff7f";ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle="#d2ff7f";ctx.fillText(actionToastText,x,y+4);ctx.restore();
   }
 
   function drawExit(level) {
@@ -2404,13 +2394,13 @@
     ctx.fillStyle = glow; ctx.fillRect(x-50,y-45,w+100,h+90);
     ctx.fillStyle = "#020604"; ctx.fillRect(x,y,w,h);
     ctx.strokeStyle = locked?"#c75b4e":level.palette[3]; ctx.lineWidth = 3; ctx.strokeRect(x,y,w,h);
-    ctx.fillStyle = locked?"#f4b06b":level.palette[3];
+    ctx.fillStyle = locked?"#df7b6c":level.palette[3];
     const destination=level.decor==="torontoTower"?"OBSERVATION DECK":level.decor==="towerRestaurant"?"EMERGENCY EXIT":level.decor==="parachute"?"LAND HERE":level.decor==="cheeseGetaway"?"JANE + BOAT":level.underwater?"FILTER OUT":"EXIT";
-    const exitLabel = locked?`${remaining} MORE TO COLLECT`:destination;
-    ctx.font = "900 11px system-ui"; ctx.textAlign = "center"; ctx.fillText(exitLabel, x+w/2, y-10);
+    const exitLabel = locked?`${remaining} PREY LEFT`:destination;
+    ctx.font = "900 12px system-ui"; ctx.textAlign = "center"; ctx.fillText(exitLabel, x+w/2, y-10);
     ctx.font = "900 24px system-ui";
-    if(locked){const lockY=y-42,cx=x+w/2;ctx.strokeStyle="#f4b06b";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(cx-6,lockY+1);ctx.lineTo(cx-6,lockY-5);ctx.quadraticCurveTo(cx,lockY-15,cx+6,lockY-5);ctx.lineTo(cx+6,lockY+1);ctx.stroke();ctx.fillStyle="#f4b06b";roundedRect(cx-10,lockY,20,16,3);ctx.fill();ctx.fillStyle="#60401e";ctx.beginPath();ctx.arc(cx,lockY+6,2,0,Math.PI*2);ctx.fill();ctx.fillRect(cx-1,lockY+7,2,4);}else ctx.fillText("↓", x+w/2, y-28);
-    if(!locked){ctx.strokeStyle=level.palette[3];ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x+w/2,y+12);ctx.lineTo(x+w/2,y+h-12);ctx.lineTo(x+w/2-6,y+h-19);ctx.moveTo(x+w/2,y+h-12);ctx.lineTo(x+w/2+6,y+h-19);ctx.stroke();}
+    ctx.fillText(locked?"×":"↓", x+w/2, y-28);
+    if(locked){ctx.strokeStyle="#c75b4e";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x+7,y+8);ctx.lineTo(x+w-7,y+h-8);ctx.moveTo(x+w-7,y+8);ctx.lineTo(x+7,y+h-8);ctx.stroke();}
   }
 
   function drawInsects(level, time) {
@@ -2653,14 +2643,14 @@
     ctx.save();
     ctx.translate(player.x + player.w/2, player.y + player.h/2);
     ctx.scale(player.facing, 1);
-    const green = selectedCrestieSkin==="halloween"?"#aa693f":characters.crested.color;
+    const green = selectedCrestieSkin==="halloween"?"#d9783c":characters.crested.color;
     const spotColor=selectedCrestieSkin==="halloween"?"#34251f":"#593a28";
     const motion=livelyMotion(now,.02);ctx.translate(0,Math.abs(motion.stride)*motion.moving*1.6+motion.landing*1.5);ctx.scale(1+motion.landing*.06,1-motion.landing*.1);
     // Long, gently tapering tail. Crested geckos are not curly-tailed chameleons.
     if (tailReady) {
       ctx.strokeStyle = green; ctx.lineWidth = 7; ctx.lineCap = "round";
       const tailWave=Math.sin(now*.011)*(2+motion.moving*3)+(motion.airborne?-player.vy*.012:0);ctx.beginPath(); ctx.moveTo(-14, 2); ctx.bezierCurveTo(-27, 3-tailWave*.2, -37, 8+tailWave, -49, 5+tailWave*.5); ctx.stroke();
-      if(selectedCrestieSkin==="super-dalmatian"){ctx.fillStyle="#593a28";for(const [x,y,r] of [[-24,2-tailWave*.2,1.4],[-32,6+tailWave*.25,1.7],[-40,6+tailWave*.4,1.2]]){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}}
+      if(selectedCrestieSkin!=="classic"){ctx.fillStyle=selectedCrestieSkin==="halloween"?"#34251f":"#593a28";for(const [x,y,r] of [[-24,2-tailWave*.2,1.4],[-32,6+tailWave*.25,1.7],[-40,6+tailWave*.4,1.2]]){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}}
     }
 
     // Four articulated side-view legs with alternating steps and adhesive toe pads.
@@ -2671,15 +2661,9 @@
     ctx.fillStyle = green;
     ctx.beginPath(); ctx.ellipse(-1,0,20+motion.breath*.35,9+motion.breath*.2,0,0,Math.PI*2); ctx.fill();
     if(selectedCrestieSkin!=="classic"){
-      ctx.save();ctx.beginPath();ctx.ellipse(-1,0,20+motion.breath*.35,9+motion.breath*.2,0,0,Math.PI*2);ctx.clip();
-      if(selectedCrestieSkin==="super-dalmatian"){
-        ctx.fillStyle=spotColor;for(const [x,y,rx,ry] of [[-16,-3,3.1,2.2],[-10,4,2.1,1.8],[-5,-4,2.7,2],[-1,3,3,2.4],[5,-3,2,1.7],[10,3,3.2,2.2],[15,-2,2.4,1.8]]){ctx.beginPath();ctx.ellipse(x,y,rx,ry,(x%3)*.08,0,Math.PI*2);ctx.fill();}
-      }else{
-        ctx.fillStyle="#ead9a5";ctx.beginPath();ctx.moveTo(-20,-3);ctx.quadraticCurveTo(-12,-10,-5,-5);ctx.lineTo(-1,-1);ctx.lineTo(-7,3);ctx.lineTo(-17,4);ctx.closePath();ctx.fill();
-        ctx.beginPath();ctx.moveTo(-3,-7);ctx.quadraticCurveTo(5,-10,11,-5);ctx.lineTo(18,-2);ctx.lineTo(12,3);ctx.lineTo(5,2);ctx.lineTo(2,7);ctx.lineTo(-4,4);ctx.closePath();ctx.fill();
-        ctx.fillStyle="#d79658";ctx.beginPath();ctx.ellipse(-1,-7,17,2.2,0,0,Math.PI*2);ctx.fill();
-      }
-      ctx.restore();
+      ctx.save();ctx.beginPath();ctx.ellipse(-1,0,20+motion.breath*.35,9+motion.breath*.2,0,0,Math.PI*2);ctx.clip();ctx.fillStyle=spotColor;
+      const marks=selectedCrestieSkin==="super-dalmatian"?[[-16,-3,3.1,2.2],[-10,4,2.1,1.8],[-5,-4,2.7,2],[-1,3,3,2.4],[5,-3,2,1.7],[10,3,3.2,2.2],[15,-2,2.4,1.8]]:[[-15,-2,6,3.4],[-3,3,6,3],[9,-2,6,3.5]];
+      for(const [x,y,rx,ry] of marks){ctx.beginPath();ctx.ellipse(x,y,rx,ry,(x%3)*.08,0,Math.PI*2);ctx.fill();}ctx.restore();
     }
     ctx.save();ctx.translate(0,motion.headBob);
     ctx.beginPath();
@@ -2719,16 +2703,13 @@
     const cycleIndex=now-camouflageCycleStartedAt<325?Math.min(camouflageColorCycle.length-1,Math.floor((now-camouflageCycleStartedAt)/65)):camouflageColorCycle.length-1;
     const visibleColorIndex=camouflageColorCycle.length&&now-camouflageCycleStartedAt<325?camouflageColorCycle[cycleIndex]:chameleonColorIndex;
     const green=chameleonColors[visibleColorIndex];
-    const swimming=Boolean(levels[levelIndex]?.underwater);
-    const airborne=!player.grounded&&!player.climbing&&!player.ceilingClimbing&&!swimming;
+    const airborne=!player.grounded&&!player.climbing&&!player.ceilingClimbing;
     const speed=Math.min(1,(Math.abs(player.vx)+Math.abs(player.vy))/190),crawlDirection=player.climbing&&player.vy>0?-1:1,phase=now*(.004+speed*.018)*crawlDirection;
     const chameleonLeg=(hipX,hipY,front,far)=>{
-      const phaseOffset=front===far?0:Math.PI;
-      const swimPhase=phase*1.7+phaseOffset;
-      const step=swimming?Math.sin(swimPhase)*3.5:airborne?(front?1:-1):Math.sin(phase+phaseOffset)*speed*7;
-      const lift=swimming?Math.max(0,Math.cos(swimPhase))*2.2:airborne?(player.vy<0?1:2):Math.max(0,Math.cos(phase+phaseOffset))*speed*3.5;
-      const kneeX=hipX+(front?4:-3)+step*.42,kneeY=hipY+(swimming?(front?-1:2):airborne?(front?1:4):5+lift);
-      const footX=kneeX+(swimming?step*.55:airborne?(front?2:-2):(front?6:-5))+step*.5,footY=hipY+(swimming?(front?4:6):airborne?(front?5:7):12)-lift;
+      const phaseOffset=front===far?0:Math.PI,step=airborne?(front?5:-5):Math.sin(phase+phaseOffset)*speed*7;
+      const lift=airborne?(player.vy<0?2:4):Math.max(0,Math.cos(phase+phaseOffset))*speed*3.5;
+      const kneeX=hipX+(front?5:-4)+step*.48,kneeY=hipY+(airborne?(front?1:6):5+lift);
+      const footX=kneeX+(airborne?(front?8:-7):(front?6:-5))+step*.52,footY=hipY+(airborne?(front?8:11):12)-lift;
       ctx.globalAlpha=far?.52:1;ctx.strokeStyle=green;ctx.lineCap="round";
       // Angular upper arm, bent forearm, and paired grasping toes form the climbing foot.
       ctx.lineWidth=far?4:5;ctx.beginPath();ctx.moveTo(hipX,hipY);ctx.lineTo(kneeX,kneeY);ctx.lineTo(footX,footY);ctx.stroke();
@@ -2738,10 +2719,7 @@
     // Far-side limbs first; the shoulder and haunch stay connected to the moving joints.
     chameleonLeg(-9,-3,false,true);chameleonLeg(9,4,true,true);
     ctx.strokeStyle=green;ctx.lineWidth=6;ctx.lineCap="round";
-    ctx.beginPath();
-    if(swimming){const swish=Math.sin(now*.012)*5;ctx.moveTo(-13,3);ctx.bezierCurveTo(-31,5+swish,-39,-2-swish,-48,4+swish);}
-    else{ctx.moveTo(-13,3);ctx.bezierCurveTo(-37,12,-47,-3,-34,-14);ctx.bezierCurveTo(-23,-22,-18,-9,-29,-5);}
-    ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-13,3);ctx.bezierCurveTo(-37,12,-47,-3,-34,-14);ctx.bezierCurveTo(-23,-22,-18,-9,-29,-5);ctx.stroke();
     ctx.fillStyle=green;ctx.beginPath();ctx.ellipse(-1,Math.sin(phase)*speed*1.2,20,11,-.08,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.moveTo(12,-9);ctx.lineTo(25,-15);ctx.lineTo(31,-4);ctx.lineTo(27,8);ctx.lineTo(12,8);ctx.closePath();ctx.fill();
     // Near-side shoulder and hip muscles overlap the articulated legs naturally.
@@ -3064,7 +3042,6 @@
 
   function drawPlayer(now) {
     ctx.save();
-    if (editionCharacters[gameEdition].has(selectedCharacter)) { const cx=player.x+player.w/2,cy=player.y+player.h/2; ctx.translate(cx,cy); ctx.scale(1.08,1.08); ctx.translate(-cx,-cy); }
     const verticalClimber=player.climbing&&["chameleon","crested","boa","newt"].includes(selectedCharacter);
     if(player.ceilingClimbing&&selectedCharacter!=="bat"){ctx.translate(0,player.y*2+player.h);ctx.scale(1,-1);}
     if(verticalClimber){const cx=player.x+player.w/2,cy=player.y+player.h/2;ctx.translate(cx,cy);ctx.rotate(player.climbDirection<0?-Math.PI/2:Math.PI/2);ctx.translate(-cx,-cy);}
@@ -3184,16 +3161,6 @@
     ctx.fillStyle="#efce55";for(const [x,y,r] of [[48,-1,12],[64,5,10],[55,13,13],[73,15,9]]){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.fillStyle="#9c7623";ctx.beginPath();ctx.arc(x+3,y-2,2,0,Math.PI*2);ctx.fill();ctx.fillStyle="#efce55";}
     if(Math.abs(boatTilt)>.38){ctx.fillStyle="#fff";ctx.font="900 14px system-ui";ctx.textAlign="center";ctx.fillText("OH NO",0,-67);}
     ctx.restore();
-    const dangerTypes=["cat","dalmatian","frenchie","spider","bird","shark","car","truck"];
-    const closeToPlayer=Math.hypot(player.x+player.w/2-(h.x+h.w/2),player.y+player.h/2-(h.y+h.h/2))<145;
-    if(dangerTypes.includes(h.type)&&closeToPlayer&&now>=(h.stunnedUntil||0)){ctx.save();ctx.globalAlpha=.42+.2*Math.sin(now*.018);ctx.strokeStyle="#ff625c";ctx.lineWidth=2.5;ctx.strokeRect(h.x-3,h.y-3,h.w+6,h.h+6);ctx.fillStyle="#ff625c";ctx.font="900 12px system-ui";ctx.textAlign="center";ctx.fillText("!",h.x+h.w/2,h.y-7);ctx.restore();}
-  }
-
-  function drawRouteCues(level){
-    if(!["chameleon","crested","newt","frog","boa"].includes(selectedCharacter)||levelIndex>4)return;
-    ctx.save();ctx.globalAlpha=.46;ctx.strokeStyle="#d8ff9f";ctx.lineWidth=2;ctx.setLineDash([8,11]);
-    for(const p of level.platforms){if(p[2]>=95&&p[1]+p[3]<H-25){ctx.beginPath();ctx.moveTo(p[0]+5,p[1]+1);ctx.lineTo(p[0]+p[2]-5,p[1]+1);ctx.stroke();}}
-    ctx.restore();
   }
 
   function drawHandCapture(now) {
@@ -3239,7 +3206,6 @@
     drawBackdrop(level);
     if(level.decor==="boatEscape"){drawBoatEscape(time);return;}
     drawPlatforms(level);
-    drawRouteCues(level);
     drawExit(level);
     drawInsects(level, time);
     drawMice(level,time);
@@ -3249,25 +3215,20 @@
     drawPlayer(time);
     drawCharacterPickup(time);
     drawObjectiveMarker(level, time);
+    drawActionFeedback(time);
     drawHandCapture(time);
-    if (time < actionToastUntil && state === "playing") { ctx.save(); ctx.font="900 15px system-ui"; ctx.textAlign="center"; const tw=ctx.measureText(actionToastText).width+24,tx=Math.max(tw/2+12,Math.min(W-tw/2-12,player.x+player.w/2)),ty=Math.max(32,player.y-20); ctx.fillStyle="rgba(6,18,12,.9)";roundedRect(tx-tw/2,ty-21,tw,28,8);ctx.fill();ctx.strokeStyle="#a9f576";ctx.lineWidth=1.5;roundedRect(tx-tw/2,ty-21,tw,28,8);ctx.stroke();ctx.fillStyle="#e9ffd9";ctx.fillText(actionToastText,tx,ty-2);ctx.restore(); }
-    if (time < damageFlashUntil) { ctx.save(); ctx.globalAlpha = Math.min(.34, (damageFlashUntil-time)/150); ctx.strokeStyle="#ff4e4e"; ctx.lineWidth=18; ctx.strokeRect(8,8,W-16,H-16); ctx.restore(); }
   }
 
   function frame(time) {
-    if (state === "playing" && time - lastHudRefreshAt >= 250) { lastHudRefreshAt = time; updateHud(); }
-    if ((state === "intro" || state === "character-select") && time - lastInputAt > 90000) { lastInputAt = time; showMenu(); }
-    if ((state === "complete" || state === "dead") && resultPanelUntil && time >= resultPanelUntil) { resultPanelUntil = 0; showMenu(); }
     const dt = Math.min((time - lastTime) / 1000 || 0, .033);
     lastTime = time;
     update(dt, time);
+    if(state==="playing"&&time-lastHudRefreshAt>180){updateHud();lastHudRefreshAt=time;}
     draw(time);
     requestAnimationFrame(frame);
   }
 
-  window.addEventListener("pointerdown", () => { lastInputAt = performance.now(); }, true);
   window.addEventListener("keydown", event => {
-    lastInputAt = performance.now();
     const shiftHeld=event.shiftKey||keys.ShiftLeft||keys.ShiftRight||event.code==="ShiftLeft"||event.code==="ShiftRight";
     const keyName=event.key?.toLowerCase();
     if(event.code==="Escape"){
@@ -3284,7 +3245,7 @@
       if(!devDoorsUnlocked){devDoorsUnlocked=true;levelLabel.textContent+=" · EXITS UNLOCKED";updateHud();tone(660,.12,"triangle");}
       return;
     }
-    if((backstageMode&&event.code==="KeyL")||(shiftHeld&&event.code==="KeyL")){
+    if(event.code==="KeyL"){
       event.preventDefault();
       if(!event.repeat&&state!=="level-select")showLevelSelect(state==="playing",true);
       return;
@@ -3379,7 +3340,6 @@
       applyCharacterHabitat();
       updateHud();
       abilityButton.textContent = characters[selectedCharacter].ability;
-      characterSelect.querySelectorAll("[data-character]").forEach(card=>{const active=card===button;card.classList.toggle("is-selected",active);card.setAttribute("aria-pressed",String(active));});
       if(backstageMode)showLevelSelect();else showIntro(0);
     });
   });
@@ -3428,9 +3388,9 @@
     startLevel(FOX_LAB_LEVEL);
   }else showMenu();
   if(!directFoxRoute){
-    document.title="Gecko Escape";
-    document.querySelector("h1").textContent="GECKO ESCAPE";
-    document.querySelector(".eyebrow").textContent=gameEdition===1?"THE ORIGINAL CREATURE ESCAPES":"THE ANIMAL GETAWAY EXPANDS";
+    document.title=gameEdition===1?"Gecko Escape 1 · Playtest":"Gecko Escape 2";
+    document.querySelector("h1").textContent=gameEdition===1?"GECKO ESCAPE 1":"GECKO ESCAPE 2";
+    document.querySelector(".eyebrow").textContent=gameEdition===1?"GECKO ESCAPE GAMEPLAY DESIGN TEST · /TEST":"THE ANIMAL GETAWAY EXPANDS";
   }
   requestAnimationFrame(frame);
 })();
