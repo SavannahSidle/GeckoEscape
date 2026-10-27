@@ -1827,13 +1827,13 @@
     ctx.beginPath();ctx.ellipse(10,34+bob,10.5,5.8,-.04,0,Math.PI*2);ctx.fill();
     // Black floppy ear, dark nose, brown eye, and a few small natural head spots.
     ctx.fillStyle=ink;
-    ctx.beginPath();ctx.moveTo(20,20+bob);ctx.bezierCurveTo(13,13+bob,6,17+bob,8,26+bob);ctx.bezierCurveTo(9,32+bob,15,34+bob,21,28+bob);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(29,20+bob);ctx.bezierCurveTo(22,13+bob,15,17+bob,17,26+bob);ctx.bezierCurveTo(18,32+bob,24,34+bob,30,28+bob);ctx.closePath();ctx.fill();
     ctx.beginPath();ctx.ellipse(1.8,33+bob,3.2,2.5,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#17191c";ctx.beginPath();ctx.ellipse(27,24+bob,2.3,1.8,-.2,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.ellipse(30.5,29+bob,1.6,2,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#765033";ctx.beginPath();ctx.arc(24.5,26+bob,2.9,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=ink;ctx.beginPath();ctx.arc(25.1,26+bob,1.5,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(25.8,25.2+bob,.65,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#765033";ctx.beginPath();ctx.arc(17.5,26+bob,2.9,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=ink;ctx.beginPath();ctx.arc(18.1,26+bob,1.5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(18.8,25.2+bob,.65,0,Math.PI*2);ctx.fill();
     ctx.strokeStyle="#625a52";ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(5,38+bob);ctx.quadraticCurveTo(12,41+bob,18,38+bob);ctx.stroke();
     // Distinct, irregular spots in a varied natural pattern over the back and flanks.
     const spots=[[39,43,2.7,2],[43,51,2,2.7],[48,41,3.5,2.4],[52,48,2.6,2],[57,42,2.4,3],[61,51,3.1,2.2],[66,44,3.6,2.5],[70,53,2.1,2.6],[75,41,3,2.2],[79,48,2.4,2.9],[83,44,1.6,2],[50,56,1.6,1.8],[64,57,1.8,1.5],[36,43,1.4,2]];
