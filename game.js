@@ -1960,8 +1960,8 @@
     leg(34,Math.PI,false,true);leg(64,0,false,false);
     // Small upright tail nub.
     ctx.strokeStyle=coat;ctx.lineWidth=5.2;ctx.lineCap="round";ctx.beginPath();
-    ctx.moveTo(76,24+bob);ctx.quadraticCurveTo(81,22+bob,82,20+bob+Math.sin(cycle)*.7);ctx.stroke();
-    ctx.fillStyle=ink;ctx.beginPath();ctx.ellipse(82.4,20+bob+Math.sin(cycle)*.7,2.5,2.2,.2,0,Math.PI*2);ctx.fill();
+    ctx.moveTo(76,24+bob);ctx.quadraticCurveTo(81,22+bob,82,20+bob+(moving?Math.sin(cycle)*.7:0));ctx.stroke();
+    ctx.fillStyle=ink;ctx.beginPath();ctx.ellipse(82.4,20+bob+(moving?Math.sin(cycle)*.7:0),2.5,2.2,.2,0,Math.PI*2);ctx.fill();
     // Low, fairly flat back and rounded rump.
     ctx.fillStyle=coat;ctx.beginPath();
     ctx.moveTo(33,20+bob);ctx.quadraticCurveTo(43,14.5+bob,56,15.5+bob);
