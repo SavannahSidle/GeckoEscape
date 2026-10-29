@@ -1682,13 +1682,17 @@
       ctx.lineWidth = 5; ctx.strokeRect(18, 45, 924, 455);
       if(!["raccoon","opossum","bat","goat","highland","devilfox"].includes(level.habitat)){
         drawEnclosureTrees();
-        ctx.save();ctx.globalAlpha=.42;
+        ctx.save();ctx.globalAlpha=frogAtmosphere ? .22 : .42;
         drawLeaves(-18,120,"#1b4b2b");drawLeaves(185,155,"#285c34");drawLeaves(390,105,"#214d2d");
         drawLeaves(545,265,"#285735");drawLeaves(790,125,"#1d492b");drawLeaves(820,335,"#285d37");
         ctx.restore();
       }
       drawHabitatDetails(level);
-      if(!["raccoon","opossum","bat","goat","highland","devilfox"].includes(level.habitat)){drawLeaves(48, 220, "#245f36");drawLeaves(665,180,"#1d4e2e");drawLeaves(720,400,"#245f36");}
+      if(!["raccoon","opossum","bat","goat","highland","devilfox"].includes(level.habitat)){
+        ctx.save();if(frogAtmosphere)ctx.globalAlpha=.18;
+        drawLeaves(48,220,"#245f36");drawLeaves(665,180,"#1d4e2e");drawLeaves(720,400,"#245f36");
+        ctx.restore();
+      }
     } else if (level.decor === "torontoTower") {
       const sky=ctx.createLinearGradient(0,55,0,H);sky.addColorStop(0,"#68acd2");sky.addColorStop(1,"#d8e6e8");ctx.fillStyle=sky;ctx.fillRect(0,55,W,H-55);
       ctx.fillStyle="rgba(255,255,255,.72)";for(const [x,y,s] of [[90,105,1],[430,170,.8],[760,85,1.15]]){ctx.beginPath();ctx.ellipse(x,y,48*s,15*s,0,0,Math.PI*2);ctx.ellipse(x+38*s,y-5*s,35*s,18*s,0,0,Math.PI*2);ctx.fill();}
@@ -2122,26 +2126,32 @@
       for(let i=0;i<50;i++){const x=26+(i*97)%906,y=452+(i*31)%34;ctx.save();ctx.translate(x,y);ctx.rotate((i%7)*.34-.8);ctx.fillStyle=i%3===0?"#9a7544":i%3===1?"#684a31":"#aa8450";ctx.beginPath();ctx.ellipse(0,0,8+(i%4),3+(i%2),0,0,Math.PI*2);ctx.fill();ctx.restore();}
       drawMossFloor(477);drawCorkBark(55,267,64,192,.9);drawCorkBark(835,228,70,230,.82);drawCorkBark(415,326,48,144,.48);
       for(const [index,[x,y]] of [[120,403],[310,436],[612,424],[782,420],[904,404]].entries())drawBromeliad(x,y,"frog",index,.92);
+      ctx.save();ctx.globalAlpha*=.36;
       drawLeaves(-20,195,"#286b3b");drawLeaves(288,154,"#347b43");drawLeaves(552,206,"#286b3b");drawLeaves(790,166,"#3a8245");
       ctx.strokeStyle="#4b8a48";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(220,55);ctx.bezierCurveTo(260,135,185,185,232,263);ctx.moveTo(700,55);ctx.bezierCurveTo(655,130,744,173,708,252);ctx.stroke();
       for(const [x,y] of [[180,315],[355,272],[642,335],[765,290]])drawPlantLeaf(x,y,-.5,"#4a9c4b",34,12);
+      ctx.restore();
     }else if(level.habitat==="glassfrog"){
       // Cool cloud-forest canopy, kept darker than the pale translucent player sprite.
       const mist=ctx.createLinearGradient(0,50,0,496);mist.addColorStop(0,"#14252e");mist.addColorStop(.55,"#28453e");mist.addColorStop(1,"#354a35");ctx.fillStyle=mist;ctx.fillRect(20,50,920,446);
       ctx.fillStyle="rgba(174,224,204,.10)";for(const [x,y,r] of [[185,150,118],[510,100,138],[790,190,122],[345,330,95]]){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
+      ctx.save();ctx.globalAlpha*=.36;
       ctx.strokeStyle="#4e563e";ctx.lineWidth=20;ctx.lineCap="round";for(const [x,bend] of [[100,28],[310,-24],[590,25],[845,-18]]){ctx.beginPath();ctx.moveTo(x,500);ctx.bezierCurveTo(x+bend,360,x-bend,200,x+bend*.35,64);ctx.stroke();}
       for(const [x,y,c] of [[120,188,"#3b7650"],[278,117,"#547e4e"],[526,158,"#3c7551"],[720,115,"#55834e"],[865,262,"#3b704a"]])drawLeaves(x,y,c);
       ctx.strokeStyle="rgba(183,232,216,.42)";ctx.lineWidth=3;for(const [x,y,h] of [[250,70,140],[455,56,178],[760,72,130]]){ctx.beginPath();ctx.moveTo(x,y);ctx.bezierCurveTo(x-18,y+45,x+16,y+82,x,y+h);ctx.stroke();}
+      ctx.restore();
       ctx.fillStyle="#7b6b50";ctx.fillRect(20,480,920,16);ctx.fillStyle="rgba(199,234,220,.2)";for(let x=42;x<930;x+=57){ctx.beginPath();ctx.ellipse(x,478-(x%3)*3,23,5,.08,0,Math.PI*2);ctx.fill();}
       for(const [index,[x,y]] of [[46,493],[913,491]].entries())drawBromeliad(x,y,"glassfrog",index,.78);
     }else if(level.habitat==="treefrog"){
       // Warm tropical foliage and broad leaves frame the red-eyed tree frog's vivid green body.
       const forest=ctx.createLinearGradient(0,50,0,500);forest.addColorStop(0,"#182932");forest.addColorStop(.55,"#324b3d");forest.addColorStop(1,"#5c5133");ctx.fillStyle=forest;ctx.fillRect(20,50,920,446);
       ctx.fillStyle="rgba(236,218,157,.16)";ctx.beginPath();ctx.arc(780,118,48,0,Math.PI*2);ctx.fill();ctx.fillStyle="rgba(255,230,167,.74)";ctx.beginPath();ctx.arc(780,118,23,0,Math.PI*2);ctx.fill();
+      ctx.save();ctx.globalAlpha*=.36;
       ctx.strokeStyle="#57442c";ctx.lineWidth=28;ctx.lineCap="round";for(const [x,bend] of [[100,23],[350,-30],[620,26],[870,-28]]){ctx.beginPath();ctx.moveTo(x,500);ctx.bezierCurveTo(x+bend,355,x-bend,210,x+bend*.3,52);ctx.stroke();}
       for(const [x,y,c] of [[75,208,"#397647"],[210,125,"#5c944d"],[380,183,"#43834a"],[570,118,"#67964d"],[725,230,"#397346"],[895,157,"#568b4a"]])drawLeaves(x,y,c);
       ctx.fillStyle="#64513a";ctx.fillRect(20,480,920,16);ctx.fillStyle="rgba(220,198,127,.32)";for(let x=38;x<940;x+=49){ctx.beginPath();ctx.ellipse(x,475-(x%4)*2,19,5,-.15,0,Math.PI*2);ctx.fill();}
       ctx.strokeStyle="rgba(159,197,116,.55)";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(280,50);ctx.bezierCurveTo(320,125,250,200,305,278);ctx.moveTo(700,55);ctx.bezierCurveTo(664,120,728,184,692,244);ctx.stroke();
+      ctx.restore();
       for(const [index,[x,y]] of [[44,493],[915,492],[480,492]].entries())drawBromeliad(x,y,"treefrog",index,.78);
     }else if(level.habitat==="boa"){
       ctx.fillStyle="#4b3524";ctx.fillRect(20,462,920,34);ctx.fillStyle="#6b4a2e";for(let x=25;x<940;x+=19){ctx.beginPath();ctx.ellipse(x,470+(x%5)*4,13,6,.2,0,Math.PI*2);ctx.fill();}
