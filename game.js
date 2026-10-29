@@ -5,6 +5,8 @@
   const W = canvas.width;
   const H = canvas.height;
   const ctx = canvas.getContext("2d");
+  const frogHabitatBackground = new Image();
+  frogHabitatBackground.src = new URL("assets/frog-bromeliad-monstera-background.jpg", document.currentScript.src).href;
 
   function configureCanvasResolution() {
     const scale = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
@@ -99,6 +101,8 @@
   let regenerateUntil = 0;
   let regenerateCooldownUntil = 0;
   let frogHopCooldownUntil = 0;
+  let glassCamouflageUntil = 0;
+  let glassCamouflageCooldownUntil = 0;
   let jumpBufferUntil = 0;
   let groundedGraceUntil = 0;
   let climbDetachUntil = 0;
@@ -157,6 +161,8 @@
     crested: { name: "CRESTED GECKO", ability: "SHORT TONGUE", secondary: "DROP TAIL", collectible: "ROACHES", color: "#d29458", climbSpeed: 195, swimSpeed: 160, w: 42, h: 25 },
     newt: { name: "FIRE-BELLY NEWT", ability: "REGENERATE", secondary: "TOXIN", collectible: "WORMS", color: "#252a28", climbSpeed: 105, swimSpeed: 170, w: 46, h: 23 },
     frog: { name: "AZUREUS DART FROG", ability: "TONGUE", secondary: "POWER LEAP", collectible: "FRUIT FLIES", color: "#2679cb", climbSpeed: 120, swimSpeed: 155, w: 38, h: 27 },
+    glassfrog: { name: "GLASS FROG", ability: "GLASS CAMOUFLAGE", secondary: "", collectible: "MOTHS", color: "#a9f3c3", climbSpeed: 150, swimSpeed: 145, w: 42, h: 30 },
+    treefrog: { name: "RED-EYED TREE FROG", ability: "TONGUE", secondary: "POWER LEAP", collectible: "MOTHS", color: "#59d45c", climbSpeed: 175, swimSpeed: 150, w: 46, h: 32 },
     boa: { name: "BLACK COLOMBIAN BOA", ability: "CONSTRICT", secondary: "STRIKE", collectible: "RATS", color: "#030405", climbSpeed: 155, swimSpeed: 190, w: 94, h: 36 },
     opossum: { name: "VIRGINIA OPOSSUM", ability: "HISS", secondary: "PLAY DEAD", collectible: "FORAGE", color: "#b8b2aa", climbSpeed: 182, swimSpeed: 135, w: 58, h: 31 },
     bat: { name: "EGYPTIAN FRUIT BAT", ability: "HANG", secondary: "ECHO PULSE", collectible: "FRUIT", color: "#806956", climbSpeed: 190, swimSpeed: 145, w: 54, h: 30 },
@@ -167,9 +173,9 @@
     foxAlt: { name: "ALT FOX", ability: "RUN", secondary: "JUMP", collectible: "NONE", color: "#c85e2c", climbSpeed: 0, swimSpeed: 0, w: 120, h: 100 }
   };
 
-  const singleLevelCharacters=new Set(["opossum","bat","goat","highland","devilfox","foxLab","foxAlt"]);
+  const singleLevelCharacters=new Set(["opossum","bat","goat","highland","devilfox","foxLab","foxAlt","glassfrog","treefrog"]);
   const editionCharacters = {
-    1: new Set(["chameleon","crested","newt","frog","boa"]),
+    1: new Set(["chameleon","crested","newt","frog","boa","glassfrog","treefrog"]),
     2: new Set()
   };
   const storyLevelCount=()=>backstageMode?levels.length:singleLevelCharacters.has(selectedCharacter)?1:["chameleon","crested","newt","frog","boa"].includes(selectedCharacter)?5:3;
@@ -395,7 +401,7 @@
       intro:"The screen door is loose. Cross the ficus branches and leave before anyone notices the suspiciously empty vine.",
       start:[64,427],exit:[870,410,48,90],
       platforms:[[0,500,960,40],[42,452,190,20],[80,340,150,18],[240,405,36,16,"branchStep"],[275,392,175,20],[382,350,95,16,"branchStep"],[450,244,120,16,"branchStep"],[510,330,190,20],[684,222,62,16,"branchStep"],[735,264,180,20],[570,180,165,18],[820,368,105,16,"branchStep"]],
-      vines:[[420,278,18,118],[455,230,16,122],[655,188,18,142],[270,276,18,136]],ceilingVines:[[150,92,680,18,"woody"]],insects:[[149,307],[95,135],[330,355],[590,292],[810,225],[292,375],[425,327],[510,218],[760,235],[855,343]],
+      vines:[[455,230,16,122],[655,188,18,142],[270,276,18,136]],ceilingVines:[[150,92,680,18,"woody"]],insects:[[149,307],[95,135],[330,355],[590,292],[810,225],[292,375],[425,327],[510,218],[760,235],[855,343]],
       hazards:[{x:430,y:430,w:92,h:70,type:"grab",axis:"x",min:350,max:620,speed:72}]
     },
     crested: {
@@ -403,14 +409,14 @@
       intro:"The glass door is open. Cross the cork and branches, then make your first terrible decision.",
       start:[55,433],exit:[870,410,48,90],
       platforms:[[0,500,960,40],[45,458,190,22],[76,340,150,18],[250,397,130,18,"corkStep"],[390,355,110,18,"corkStep"],[430,280,110,18,"corkStep"],[500,342,185,20],[438,315,62,16,"corkStep"],[712,270,190,20],[705,205,65,16,"corkStep"],[790,154,150,20]],
-      vines:[[215,328,20,135],[375,260,18,115],[625,210,18,125],[680,204,20,140],[675,342,20,120]],ceilingVines:[[210,92,560,26,"curved"],[350,182,280,22,"curved"],[430,255,250,20,"curved"]],insects:[[145,307],[145,132],[570,308],[840,230],[310,370],[445,253],[650,315],[735,185]],
+      vines:[[215,328,20,135],[375,260,18,115],[625,210,18,125],[680,204,20,140],[675,342,20,120]],ceilingVines:[[210,92,560,26,"curved"],[430,255,250,20,"curved"]],insects:[[145,307],[145,132],[570,308],[840,230],[310,370],[445,253],[650,315],[735,185]],
       hazards:[{x:420,y:430,w:92,h:70,type:"grab",axis:"x",min:350,max:600,speed:72}]
     },
     newt: {
       title:"The Paludarium",habitat:"newt",palette:["#07151a","#153b3d","#536b50","#65d6c4"],
       intro:"The lid has shifted above the shoreline. Climb from water to stone and investigate this administrative failure.",
       start:[112,435],exit:[870,410,48,90],
-      platforms:[[0,500,960,40],[55,458,220,22],[82,342,150,18],[205,282,130,18],[310,422,150,18],[238,240,145,16,"shoreStone"],[385,205,135,16,"shoreStone"],[395,165,135,18],[510,252,130,18],[528,198,100,16,"shoreStone"],[490,372,170,18],[690,320,180,18],[760,232,150,18],[770,390,150,18,"shoreStone"]],
+      platforms:[[0,500,960,40],[238,240,145,16,"shoreStone"],[385,205,135,16,"shoreStone"],[395,165,135,18],[510,252,130,18],[528,198,100,16,"shoreStone"],[490,372,170,18],[690,320,180,18],[760,232,150,18],[770,390,150,18,"shoreStone"]],
       vines:[[650,260,18,130],[705,205,18,120],[845,165,18,155]],insects:[[151,309],[270,249],[350,390],[462,132],[560,338],[575,219],[800,285],[350,225],[570,178],[816,355]],
       hazards:[{x:475,y:430,w:92,h:70,type:"grab",axis:"x",min:410,max:620,speed:68}]
     },
@@ -421,6 +427,26 @@
       platforms:[[0,500,960,40],[75,455,175,20],[90,342,145,18],[235,425,45,16,"leafBridge"],[285,405,145,18],[365,328,105,16,"leafBridge"],[265,270,135,18],[380,95,140,18],[422,165,95,16,"leafBridge"],[465,350,150,18],[530,220,130,18],[610,285,36,16,"leafBridge"],[650,295,160,18],[730,174,90,16,"leafBridge"],[780,215,145,18]],
       vines:[],insects:[[158,309],[330,370],[332,237],[450,62],[535,315],[595,187],[825,180],[295,378],[405,302],[625,258],[762,152]],
       hazards:[{x:470,y:430,w:86,h:66,type:"grab",axis:"x",min:390,max:620,speed:70}]
+    },
+    glassfrog: {
+      title:"The Cloud-Forest Canopy",habitat:"glassfrog",palette:["#0a1720","#183740","#52614d","#b9f2cb"],
+      intro:"Climb wet stems through the cloud-forest canopy. Use Glass Camouflage to slip past the keeper’s sweeping hand, collect every moth, and reach the canopy door.",
+      completeTitle:"The canopy opens to the night.",completeText:"Every moth is accounted for, the glass frog is safe, and the keeper is left staring at a very convincing leaf.",
+      start:[55,430],exit:[870,95,48,90],
+      platforms:[[0,500,960,40],[35,458,155,18,"leafBridge"],[225,402,112,16,"leafBridge"],[360,340,120,16,"leafBridge"],[520,286,125,16,"leafBridge"],[690,225,110,16,"leafBridge"],[805,155,125,18,"leafBridge"],[145,302,94,15,"leafBridge"],[420,205,90,15,"leafBridge"]],
+      vines:[[184,300,16,158],[333,244,16,158],[480,185,16,155],[645,144,16,142],[796,92,16,145]],
+      insects:[[110,428],[275,372],[410,310],[570,256],[735,195],[455,175]],
+      hazards:[{x:500,y:430,w:82,h:64,type:"grab",axis:"x",min:420,max:690,speed:76}]
+    },
+    treefrog: {
+      title:"The Red-Eyed Tree Frog Habitat",habitat:"treefrog",palette:["#101b20","#263d3b","#675638","#b6eb66"],
+      intro:"Cross the broad leaves and climb the hanging vines. Catch every moth with your tongue, then use a Power Leap to clear the keeper’s hand and reach the exit.",
+      completeTitle:"A clean leap into the night.",completeText:"The red-eyed tree frog clears the final branch and disappears into the warm forest air.",
+      start:[55,430],exit:[870,105,48,90],
+      platforms:[[0,500,960,40],[38,458,175,20,"leafBridge"],[246,397,150,18,"leafBridge"],[430,333,135,18,"leafBridge"],[602,267,140,18,"leafBridge"],[790,195,140,18,"leafBridge"],[105,327,105,16,"leafBridge"],[320,265,100,16,"leafBridge"],[515,198,105,16,"leafBridge"],[704,132,100,16,"leafBridge"]],
+      vines:[[215,300,16,158],[397,230,16,167],[566,160,16,175],[744,98,16,170]],
+      insects:[[120,428],[300,366],[485,302],[655,236],[850,165],[360,235]],
+      hazards:[{x:480,y:430,w:82,h:64,type:"grab",axis:"x",min:390,max:665,speed:80}]
     },
     boa: {
       title:"The Boa Enclosure",habitat:"boa",palette:["#0b100d","#242a20","#62472d","#a0b37b"],
@@ -572,7 +598,7 @@
     clearHeldInputs();
     state = "character-select";
     panelKicker.textContent = "CHOOSE YOUR ESCAPE ARTIST";
-    panelTitle.textContent = gameEdition===1 ? "Five reptiles and amphibians. Five escapes." : "Six mammals. A truly suspicious getaway.";
+    panelTitle.textContent = gameEdition===1 ? "Seven reptiles and amphibians. Seven escapes." : "Six mammals. A truly suspicious getaway.";
     panelText.textContent = gameEdition===1 ? "Choose a reptile or amphibian and escape its enclosure." : "Choose your animal. The crime gets bigger from here.";
     primaryButton.classList.add("hidden");
     secondaryButton.textContent="BACK";
@@ -674,6 +700,8 @@
     regenerateUntil = 0;
     regenerateCooldownUntil = 0;
     frogHopCooldownUntil = 0;
+    glassCamouflageUntil = 0;
+    glassCamouflageCooldownUntil = 0;
     frogPoisonUntil = 0;
     frogPoisonCooldownUntil = 0;
     jumpBufferUntil = 0;
@@ -800,6 +828,8 @@
       crested:"E Short tongue catches close prey · R Drop tail to escape",
       newt:"E Regenerate heals and protects · R Toxin stuns hazards once",
       frog:selectedFrogSpecies==="terribilis"?"E Tongue catches flies · R Poison stuns nearby hazards":"E Tongue catches flies · R Power leap launches you forward",
+      glassfrog:"E Glass Camouflage makes the moving hand overlook you briefly",
+      treefrog:"E Tongue catches moths · R Power Leap launches you across wide gaps",
       boa:"E Constrict stuns close threats · R Strike knocks enemies back"
     };
     const preyTotal = levels[levelIndex].insects.length;
@@ -818,6 +848,10 @@
     } else if (selectedCharacter === "frog") {
       const frogPowerReady = selectedFrogSpecies==="terribilis" ? performance.now()>=frogPoisonCooldownUntil : performance.now()>=leapCooldownUntil;
       abilityLabel.textContent = `TONGUE · ${selectedFrogSpecies==="terribilis" ? (frogPowerReady?"POISON READY":"POISON RECHARGING") : (frogPowerReady?"POWER LEAP READY":"LEAP RECHARGING")}`;
+    } else if (selectedCharacter === "glassfrog") {
+      abilityLabel.textContent = performance.now()>=glassCamouflageCooldownUntil?"GLASS CAMOUFLAGE READY":"CAMOUFLAGE RECHARGING";
+    } else if (selectedCharacter === "treefrog") {
+      abilityLabel.textContent = `TONGUE · ${performance.now()>=leapCooldownUntil?"POWER LEAP READY":"LEAP RECHARGING"}`;
     } else if (selectedCharacter === "boa") {
       const constrictState=performance.now()>=constrictCooldownUntil?"CONSTRICT READY":"CONSTRICT RECHARGING";
       const strikeState=performance.now()>=strikeCooldownUntil?"STRIKE READY":"STRIKE RECHARGING";
@@ -875,14 +909,14 @@
 
   function useTongue() {
     const now = performance.now();
-    if (state !== "playing" || !["chameleon","crested","frog"].includes(selectedCharacter) || now < tongueCooldownUntil) return;
+    if (state !== "playing" || !["chameleon","crested","frog","treefrog"].includes(selectedCharacter) || now < tongueCooldownUntil) return;
     tongueActiveUntil = now + 230;
     tongueCooldownUntil = now + 520;
     tone(610, .045, "sine");
   }
 
   function tongueHitbox(now) {
-    if (!["chameleon","crested","frog"].includes(selectedCharacter) || now >= tongueActiveUntil) return null;
+    if (!["chameleon","crested","frog","treefrog"].includes(selectedCharacter) || now >= tongueActiveUntil) return null;
     const reach = selectedCharacter==="crested"?58:112;
     return {
       x: player.facing > 0 ? player.x + player.w - 3 : player.x - reach + 3,
@@ -923,13 +957,21 @@
 
   function usePowerLeap() {
     const now = performance.now();
-    if (state !== "playing" || selectedCharacter !== "frog" || selectedFrogSpecies==="terribilis" || now < leapCooldownUntil) return;
+    if (state !== "playing" || (selectedCharacter === "frog" && selectedFrogSpecies==="terribilis") || !["frog","treefrog"].includes(selectedCharacter) || now < leapCooldownUntil) return;
     leapCooldownUntil = now + 650;
-    player.vy = levels[levelIndex].underwater ? -characters.frog.swimSpeed * 1.55 : -620;
+    player.vy = levels[levelIndex].underwater ? -characters[selectedCharacter].swimSpeed * 1.55 : selectedCharacter==="treefrog"?-580:-620;
     player.vx += player.facing * 170;
     player.grounded = false;
     updateHud();
     tone(360, .1, "triangle");
+  }
+
+  function useGlassCamouflage(){
+    const now=performance.now();
+    if(state!=="playing"||selectedCharacter!=="glassfrog"||now<glassCamouflageCooldownUntil)return;
+    glassCamouflageUntil=now+1900;glassCamouflageCooldownUntil=now+6200;
+    actionToastText="GLASS CAMOUFLAGE!";actionToastUntil=now+850;
+    updateHud();tone(520,.12,"sine");
   }
 
   function useCamouflage() {
@@ -1103,6 +1145,8 @@
 
   function useAbility() {
     if (["chameleon","crested","frog"].includes(selectedCharacter)) useTongue();
+    else if (selectedCharacter === "treefrog") useTongue();
+    else if (selectedCharacter === "glassfrog") useGlassCamouflage();
     else if (selectedCharacter === "newt") useRegenerate();
     else if (selectedCharacter === "boa") useConstrict();
     else if (selectedCharacter === "raccoon") useBite();
@@ -1111,14 +1155,19 @@
     else if (selectedCharacter === "goat") useHeadbutt();
     else if (selectedCharacter === "highland") useHornToss();
     else if (selectedCharacter === "devilfox") useFoxPounce();
-    actionToastText = `${characters[selectedCharacter].ability.toUpperCase()}!`;
-    actionToastUntil = performance.now() + 620;
+    if(["chameleon","crested","frog","treefrog"].includes(selectedCharacter)){
+      actionToastText = ""; actionToastUntil = 0;
+    }else{
+      actionToastText = `${characters[selectedCharacter].ability.toUpperCase()}!`;
+      actionToastUntil = performance.now() + 620;
+    }
     updateHud();
   }
 
   function useSecondaryAbility(){
     if(selectedCharacter==="chameleon")useCamouflage();
     else if(selectedCharacter==="frog"){if(selectedFrogSpecies==="terribilis")useFrogPoison();else usePowerLeap();}
+    else if(selectedCharacter==="treefrog")usePowerLeap();
     else if(selectedCharacter==="crested")dropTail();
     else if(selectedCharacter==="newt")useToxin();
     else if(selectedCharacter==="boa")useStrike();
@@ -1260,24 +1309,24 @@
     const swimming = Boolean(level.underwater || inHabitatWater);
     // Land movement is species-weighted: the boa carries more mass, the newt stays deliberate, and the geckos keep quick arboreal control.
     let speed = swimming ? (selectedCharacter==="newt"?148:character.swimSpeed) :
-      selectedCharacter==="newt" ? 108 : selectedCharacter==="boa" ? 158 :
+      selectedCharacter==="newt" ? 116 : selectedCharacter==="boa" ? 158 :
       selectedCharacter==="chameleon" ? 190 : selectedCharacter==="crested" ? 190 :
-      selectedCharacter==="frog" ? 172 : selectedCharacter==="bat" ? 210 :
+      ["frog","glassfrog","treefrog"].includes(selectedCharacter) ? 172 : selectedCharacter==="bat" ? 210 :
       level.decor === "parachute" ? 265 : level.decor === "highway" ? 245 : level.decor === "house" ? 236 : 220;
     if(selectedCharacter==="opossum"&&now>playDeadUntil&&now<opossumRecoveryUntil)speed+=72;
     if(selectedCharacter==="raccoon"&&!swimming&&(left||right))speed+=18+(raccoonCombo>=3&&now<raccoonComboUntil?32:0);
-    if (["chameleon","newt","frog","boa","raccoon","opossum","bat","goat","highland","devilfox"].includes(selectedCharacter)) updateHud();
+    if (["chameleon","newt","frog","glassfrog","treefrog","boa","raccoon","opossum","bat","goat","highland","devilfox"].includes(selectedCharacter)) updateHud();
 
     const acceleration = swimming ? 720 :
       selectedCharacter==="boa" ? 720 : selectedCharacter==="chameleon" ? 1080 :
       selectedCharacter==="crested" ? 1180 : selectedCharacter==="raccoon" ? 1080 :
       selectedCharacter==="bat" ? 980 : level.decor==="parachute" ? 1180 :
-      selectedCharacter==="frog" ? 980 : selectedCharacter==="newt" ? 760 : 1450;
+      ["frog","glassfrog","treefrog"].includes(selectedCharacter) ? 980 : selectedCharacter==="newt" ? 760 : 1450;
     const movementAcceleration=player.grounded?acceleration:acceleration*.78;
     const playingDead=selectedCharacter==="opossum"&&now<playDeadUntil;
     if (!playingDead&&left) { player.vx -= movementAcceleration * dt; if(selectedCharacter!=="bat"||player.vx<10)player.facing = -1; }
     if (!playingDead&&right) { player.vx += movementAcceleration * dt; if(selectedCharacter!=="bat"||player.vx>-10)player.facing = 1; }
-    if (!left && !right) player.vx *= Math.pow(swimming ? .025 : selectedCharacter==="boa" ? .12 : selectedCharacter==="chameleon" ? .025 : selectedCharacter==="crested" ? .035 : selectedCharacter==="newt" ? .055 : selectedCharacter==="raccoon" ? .065 : selectedCharacter==="bat" ? .22 : level.decor==="parachute" ? .3 : selectedCharacter==="frog" ? .00008 : .0007, dt);
+    if (!left && !right) player.vx *= Math.pow(swimming ? .025 : selectedCharacter==="boa" ? .12 : selectedCharacter==="chameleon" ? .025 : selectedCharacter==="crested" ? .035 : selectedCharacter==="newt" ? .055 : selectedCharacter==="raccoon" ? .065 : selectedCharacter==="bat" ? .22 : level.decor==="parachute" ? .3 : ["frog","glassfrog","treefrog"].includes(selectedCharacter) ? .00008 : .0007, dt);
     if(playingDead)player.vx=0;
     player.vx = Math.max(-speed, Math.min(speed, player.vx));
 
@@ -1310,7 +1359,7 @@
       const climbProbe = {x:player.x-10,y:player.y-8,w:player.w+20,h:player.h+16};
       const onVine = level.vines.some(v => intersects(climbProbe, {x:v[0], y:v[1], w:v[2], h:v[3]})) || Boolean(diagonalVine);
       const onWall = player.x <= 5 || player.x + player.w >= W - 5;
-      const canClimbVertically=["chameleon","crested","newt","boa"].includes(selectedCharacter);
+      const canClimbVertically=["chameleon","crested","newt","boa","glassfrog","treefrog"].includes(selectedCharacter);
       const climbingCeiling=player.ceilingClimbing&&player.ceilingVine&&canClimbVertically;
       if(climbingCeiling){
         const vine=player.ceilingVine;
@@ -1348,7 +1397,7 @@
           player.vy = Math.min(player.vy, parachuting?145:gliding?205:570);
           if(raccoonMovement&&onWall&&player.vy>90&&!parachuting)player.vy=90;
         }
-        if(selectedCharacter==="frog"&&player.grounded&&(left||right)&&now>=frogHopCooldownUntil){
+        if(["frog","glassfrog","treefrog"].includes(selectedCharacter)&&player.grounded&&(left||right)&&now>=frogHopCooldownUntil){
           player.vy=-178;player.grounded=false;frogAutoHopping=true;frogHopCooldownUntil=now+300;
         }
         }
@@ -1385,10 +1434,10 @@
         player.y = platform.y - player.h;
         player.vy = 0;
         player.grounded = true;
-        if(["raccoon","opossum","devilfox","crested","newt","goat","highland","frog"].includes(selectedCharacter)&&landingSpeed>150)raccoonLandingUntil=now+190;
+        if(["raccoon","opossum","devilfox","crested","newt","goat","highland","frog","glassfrog","treefrog"].includes(selectedCharacter)&&landingSpeed>150)raccoonLandingUntil=now+190;
         if(selectedCharacter==="raccoon"&&landingSpeed>180)player.vx*=.9;
         if(raccoonMovement&&now<raccoonJumpBufferUntil){player.vy=-455;player.grounded=false;raccoonJumpBufferUntil=0;raccoonCoyoteUntil=0;}
-        if(selectedCharacter==="frog")frogAutoHopping=false;
+        if(["frog","glassfrog","treefrog"].includes(selectedCharacter))frogAutoHopping=false;
       }
     }
     if(!level.underwater&&player.vy>=0)activeSwings.forEach((config,index)=>{const swing=tireSwingPosition(config,now);if(oldY+player.h<=swing.y+5&&intersects(player,swing)){player.y=swing.y-player.h;player.vy=0;player.grounded=true;player.onSwing=index+1;}});
@@ -1404,12 +1453,12 @@
     if(player.grounded){
       groundedGraceUntil=now+115;
       if(jumpBufferUntil>now){
-        player.vy=selectedCharacter==="frog"?-535:-455;
+        player.vy=selectedCharacter==="frog"?-470:["glassfrog","treefrog"].includes(selectedCharacter)?-535:-455;
         player.grounded=false;
         jumpBufferUntil=0;
         groundedGraceUntil=0;
         if(raccoonMovement)raccoonLaunchUntil=now+130;
-        if(selectedCharacter==="frog")frogAutoHopping=false;
+        if(["frog","glassfrog","treefrog"].includes(selectedCharacter))frogAutoHopping=false;
         tone(245,.05,"triangle");
       }
     }
@@ -1452,6 +1501,9 @@
         if(selectedCharacter==="chameleon"&&now<camouflageUntil){
           if(now<(hazard.camouflageIgnoredUntil||0))continue;
           if(Math.random()<.76){hazard.camouflageIgnoredUntil=now+850;tone(510,.035,"sine");continue;}
+        } else if(selectedCharacter==="glassfrog"&&now<glassCamouflageUntil){
+          if(now<(hazard.camouflageIgnoredUntil||0))continue;
+          hazard.camouflageIgnoredUntil=now+1900;tone(510,.035,"sine");continue;
         }
         if (selectedCharacter === "newt" && now < toxinActiveUntil) {
           toxinActiveUntil = 0;
@@ -1487,7 +1539,6 @@
         if ((!shieldCheese&&(intersects(player,bug)||(tongue&&intersects(tongue,bug))||(bite&&intersects(bite,bug))))||(shieldCheese&&now<trashShieldUntil&&intersects(player,bug))) {
           insect[2] = true;
           collected += 1;
-          actionToastText = "NICE CATCH!"; actionToastUntil = now + 650;
           if(selectedCharacter==="raccoon"){
             raccoonCombo=now-raccoonLastTreasureAt<2500?raccoonCombo+1:1;raccoonLastTreasureAt=now;raccoonComboUntil=now+2500;
             if(collected%4===0&&lives<3){lives+=1;invulnerableUntil=Math.max(invulnerableUntil,now+650);tone(930,.11,"sine");}
@@ -1522,7 +1573,7 @@
     if(batStartHanging){batStartHanging=false;player.ceilingClimbing=false;batReleaseUntil=now+260;player.y+=8;player.vy=65;tone(185,.05,"triangle");return;}
     if(player.ceilingClimbing){player.ceilingClimbing=false;player.ceilingVine=null;player.climbing=false;climbDetachUntil=now+220;player.y+=8;player.vx=((keys.ArrowLeft||keys.KeyA)?-1:(keys.ArrowRight||keys.KeyD)?1:player.facing)*135;player.vy=-310;jumpBufferUntil=0;tone(185,.05,"triangle");return;}
     const jumpProbe={x:player.x-10,y:player.y-8,w:player.w+20,h:player.h+16};
-    const climbableNearby=["chameleon","crested","newt","boa"].includes(selectedCharacter)&&
+    const climbableNearby=["chameleon","crested","newt","boa","glassfrog","treefrog"].includes(selectedCharacter)&&
       (levels[levelIndex].vines.some(v=>intersects(jumpProbe,{x:v[0],y:v[1],w:v[2],h:v[3]}))||player.x<=5||player.x+player.w>=W-5);
     if(player.climbing||climbableNearby){player.climbing=false;player.ceilingVine=null;climbDetachUntil=now+240;player.vx=((keys.ArrowLeft||keys.KeyA)?-1:(keys.KeyD||keys.ArrowRight)?1:player.facing)*155;player.vy=-455;player.grounded=false;jumpBufferUntil=0;tone(245,.05,"triangle");return;}
     const level=levels[levelIndex];
@@ -1549,14 +1600,14 @@
       return;
     }
     const raccoonMovement=selectedCharacter==="raccoon"||selectedCharacter==="devilfox";
-    if (player.grounded || now<groundedGraceUntil || (raccoonMovement&&now<raccoonCoyoteUntil) || (selectedCharacter === "frog" && frogAutoHopping)) {
-      player.vy = selectedCharacter === "frog" ? -535 : -455;
+    if (player.grounded || now<groundedGraceUntil || (raccoonMovement&&now<raccoonCoyoteUntil) || (["frog","glassfrog","treefrog"].includes(selectedCharacter) && frogAutoHopping)) {
+      player.vy = selectedCharacter === "frog" ? -470 : ["glassfrog","treefrog"].includes(selectedCharacter) ? -535 : -455;
       if(raccoonMovement)raccoonLaunchUntil=now+130;
       player.grounded = false;
       groundedGraceUntil=0;
       jumpBufferUntil=0;
       if(raccoonMovement){raccoonCoyoteUntil=0;raccoonJumpBufferUntil=0;}
-      if(selectedCharacter==="frog")frogAutoHopping=false;
+      if(["frog","glassfrog","treefrog"].includes(selectedCharacter))frogAutoHopping=false;
       tone(245, .05, "triangle");
     }else if(raccoonMovement)raccoonJumpBufferUntil=now+150;
   }
@@ -1590,6 +1641,11 @@
   }
 
   function drawBackdrop(level) {
+    if(["frog","glassfrog","treefrog"].includes(level.habitat)&&frogHabitatBackground.complete&&frogHabitatBackground.naturalWidth>0){
+      ctx.drawImage(frogHabitatBackground,0,0,W,H);
+      ctx.strokeStyle="rgba(210,255,230,.18)";ctx.lineWidth=5;ctx.strokeRect(18,45,924,455);
+      return;
+    }
     const gradient = ctx.createLinearGradient(0, 0, 0, H);
     gradient.addColorStop(0, level.palette[0]);
     gradient.addColorStop(1, level.palette[1]);
@@ -2009,6 +2065,22 @@
       drawLeaves(-20,195,"#286b3b");drawLeaves(288,154,"#347b43");drawLeaves(552,206,"#286b3b");drawLeaves(790,166,"#3a8245");
       ctx.strokeStyle="#4b8a48";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(220,55);ctx.bezierCurveTo(260,135,185,185,232,263);ctx.moveTo(700,55);ctx.bezierCurveTo(655,130,744,173,708,252);ctx.stroke();
       for(const [x,y] of [[180,315],[355,272],[642,335],[765,290]])drawPlantLeaf(x,y,-.5,"#4a9c4b",34,12);
+    }else if(level.habitat==="glassfrog"){
+      // Cool cloud-forest canopy, kept darker than the pale translucent player sprite.
+      const mist=ctx.createLinearGradient(0,50,0,496);mist.addColorStop(0,"#14252e");mist.addColorStop(.55,"#28453e");mist.addColorStop(1,"#354a35");ctx.fillStyle=mist;ctx.fillRect(20,50,920,446);
+      ctx.fillStyle="rgba(174,224,204,.10)";for(const [x,y,r] of [[185,150,118],[510,100,138],[790,190,122],[345,330,95]]){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
+      ctx.strokeStyle="#4e563e";ctx.lineWidth=20;ctx.lineCap="round";for(const [x,bend] of [[100,28],[310,-24],[590,25],[845,-18]]){ctx.beginPath();ctx.moveTo(x,500);ctx.bezierCurveTo(x+bend,360,x-bend,200,x+bend*.35,64);ctx.stroke();}
+      for(const [x,y,c] of [[120,188,"#3b7650"],[278,117,"#547e4e"],[526,158,"#3c7551"],[720,115,"#55834e"],[865,262,"#3b704a"]])drawLeaves(x,y,c);
+      ctx.strokeStyle="rgba(183,232,216,.42)";ctx.lineWidth=3;for(const [x,y,h] of [[250,70,140],[455,56,178],[760,72,130]]){ctx.beginPath();ctx.moveTo(x,y);ctx.bezierCurveTo(x-18,y+45,x+16,y+82,x,y+h);ctx.stroke();}
+      ctx.fillStyle="#7b6b50";ctx.fillRect(20,480,920,16);ctx.fillStyle="rgba(199,234,220,.2)";for(let x=42;x<930;x+=57){ctx.beginPath();ctx.ellipse(x,478-(x%3)*3,23,5,.08,0,Math.PI*2);ctx.fill();}
+    }else if(level.habitat==="treefrog"){
+      // Warm tropical foliage and broad leaves frame the red-eyed tree frog's vivid green body.
+      const forest=ctx.createLinearGradient(0,50,0,500);forest.addColorStop(0,"#182932");forest.addColorStop(.55,"#324b3d");forest.addColorStop(1,"#5c5133");ctx.fillStyle=forest;ctx.fillRect(20,50,920,446);
+      ctx.fillStyle="rgba(236,218,157,.16)";ctx.beginPath();ctx.arc(780,118,48,0,Math.PI*2);ctx.fill();ctx.fillStyle="rgba(255,230,167,.74)";ctx.beginPath();ctx.arc(780,118,23,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="#57442c";ctx.lineWidth=28;ctx.lineCap="round";for(const [x,bend] of [[100,23],[350,-30],[620,26],[870,-28]]){ctx.beginPath();ctx.moveTo(x,500);ctx.bezierCurveTo(x+bend,355,x-bend,210,x+bend*.3,52);ctx.stroke();}
+      for(const [x,y,c] of [[75,208,"#397647"],[210,125,"#5c944d"],[380,183,"#43834a"],[570,118,"#67964d"],[725,230,"#397346"],[895,157,"#568b4a"]])drawLeaves(x,y,c);
+      ctx.fillStyle="#64513a";ctx.fillRect(20,480,920,16);ctx.fillStyle="rgba(220,198,127,.32)";for(let x=38;x<940;x+=49){ctx.beginPath();ctx.ellipse(x,475-(x%4)*2,19,5,-.15,0,Math.PI*2);ctx.fill();}
+      ctx.strokeStyle="rgba(159,197,116,.55)";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(280,50);ctx.bezierCurveTo(320,125,250,200,305,278);ctx.moveTo(700,55);ctx.bezierCurveTo(664,120,728,184,692,244);ctx.stroke();
     }else if(level.habitat==="boa"){
       ctx.fillStyle="#4b3524";ctx.fillRect(20,462,920,34);ctx.fillStyle="#6b4a2e";for(let x=25;x<940;x+=19){ctx.beginPath();ctx.ellipse(x,470+(x%5)*4,13,6,.2,0,Math.PI*2);ctx.fill();}
       ctx.fillStyle="#29231b";roundedRect(695,390,175,106,22);ctx.fill();roundedRect(92,390,168,106,22);ctx.fill();
@@ -2453,6 +2525,12 @@
         ctx.fillStyle="#181513";ctx.beginPath();ctx.ellipse(0,2,3,7,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(0,-5,3,0,Math.PI*2);ctx.fill();
         ctx.fillStyle="#9d3030";ctx.beginPath();ctx.arc(-1,-6,1,0,Math.PI*2);ctx.arc(2,-6,1,0,Math.PI*2);ctx.fill();
         ctx.strokeStyle="#6d6259";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-2,3);ctx.lineTo(-8,8);ctx.moveTo(2,3);ctx.lineTo(8,8);ctx.stroke();
+      }else if(["glassfrog","treefrog"].includes(selectedCharacter)){
+        const flutter=Math.sin(time*.018+i*2)*.25;
+        ctx.fillStyle=selectedCharacter==="glassfrog"?"rgba(225,255,241,.9)":"rgba(246,232,180,.92)";
+        ctx.beginPath();ctx.ellipse(-6,-2,7,5,-.45-flutter,0,Math.PI*2);ctx.ellipse(6,-2,7,5,.45+flutter,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#574536";ctx.beginPath();ctx.ellipse(0,1,2,7,0,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="#574536";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-1,-5);ctx.quadraticCurveTo(-4,-9,-6,-8);ctx.moveTo(1,-5);ctx.quadraticCurveTo(4,-9,6,-8);ctx.stroke();
       }else if(selectedCharacter==="crested"){
         ctx.strokeStyle="#bb8b54";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-5,-2);ctx.lineTo(-13,-8);ctx.moveTo(5,-2);ctx.lineTo(13,-8);ctx.moveTo(-5,3);ctx.lineTo(-13,9);ctx.moveTo(5,3);ctx.lineTo(13,9);ctx.stroke();
         ctx.fillStyle="#5b351d";ctx.beginPath();ctx.ellipse(0,1,8,12,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#9a6c3d";ctx.beginPath();ctx.moveTo(-6,-2);ctx.lineTo(6,-2);ctx.moveTo(-7,3);ctx.lineTo(7,3);ctx.stroke();
@@ -2796,6 +2874,52 @@
     ctx.restore();ctx.globalAlpha=1;
   }
 
+  function drawGlassFrog(now){
+    const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;
+    const cloaked=now<glassCamouflageUntil;
+    if(flash)ctx.globalAlpha=.4;
+    ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
+    if(cloaked){ctx.strokeStyle="rgba(194,255,231,.78)";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(1,0,35+Math.sin(now*.02)*3,24,0,0,Math.PI*2);ctx.stroke();ctx.globalAlpha*=.56;}
+    const bob=Math.sin(now*.009)*.8+(player.grounded?0:Math.max(-2,Math.min(2,player.vy*.005)));
+    ctx.translate(0,bob);
+    // Pale translucent skin, visible ribs and organs, and rounded toe discs identify a glass frog.
+    const limb=(sx,sy,kx,ky,ax,ay,color)=>{ctx.strokeStyle=color;ctx.lineCap="round";ctx.lineJoin="round";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(kx,ky);ctx.lineTo(ax,ay);ctx.stroke();ctx.fillStyle="#d8fff0";ctx.beginPath();ctx.arc(ax,ay,3.5,0,Math.PI*2);ctx.fill();ctx.strokeStyle="rgba(57,133,106,.75)";ctx.lineWidth=1.3;ctx.stroke();};
+    limb(-6,4,-22,9,-30,16,"#b0f1d1");limb(9,4,21,9,30,15,"#b0f1d1");
+    limb(-7,0,-18,-10,-25,-14,"#b0f1d1");limb(10,0,21,-8,29,-13,"#b0f1d1");
+    ctx.fillStyle="rgba(150,235,194,.88)";ctx.strokeStyle="#e0fff0";ctx.lineWidth=1.6;
+    ctx.beginPath();ctx.ellipse(-1,4,19,11,-.08,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.fillStyle="rgba(227,255,243,.78)";ctx.strokeStyle="rgba(78,147,117,.72)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.ellipse(1,6,12,7,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.strokeStyle="rgba(93,153,129,.8)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(-8,1);ctx.quadraticCurveTo(-2,-1,3,2);ctx.moveTo(-9,4);ctx.quadraticCurveTo(-2,2,5,5);ctx.moveTo(-7,7);ctx.quadraticCurveTo(-1,5,7,8);ctx.stroke();
+    ctx.fillStyle="rgba(206,116,101,.92)";ctx.beginPath();ctx.ellipse(1,4,3.2,3.8,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="rgba(233,181,104,.84)";ctx.beginPath();ctx.ellipse(6,7,4.2,2.5,-.2,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#a7edc5";ctx.strokeStyle="#eafff2";ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(11,-5,12,8,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+    for(const x of [5,17]){ctx.fillStyle="#d8bf68";ctx.beginPath();ctx.arc(x,-10,5.1,0,Math.PI*2);ctx.fill();ctx.fillStyle="#14211e";ctx.beginPath();ctx.arc(x+1,-10,2.8,0,Math.PI*2);ctx.fill();ctx.fillStyle="rgba(255,255,255,.9)";ctx.beginPath();ctx.arc(x+1.5,-11,1,0,Math.PI*2);ctx.fill();}
+    ctx.strokeStyle="rgba(56,120,91,.78)";ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(15,-1);ctx.quadraticCurveTo(21,1,24,-1);ctx.stroke();
+    ctx.restore();ctx.globalAlpha=1;
+  }
+
+  function drawTreeFrog(now){
+    const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;
+    if(flash)ctx.globalAlpha=.4;
+    ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
+    const airborne=!player.grounded,hop=airborne?Math.max(0,Math.min(1,-player.vy/580)):0;
+    ctx.translate(0,Math.sin(now*.01)*.55);
+    const leg=(points)=>{ctx.strokeStyle="#47ca55";ctx.lineCap="round";ctx.lineJoin="round";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(...points[0]);for(let i=1;i<points.length;i++)ctx.lineTo(...points[i]);ctx.stroke();const [x,y]=points[points.length-1];ctx.fillStyle="#ff8b42";ctx.beginPath();ctx.arc(x,y,4.1,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#ffe2a4";ctx.lineWidth=1;ctx.stroke();};
+    leg([[-8,4],[-19,10-hop*5],[-30,15-hop*10]]);leg([[8,4],[20,10-hop*5],[31,14-hop*10]]);
+    leg([[-6,-1],[-16,-8],[ -23,-11]]);leg([[11,-1],[20,-7],[27,-10]]);
+    ctx.fillStyle="#218e48";ctx.beginPath();ctx.ellipse(-1,4,20,12,-.06,0,Math.PI*2);ctx.fill();
+    // Cream flank line and blue side panels keep this tree frog distinct from the glass frog and dart frogs.
+    ctx.fillStyle="#178eb0";ctx.beginPath();ctx.ellipse(-2,7,14,6,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#fff0c4";ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(-18,1);ctx.quadraticCurveTo(-5,-1,8,3);ctx.stroke();
+    ctx.fillStyle="#62df5d";ctx.beginPath();ctx.ellipse(12,-5,15,10,0,0,Math.PI*2);ctx.fill();
+    for(const x of [7,19]){ctx.fillStyle="#e63e49";ctx.beginPath();ctx.arc(x,-12,6.3,0,Math.PI*2);ctx.fill();ctx.fillStyle="#f6f0d7";ctx.beginPath();ctx.arc(x,-12,3.8,0,Math.PI*2);ctx.fill();ctx.fillStyle="#111719";ctx.beginPath();ctx.arc(x+1,-12,2.1,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(x+1,-13,0.8,0,Math.PI*2);ctx.fill();}
+    ctx.strokeStyle="#1c5f3b";ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(15,-2);ctx.quadraticCurveTo(21,1,25,-2);ctx.stroke();
+    if(now<tongueActiveUntil){const progress=Math.min(1,Math.max(0,(now-(tongueActiveUntil-230))/230));const extension=Math.sin(progress*Math.PI)*100;ctx.strokeStyle="#ffb0b9";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(23,0);ctx.lineTo(23+extension,0);ctx.stroke();ctx.fillStyle="#ff718e";ctx.beginPath();ctx.ellipse(25+extension,0,5,3.5,0,0,Math.PI*2);ctx.fill();}
+    ctx.restore();ctx.globalAlpha=1;
+  }
+
   function drawBoa(now) {
     const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;
     if(flash)ctx.globalAlpha=.4;
@@ -3042,13 +3166,15 @@
 
   function drawPlayer(now) {
     ctx.save();
-    const verticalClimber=player.climbing&&["chameleon","crested","boa","newt"].includes(selectedCharacter);
+    const verticalClimber=player.climbing&&["chameleon","crested","boa","newt","glassfrog","treefrog"].includes(selectedCharacter);
     if(player.ceilingClimbing&&selectedCharacter!=="bat"){ctx.translate(0,player.y*2+player.h);ctx.scale(1,-1);}
     if(verticalClimber){const cx=player.x+player.w/2,cy=player.y+player.h/2;ctx.translate(cx,cy);ctx.rotate(player.climbDirection<0?-Math.PI/2:Math.PI/2);ctx.translate(-cx,-cy);}
     const priorFacing=player.facing;if(verticalClimber)player.facing=1;
     if (selectedCharacter === "chameleon") drawChameleon(now);
     else if (selectedCharacter === "newt") drawNewt(now);
     else if (selectedCharacter === "frog") drawFrog(now);
+    else if (selectedCharacter === "glassfrog") drawGlassFrog(now);
+    else if (selectedCharacter === "treefrog") drawTreeFrog(now);
     else if (selectedCharacter === "boa") drawBoa(now);
     else if (selectedCharacter === "raccoon") drawRaccoon(now);
     else if (selectedCharacter === "opossum") drawOpossum(now);
