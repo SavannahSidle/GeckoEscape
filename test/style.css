@@ -185,6 +185,8 @@ canvas {
 .crested-icon { background: #a9f576; color: #07150f; }
 .newt-icon { background: #15171a; color: #f05a31; border: 2px solid #f05a31; }
 .frog-icon { background: #246fbb; color: #071626; border: 2px solid #6dc5ff; }
+.glassfrog-icon { background: #b9f2d3; color: #255947; border: 2px solid #effff5; box-shadow: inset 0 0 0 5px rgba(255,255,255,.22); }
+.treefrog-icon { background: #4fcf59; color: #df3d43; border: 2px solid #ff8a45; }
 .boa-icon { background: #08090a; color: #aaaeb5; border: 2px solid #555b63; font-size: 1.6rem; }
 .raccoon-icon { background: #73777a; color: #1d2022; border: 2px solid #bfc3c4; }
 .opossum-icon { background: #b8b2aa; color: #5c4a49; border: 2px solid #e2adad; font-size: 1.5rem; }
