@@ -3371,7 +3371,7 @@
       if(!devDoorsUnlocked){devDoorsUnlocked=true;levelLabel.textContent+=" · EXITS UNLOCKED";updateHud();tone(660,.12,"triangle");}
       return;
     }
-    if(event.code==="KeyL"){
+    if((backstageMode&&event.code==="KeyL")||(shiftHeld&&event.code==="KeyL")){
       event.preventDefault();
       if(!event.repeat&&state!=="level-select")showLevelSelect(state==="playing",true);
       return;
@@ -3514,9 +3514,9 @@
     startLevel(FOX_LAB_LEVEL);
   }else showMenu();
   if(!directFoxRoute){
-    document.title=gameEdition===1?"Gecko Escape 1 · Playtest":"Gecko Escape 2";
-    document.querySelector("h1").textContent=gameEdition===1?"GECKO ESCAPE 1":"GECKO ESCAPE 2";
-    document.querySelector(".eyebrow").textContent=gameEdition===1?"GECKO ESCAPE GAMEPLAY DESIGN TEST · /TEST":"THE ANIMAL GETAWAY EXPANDS";
+    document.title=gameEdition===1?"Gecko Escape":"Gecko Escape 2";
+    document.querySelector("h1").textContent=gameEdition===1?"GECKO ESCAPE":"GECKO ESCAPE 2";
+    document.querySelector(".eyebrow").textContent=gameEdition===1?"ALIEN ARBOREAL PRESENTS":"THE ANIMAL GETAWAY EXPANDS";
   }
   requestAnimationFrame(frame);
 })();
