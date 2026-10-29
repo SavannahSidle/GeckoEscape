@@ -597,6 +597,8 @@
     clearHandCapture();
     clearHeldInputs();
     state = "character-select";
+    overlay.classList.remove("hidden");
+    hud.classList.add("hidden");
     panelKicker.textContent = "CHOOSE YOUR ESCAPE ARTIST";
     panelTitle.textContent = gameEdition===1 ? "Seven reptiles and amphibians. Seven escapes." : "Six mammals. A truly suspicious getaway.";
     panelText.textContent = gameEdition===1 ? "Choose a reptile or amphibian and escape its enclosure." : "Choose your animal. The crime gets bigger from here.";
