@@ -2874,28 +2874,116 @@
     ctx.restore();ctx.globalAlpha=1;
   }
 
+  function frogAnimationPose(now, phaseOffset=0){
+    const clamp=(value,min=0,max=1)=>Math.max(min,Math.min(max,value));
+    const climbing=player.climbing||player.ceilingClimbing;
+    const airborne=!player.grounded&&!climbing;
+    const groundSpeed=clamp(Math.abs(player.vx)/125);
+    const climbSpeed=clamp((Math.abs(player.vx)+Math.abs(player.vy))/140);
+    const moving=climbing?climbSpeed:groundSpeed;
+    const direction=player.climbing&&player.climbDirection>0?-1:1;
+    const phase=now*(.0025+moving*.01)*direction+phaseOffset;
+    const landing=!airborne&&!climbing&&raccoonLandingUntil>now?Math.sin((raccoonLandingUntil-now)/190*Math.PI/2):0;
+    return {
+      climbing,airborne,groundWalk:player.grounded&&!climbing?groundSpeed:0,
+      climb:climbing?Math.max(.16,climbSpeed):0,phase,
+      frontNear:Math.sin(phase),frontFar:Math.sin(phase+Math.PI),
+      hindNear:Math.sin(phase+Math.PI),hindFar:Math.sin(phase),
+      launch:airborne?clamp(-player.vy/650):0,
+      descent:airborne?clamp(player.vy/400):0,
+      apex:airborne?clamp(1-Math.abs(player.vy)/155):0,
+      airForward:airborne?clamp(Math.abs(player.vx)/285):0,
+      landing
+    };
+  }
+
   function drawGlassFrog(now){
     const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;
     const cloaked=now<glassCamouflageUntil;
     if(flash)ctx.globalAlpha=.4;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
     if(cloaked){ctx.strokeStyle="rgba(194,255,231,.78)";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(1,0,35+Math.sin(now*.02)*3,24,0,0,Math.PI*2);ctx.stroke();ctx.globalAlpha*=.56;}
-    const bob=Math.sin(now*.009)*.8+(player.grounded?0:Math.max(-2,Math.min(2,player.vy*.005)));
-    ctx.translate(0,bob);
-    // Pale translucent skin, visible ribs and organs, and rounded toe discs identify a glass frog.
-    const limb=(sx,sy,kx,ky,ax,ay,color)=>{ctx.strokeStyle=color;ctx.lineCap="round";ctx.lineJoin="round";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(kx,ky);ctx.lineTo(ax,ay);ctx.stroke();ctx.fillStyle="#d8fff0";ctx.beginPath();ctx.arc(ax,ay,3.5,0,Math.PI*2);ctx.fill();ctx.strokeStyle="rgba(57,133,106,.75)";ctx.lineWidth=1.3;ctx.stroke();};
-    limb(-6,4,-22,9,-30,16,"#b0f1d1");limb(9,4,21,9,30,15,"#b0f1d1");
-    limb(-7,0,-18,-10,-25,-14,"#b0f1d1");limb(10,0,21,-8,29,-13,"#b0f1d1");
-    ctx.fillStyle="rgba(150,235,194,.88)";ctx.strokeStyle="#e0fff0";ctx.lineWidth=1.6;
-    ctx.beginPath();ctx.ellipse(-1,4,19,11,-.08,0,Math.PI*2);ctx.fill();ctx.stroke();
-    ctx.fillStyle="rgba(227,255,243,.78)";ctx.strokeStyle="rgba(78,147,117,.72)";ctx.lineWidth=1;
-    ctx.beginPath();ctx.ellipse(1,6,12,7,0,0,Math.PI*2);ctx.fill();ctx.stroke();
-    ctx.strokeStyle="rgba(93,153,129,.8)";ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(-8,1);ctx.quadraticCurveTo(-2,-1,3,2);ctx.moveTo(-9,4);ctx.quadraticCurveTo(-2,2,5,5);ctx.moveTo(-7,7);ctx.quadraticCurveTo(-1,5,7,8);ctx.stroke();
-    ctx.fillStyle="rgba(206,116,101,.92)";ctx.beginPath();ctx.ellipse(1,4,3.2,3.8,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="rgba(233,181,104,.84)";ctx.beginPath();ctx.ellipse(6,7,4.2,2.5,-.2,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#a7edc5";ctx.strokeStyle="#eafff2";ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(11,-5,12,8,0,0,Math.PI*2);ctx.fill();ctx.stroke();
-    for(const x of [5,17]){ctx.fillStyle="#d8bf68";ctx.beginPath();ctx.arc(x,-10,5.1,0,Math.PI*2);ctx.fill();ctx.fillStyle="#14211e";ctx.beginPath();ctx.arc(x+1,-10,2.8,0,Math.PI*2);ctx.fill();ctx.fillStyle="rgba(255,255,255,.9)";ctx.beginPath();ctx.arc(x+1.5,-11,1,0,Math.PI*2);ctx.fill();}
+    const pose=frogAnimationPose(now,.3),walk=pose.groundWalk;
+    const crouch=walk*.35+pose.landing*.48,breath=player.grounded&&walk<.1?Math.sin(now*.0036+.3):0;
+    const bob=Math.sin(now*.0036+.3)*.28*(1-walk)+Math.abs(Math.sin(pose.phase*2))*.72*walk-pose.launch*.45+pose.descent*.65-pose.landing*1.4;
+    const pitch=pose.airborne?-.055*pose.launch+.065*pose.descent:Math.sin(pose.phase)*.018*walk;
+    ctx.translate(0,bob);ctx.rotate(pitch);ctx.scale(1+breath*.012+pose.landing*.035,1+breath*.025-crouch*.035-pose.landing*.09);
+
+    const blinkCycle=(now+360)%4300,blink=Math.max(0,1-Math.abs(blinkCycle-4250)/55),eyeY=1-blink*.9;
+    const limbColor=(near)=>near?"rgba(151,226,185,.96)":"rgba(91,169,132,.82)";
+    const padColor=(near)=>near?"#d8fff0":"#a9e8ca";
+    const drawPads=(x,y,near,backward=false)=>{
+      const sign=backward?-1:1;
+      ctx.lineCap="round";ctx.lineJoin="round";ctx.strokeStyle=limbColor(near);ctx.lineWidth=near?1.8:1.45;
+      for(const offset of [-2.5,0,2.5]){
+        const tipX=x+sign*(5.5+Math.max(0,Math.sin(now*.006+.3))*.5),tipY=y+offset+Math.sin(now*.006+.3+offset)*.22;
+        ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+sign*3,y+offset*.55,tipX,tipY);ctx.stroke();
+        ctx.fillStyle=padColor(near);ctx.beginPath();ctx.ellipse(tipX,tipY,2.15,1.65,0,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="rgba(57,133,106,.74)";ctx.lineWidth=.55;ctx.stroke();ctx.strokeStyle=limbColor(near);ctx.lineWidth=near?1.8:1.45;
+      }
+    };
+    const drawHind=(near,step)=>{
+      const sideX=near?0:-2.2,sideY=near?0:-1.7;
+      const hipX=-7+sideX,hipY=4.5+sideY;
+      let kneeX=-17+sideX+step*2.7,kneeY=9.5+sideY-Math.abs(step)*.7;
+      let ankleX=-5+sideX+step*5.5,ankleY=15.5+sideY;
+      let toeX=ankleX-10+step*2,toeY=17.5+sideY;
+      const reach=.5+.5*step;
+      if(pose.climbing){kneeX+=reach*3;ankleX+=reach*8;ankleY-=2;toeX+=reach*9;toeY-=2;}
+      if(pose.airborne){
+        kneeX+=-pose.launch*3+pose.apex*4+pose.descent*2;
+        kneeY+=-pose.launch*4-pose.apex*1.5+pose.descent;
+        ankleX+=-pose.launch*23+pose.apex*8+pose.descent*10;
+        ankleY+=-pose.launch*7-pose.apex*3-pose.descent*5;
+        toeX+=-pose.launch*12+pose.apex*10+pose.descent*15+pose.airForward*3;
+        toeY+=-pose.launch*8-pose.apex*5-pose.descent*6;
+      }
+      ankleX+=pose.landing*7;ankleY+=pose.landing*3;toeX+=pose.landing*16;toeY+=pose.landing*2;
+      const muscleX=(hipX+kneeX)/2,muscleY=(hipY+kneeY)/2;
+      ctx.save();ctx.translate(muscleX,muscleY);ctx.rotate(Math.atan2(kneeY-hipY,kneeX-hipX));
+      ctx.fillStyle=near?"rgba(164,236,198,.76)":"rgba(104,184,146,.65)";ctx.strokeStyle="rgba(68,139,107,.52)";ctx.lineWidth=.8;
+      ctx.beginPath();ctx.ellipse(0,0,8.1,4.5,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore();
+      ctx.strokeStyle=limbColor(near);ctx.lineCap="round";ctx.lineJoin="round";
+      ctx.lineWidth=near?4.7:3.6;ctx.beginPath();ctx.moveTo(hipX,hipY);ctx.quadraticCurveTo(hipX-5,hipY+1,kneeX,kneeY);ctx.stroke();
+      ctx.lineWidth=near?3.6:2.8;ctx.beginPath();ctx.moveTo(kneeX,kneeY);ctx.quadraticCurveTo(kneeX+4,kneeY+3,ankleX,ankleY);ctx.lineTo(toeX,toeY);ctx.stroke();
+      for(const [x,y,r] of [[hipX,hipY,2.7],[kneeX,kneeY,2.6],[ankleX,ankleY,2.2]]){ctx.fillStyle=limbColor(near);ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
+      drawPads(toeX,toeY,near,true);
+    };
+    const drawFore=(near,step)=>{
+      const sideX=near?0:-2.5,sideY=near?0:-2.2;
+      const shoulderX=8+sideX,shoulderY=-1.1+sideY;
+      let elbowX=14+sideX+step*1.7,elbowY=3.4+sideY+Math.abs(step)*.45;
+      let wristX=22+sideX+step*4,wristY=10.1+sideY+Math.abs(step)*.65;
+      const reach=.5+.5*step;
+      if(pose.climbing){elbowX+=reach*2;wristX+=reach*7;wristY-=1.4;}
+      if(pose.airborne){wristX+=pose.launch*5+pose.descent*8-pose.apex*1.5+pose.airForward*3;wristY+=-pose.launch*5-pose.descent*3-pose.apex-pose.airForward;elbowY-=pose.launch*1.5;}
+      elbowX+=pose.landing;elbowY+=pose.landing*.5;wristX+=pose.landing*3;wristY+=pose.landing*1.7;
+      ctx.strokeStyle=limbColor(near);ctx.lineCap="round";ctx.lineJoin="round";
+      ctx.lineWidth=near?3.8:3;ctx.beginPath();ctx.moveTo(shoulderX,shoulderY);ctx.quadraticCurveTo(shoulderX+4,shoulderY-1,elbowX,elbowY);ctx.stroke();
+      ctx.lineWidth=near?3:2.35;ctx.beginPath();ctx.moveTo(elbowX,elbowY);ctx.quadraticCurveTo(elbowX+4,elbowY+2,wristX,wristY);ctx.stroke();
+      for(const [x,y,r] of [[shoulderX,shoulderY,2.45],[elbowX,elbowY,2],[wristX,wristY,1.8]]){ctx.fillStyle=limbColor(near);ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
+      drawPads(wristX,wristY,near,false);
+    };
+
+    // The far pair sits behind the translucent trunk; the near pair is drawn over it.
+    drawHind(false,pose.hindFar*walk+(pose.climbing?pose.hindFar*pose.climb:0));
+    drawFore(false,pose.frontFar*walk+(pose.climbing?pose.frontFar*pose.climb:0));
+    ctx.fillStyle="rgba(150,235,194,.9)";ctx.strokeStyle="rgba(224,255,240,.95)";ctx.lineWidth=1.45;
+    ctx.beginPath();ctx.ellipse(-1,4,19,10.8,-.08,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.fillStyle="rgba(227,255,243,.76)";ctx.strokeStyle="rgba(78,147,117,.72)";ctx.lineWidth=.9;
+    ctx.beginPath();ctx.ellipse(0,6.1,12,6.8,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.strokeStyle="rgba(93,153,129,.82)";ctx.lineWidth=.9;
+    ctx.beginPath();ctx.moveTo(-9,1);ctx.quadraticCurveTo(-3,-1+breath,4,2);ctx.moveTo(-10,4);ctx.quadraticCurveTo(-2,2,6,5);ctx.moveTo(-8,7);ctx.quadraticCurveTo(-1,5,8,8);ctx.stroke();
+    ctx.fillStyle="rgba(206,116,101,.92)";ctx.beginPath();ctx.ellipse(0,4,3.1,3.6,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="rgba(233,181,104,.82)";ctx.beginPath();ctx.ellipse(6,7,4,2.35,-.2,0,Math.PI*2);ctx.fill();
+    drawHind(true,pose.hindNear*walk+(pose.climbing?pose.hindNear*pose.climb:0));
+    drawFore(true,pose.frontNear*walk+(pose.climbing?pose.frontNear*pose.climb:0));
+    ctx.fillStyle="#a7edc5";ctx.strokeStyle="#eafff2";ctx.lineWidth=1.35;ctx.beginPath();ctx.ellipse(11,-5,12,8,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+    for(const x of [5,17]){
+      ctx.fillStyle="#d8bf68";ctx.beginPath();ctx.ellipse(x,-10,5.1,5.1*eyeY,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#14211e";ctx.beginPath();ctx.ellipse(x+1,-10,2.8,2.8*eyeY,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="rgba(255,255,255,.9)";ctx.beginPath();ctx.arc(x+1.5,-11,1,0,Math.PI*2);ctx.fill();
+    }
     ctx.strokeStyle="rgba(56,120,91,.78)";ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(15,-1);ctx.quadraticCurveTo(21,1,24,-1);ctx.stroke();
     ctx.restore();ctx.globalAlpha=1;
   }
@@ -2904,17 +2992,80 @@
     const flash=now<invulnerableUntil&&Math.floor(now/90)%2===0;
     if(flash)ctx.globalAlpha=.4;
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
-    const airborne=!player.grounded,hop=airborne?Math.max(0,Math.min(1,-player.vy/580)):0;
-    ctx.translate(0,Math.sin(now*.01)*.55);
-    const leg=(points)=>{ctx.strokeStyle="#47ca55";ctx.lineCap="round";ctx.lineJoin="round";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(...points[0]);for(let i=1;i<points.length;i++)ctx.lineTo(...points[i]);ctx.stroke();const [x,y]=points[points.length-1];ctx.fillStyle="#ff8b42";ctx.beginPath();ctx.arc(x,y,4.1,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#ffe2a4";ctx.lineWidth=1;ctx.stroke();};
-    leg([[-8,4],[-19,10-hop*5],[-30,15-hop*10]]);leg([[8,4],[20,10-hop*5],[31,14-hop*10]]);
-    leg([[-6,-1],[-16,-8],[ -23,-11]]);leg([[11,-1],[20,-7],[27,-10]]);
-    ctx.fillStyle="#218e48";ctx.beginPath();ctx.ellipse(-1,4,20,12,-.06,0,Math.PI*2);ctx.fill();
-    // Cream flank line and blue side panels keep this tree frog distinct from the glass frog and dart frogs.
-    ctx.fillStyle="#178eb0";ctx.beginPath();ctx.ellipse(-2,7,14,6,0,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#fff0c4";ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(-18,1);ctx.quadraticCurveTo(-5,-1,8,3);ctx.stroke();
-    ctx.fillStyle="#62df5d";ctx.beginPath();ctx.ellipse(12,-5,15,10,0,0,Math.PI*2);ctx.fill();
-    for(const x of [7,19]){ctx.fillStyle="#e63e49";ctx.beginPath();ctx.arc(x,-12,6.3,0,Math.PI*2);ctx.fill();ctx.fillStyle="#f6f0d7";ctx.beginPath();ctx.arc(x,-12,3.8,0,Math.PI*2);ctx.fill();ctx.fillStyle="#111719";ctx.beginPath();ctx.arc(x+1,-12,2.1,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(x+1,-13,0.8,0,Math.PI*2);ctx.fill();}
+    const pose=frogAnimationPose(now,1.1),walk=pose.groundWalk;
+    const crouch=walk*.3+pose.landing*.48,breath=player.grounded&&walk<.1?Math.sin(now*.0033+1.1):0;
+    const bob=Math.sin(now*.0033+1.1)*.3*(1-walk)+Math.abs(Math.sin(pose.phase*2))*.9*walk-pose.launch*.55+pose.descent*.75-pose.landing*1.6;
+    const pitch=pose.airborne?-.065*pose.launch+.075*pose.descent:Math.sin(pose.phase+1.1)*.02*walk;
+    ctx.translate(0,bob);ctx.rotate(pitch);ctx.scale(1+breath*.014+pose.landing*.04,1+breath*.03-crouch*.04-pose.landing*.1);
+
+    const blinkCycle=(now+1870)%4100,blink=Math.max(0,1-Math.abs(blinkCycle-4025)/55),eyeY=1-blink*.9;
+    const limbColor=near=>near?"#49c956":"#319648";
+    const padColor=near=>near?"#ff8b42":"#d97536";
+    const drawPads=(x,y,near,backward=false)=>{
+      const sign=backward?-1:1,base=padColor(near);
+      ctx.lineCap="round";ctx.lineJoin="round";ctx.strokeStyle=limbColor(near);ctx.lineWidth=near?2.05:1.7;
+      for(const offset of [-3,0,3]){
+        const tipX=x+sign*(6+Math.max(0,Math.sin(now*.006+1.1))*.55),tipY=y+offset+Math.sin(now*.006+1.1+offset)*.22;
+        ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+sign*3,y+offset*.55,tipX,tipY);ctx.stroke();
+        ctx.fillStyle=base;ctx.beginPath();ctx.ellipse(tipX,tipY,2.7,2.15,0,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="#ffe2a4";ctx.lineWidth=.65;ctx.stroke();ctx.strokeStyle=limbColor(near);ctx.lineWidth=near?2.05:1.7;
+      }
+    };
+    const drawHind=(near,step)=>{
+      const sideX=near?0:-2.2,sideY=near?0:-1.7;
+      const hipX=-7.5+sideX,hipY=4.5+sideY;
+      let kneeX=-18+sideX+step*3,kneeY=9.5+sideY-Math.abs(step)*.8;
+      let ankleX=-5+sideX+step*6,ankleY=15.5+sideY;
+      let toeX=ankleX-10+step*2,toeY=18+sideY;
+      const reach=.5+.5*step;
+      if(pose.climbing){kneeX+=reach*3;ankleX+=reach*8;ankleY-=2;toeX+=reach*9;toeY-=2;}
+      if(pose.airborne){
+        kneeX+=-pose.launch*4+pose.apex*4+pose.descent*2;kneeY+=-pose.launch*4-pose.apex*1.5+pose.descent;
+        ankleX+=-pose.launch*24+pose.apex*8+pose.descent*11;ankleY+=-pose.launch*7-pose.apex*3-pose.descent*5;
+        toeX+=-pose.launch*12+pose.apex*10+pose.descent*16+pose.airForward*3;toeY+=-pose.launch*8-pose.apex*5-pose.descent*6;
+      }
+      ankleX+=pose.landing*7;ankleY+=pose.landing*3;toeX+=pose.landing*17;toeY+=pose.landing*2;
+      const muscleX=(hipX+kneeX)/2,muscleY=(hipY+kneeY)/2;
+      ctx.save();ctx.translate(muscleX,muscleY);ctx.rotate(Math.atan2(kneeY-hipY,kneeX-hipX));
+      ctx.fillStyle=near?"#48bd51":"#2d8742";ctx.strokeStyle=near?"#319548":"#276f3a";ctx.lineWidth=.8;
+      ctx.beginPath();ctx.ellipse(0,0,8.8,5.1,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore();
+      ctx.strokeStyle=limbColor(near);ctx.lineCap="round";ctx.lineJoin="round";
+      ctx.lineWidth=near?5.2:4.1;ctx.beginPath();ctx.moveTo(hipX,hipY);ctx.quadraticCurveTo(hipX-5,hipY+1,kneeX,kneeY);ctx.stroke();
+      ctx.lineWidth=near?4:3.1;ctx.beginPath();ctx.moveTo(kneeX,kneeY);ctx.quadraticCurveTo(kneeX+4,kneeY+3,ankleX,ankleY);ctx.lineTo(toeX,toeY);ctx.stroke();
+      for(const [x,y,r] of [[hipX,hipY,2.8],[kneeX,kneeY,2.8],[ankleX,ankleY,2.3]]){ctx.fillStyle=limbColor(near);ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
+      drawPads(toeX,toeY,near,true);
+    };
+    const drawFore=(near,step)=>{
+      const sideX=near?0:-2.5,sideY=near?0:-2.2;
+      const shoulderX=8+sideX,shoulderY=-1.3+sideY;
+      let elbowX=14+sideX+step*1.8,elbowY=3.3+sideY+Math.abs(step)*.5;
+      let wristX=22+sideX+step*4.5,wristY=10.5+sideY+Math.abs(step)*.65;
+      const reach=.5+.5*step;
+      if(pose.climbing){elbowX+=reach*2;wristX+=reach*7;wristY-=1.5;}
+      if(pose.airborne){wristX+=pose.launch*5+pose.descent*9-pose.apex*1.5+pose.airForward*3;wristY+=-pose.launch*5-pose.descent*3-pose.apex-pose.airForward;elbowY-=pose.launch*1.5;}
+      elbowX+=pose.landing;elbowY+=pose.landing*.5;wristX+=pose.landing*3.5;wristY+=pose.landing*2;
+      ctx.strokeStyle=limbColor(near);ctx.lineCap="round";ctx.lineJoin="round";
+      ctx.lineWidth=near?4.3:3.45;ctx.beginPath();ctx.moveTo(shoulderX,shoulderY);ctx.quadraticCurveTo(shoulderX+4,shoulderY-1,elbowX,elbowY);ctx.stroke();
+      ctx.lineWidth=near?3.4:2.7;ctx.beginPath();ctx.moveTo(elbowX,elbowY);ctx.quadraticCurveTo(elbowX+4,elbowY+2,wristX,wristY);ctx.stroke();
+      for(const [x,y,r] of [[shoulderX,shoulderY,2.6],[elbowX,elbowY,2.2],[wristX,wristY,2]]){ctx.fillStyle=limbColor(near);ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
+      drawPads(wristX,wristY,near,false);
+    };
+
+    drawHind(false,pose.hindFar*walk+(pose.climbing?pose.hindFar*pose.climb:0));
+    drawFore(false,pose.frontFar*walk+(pose.climbing?pose.frontFar*pose.climb:0));
+    ctx.fillStyle="#218e48";ctx.strokeStyle="#176b38";ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(-1,4,20,11.5,-.06,0,Math.PI*2);ctx.fill();ctx.stroke();
+    // Retain the species' bright dorsal green, blue flank panel and clean cream lateral stripe.
+    ctx.fillStyle="#178eb0";ctx.beginPath();ctx.ellipse(-3,7,14,5.7,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="#fff0c4";ctx.lineWidth=2.35;ctx.beginPath();ctx.moveTo(-18,1);ctx.quadraticCurveTo(-5,-1,8,3);ctx.stroke();
+    drawHind(true,pose.hindNear*walk+(pose.climbing?pose.hindNear*pose.climb:0));
+    drawFore(true,pose.frontNear*walk+(pose.climbing?pose.frontNear*pose.climb:0));
+    ctx.fillStyle="#62df5d";ctx.strokeStyle="#319648";ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(12,-5,15,10,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+    for(const x of [7,19]){
+      ctx.fillStyle="#e63e49";ctx.beginPath();ctx.ellipse(x,-12,6.3,6.3*eyeY,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#f6f0d7";ctx.beginPath();ctx.ellipse(x,-12,3.8,3.8*eyeY,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#111719";ctx.beginPath();ctx.ellipse(x+1,-12,2.1,2.1*eyeY,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(x+1,-13,.8,0,Math.PI*2);ctx.fill();
+    }
     ctx.strokeStyle="#1c5f3b";ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(15,-2);ctx.quadraticCurveTo(21,1,25,-2);ctx.stroke();
     if(now<tongueActiveUntil){const progress=Math.min(1,Math.max(0,(now-(tongueActiveUntil-230))/230));const extension=Math.sin(progress*Math.PI)*100;ctx.strokeStyle="#ffb0b9";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(23,0);ctx.lineTo(23+extension,0);ctx.stroke();ctx.fillStyle="#ff718e";ctx.beginPath();ctx.ellipse(25+extension,0,5,3.5,0,0,Math.PI*2);ctx.fill();}
     ctx.restore();ctx.globalAlpha=1;
