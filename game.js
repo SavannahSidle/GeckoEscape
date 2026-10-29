@@ -222,7 +222,7 @@
       completeText: "The kitchen exit is clear. Somewhere in the dark, a refrigerator hums like destiny.",
       palette: ["#0c1117", "#1d2830", "#754f31", "#f0cc62"],
       start: [45, 445], exit: [876,88,50,82],
-      platforms: [[0,500,960,40],[375,270,120,18,"spiceShelf"],[105,322,180,18,"sink"],[40,196,210,18,"sill"],[530,206,190,18,"sill"],[775,174,185,18,"fridgeTop"]],
+      platforms: [[0,500,960,40],[205,420,72,80,"kitchenBin"],[375,270,120,18,"spiceShelf"],[105,322,180,18,"sink"],[40,196,210,18,"sill"],[530,206,190,18,"sill"],[775,174,185,18,"fridgeTop"]],
       angledPlatforms: [],
       vines: [],
       insects: [[80,410],[420,355],[300,294],[510,294],[690,171],[120,161],[620,120],[875,142]],
@@ -249,7 +249,7 @@
         {x:550,y:413,w:72,h:32,type:"roomba",axis:"x",min:510,max:680,speed:118},
         {x:645,y:460,w:78,h:40,type:"frenchie",axis:"x",min:610,max:760,speed:92},
         {x:330,y:390,w:66,h:24,type:"cat",axis:"jump",min:285,max:525,speed:88,baseY:390,jumpHeight:132},
-        {x:465,y:170,w:38,h:32,type:"spider",axis:"y",minY:145,maxY:390,speed:72}
+        {x:465,y:170,w:38,h:32,type:"spider",axis:"y",minY:145,maxY:390,speed:112}
       ],
       decor: "house"
     },
@@ -1497,7 +1497,7 @@
         if(hazard.y<hazard.minY||hazard.y>hazard.maxY){hazard.y=Math.max(hazard.minY,Math.min(hazard.maxY,hazard.y));hazard.dirY*=-1;}
       }
       if (now > invulnerableUntil && intersects(player, hazard)) {
-        if ((hazard.type === "grab" || hazard.type === "hand") && now < (hazard.stunnedUntil || 0)) continue;
+        if ((hazard.type === "grab" || hazard.type === "hand" || selectedCharacter === "boa") && now < (hazard.stunnedUntil || 0)) continue;
         if(selectedCharacter==="chameleon"&&now<camouflageUntil){
           if(now<(hazard.camouflageIgnoredUntil||0))continue;
           if(Math.random()<.76){hazard.camouflageIgnoredUntil=now+850;tone(510,.035,"sine");continue;}
@@ -1769,6 +1769,9 @@
         ctx.fillStyle="#3d7e42";ctx.beginPath();ctx.moveTo(wx,wy+wh);ctx.lineTo(wx+35,wy+70);ctx.lineTo(wx+68,wy+wh);ctx.lineTo(wx+108,wy+64);ctx.lineTo(wx+150,wy+wh);ctx.fill();
         ctx.strokeStyle="#b9a77e";ctx.lineWidth=7;ctx.strokeRect(wx,wy,ww,wh);ctx.beginPath();ctx.moveTo(wx+ww/2,wy);ctx.lineTo(wx+ww/2,wy+wh);ctx.stroke();
       }
+      // A second, decorative spice cupboard above and left of the existing shelf.
+      ctx.fillStyle="#805d43";roundedRect(315,126,110,66,4);ctx.fill();ctx.fillStyle="#cbb094";ctx.fillRect(320,131,100,55);ctx.fillStyle="#74533c";ctx.fillRect(320,177,100,5);
+      ["#ad5936","#cca44f","#758354","#9a453a"].forEach((c,i)=>{const x=327+i*23;ctx.fillStyle=c;roundedRect(x,152,15,25,3);ctx.fill();ctx.fillStyle="#ede0c7";ctx.fillRect(x+2,159,11,5);ctx.fillStyle="#584a3c";ctx.fillRect(x+1,149,13,4);});
       // One continuous working kitchen: tiled backsplash, clear counter line, and matching cabinet fronts.
       ctx.fillStyle="#d7dedb";ctx.fillRect(0,220,775,102);
       ctx.strokeStyle="rgba(89,111,108,.28)";ctx.lineWidth=1;
@@ -1784,7 +1787,7 @@
       ctx.strokeStyle="#8f8177";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(187,108);ctx.lineTo(187,252);ctx.moveTo(85,180);ctx.lineTo(289,180);ctx.stroke();
       ctx.fillStyle="#6d4051";
       const drawCurtain=(inner,outer)=>{ctx.beginPath();ctx.moveTo(inner,91);ctx.quadraticCurveTo((inner+outer)/2,160,inner,284);ctx.lineTo(outer,284);ctx.quadraticCurveTo(outer+10,155,outer,91);ctx.closePath();ctx.fill();};
-      drawCurtain(57,112);drawCurtain(260,315);
+      ctx.save();ctx.translate(Math.sin(performance.now()*.002)*2,0);drawCurtain(57,112);ctx.restore();ctx.save();ctx.translate(-Math.sin(performance.now()*.002+1)*2,0);drawCurtain(260,315);ctx.restore();
       ctx.fillStyle="#493c50";roundedRect(92,330,305,118,22);ctx.fill();ctx.fillStyle="#5d4b63";roundedRect(110,300,128,83,20);ctx.fill();roundedRect(244,300,132,83,20);ctx.fill();
       ctx.strokeStyle="#2d2831";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(242,312);ctx.lineTo(242,430);ctx.stroke();
       ctx.fillStyle="#201b22";ctx.fillRect(455,390,240,16);ctx.fillRect(478,406,12,56);ctx.fillRect(660,406,12,56);
@@ -1884,9 +1887,9 @@
       const swing=moving?Math.sin(cycle+phase)*(isFront?9.5:8.5):0;
       const lift=moving?Math.max(0,Math.cos(cycle+phase))*3.8:0;
       const hipY=(isFront?53:54)+bob;
-      const kneeX=hipX+swing*.53+(isFront?-1:2);
-      const kneeY=74+bob-lift*.38;
-      const pawX=hipX+swing;
+      const kneeX=hipX+swing*.53+(isFront?-1:-4);
+      const kneeY=(isFront?74:71)+bob-lift*.38;
+      const pawX=hipX+swing+(isFront?-1:3);
       const pawY=96-lift;
       ctx.strokeStyle=isNear?coat:farCoat;
       ctx.lineWidth=isFront?5.1:4.8;
@@ -1914,6 +1917,7 @@
     ctx.beginPath();ctx.ellipse(1.8,33+bob,3.2,2.5,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#17191c";ctx.beginPath();ctx.ellipse(27,24+bob,2.3,1.8,-.2,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.ellipse(30.5,29+bob,1.6,2,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=ink;ctx.beginPath();ctx.ellipse(11.5,26+bob,5.1,4.1,-.15,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#765033";ctx.beginPath();ctx.arc(11.5,26+bob,2.8,0,Math.PI*2);ctx.fill();
     ctx.fillStyle=ink;ctx.beginPath();ctx.arc(12,26+bob,1.45,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(12.6,25.3+bob,.6,0,Math.PI*2);ctx.fill();
@@ -1922,11 +1926,11 @@
     const spots=[[39,43,2.7,2],[43,51,2,2.7],[48,41,3.5,2.4],[52,48,2.6,2],[57,42,2.4,3],[61,51,3.1,2.2],[66,44,3.6,2.5],[70,53,2.1,2.6],[75,41,3,2.2],[79,48,2.4,2.9],[83,44,1.6,2],[50,56,1.6,1.8],[64,57,1.8,1.5],[36,43,1.4,2]];
     ctx.fillStyle=ink;
     for(const [x,y,rx,ry] of spots){ctx.beginPath();ctx.ellipse(x,y+bob,rx,ry,.16,0,Math.PI*2);ctx.fill();}
-    // Long, smooth tail carried low, ending in a small dark tip.
+    // Gently curved tail with a dark tip, as in the selected reference.
     ctx.strokeStyle=coat;ctx.lineWidth=3.8;ctx.lineCap="round";ctx.lineJoin="round";
-    ctx.beginPath();ctx.moveTo(84,48+bob);ctx.quadraticCurveTo(94,51+bob,98,61+bob);ctx.quadraticCurveTo(100,66+bob,101,70+bob);ctx.stroke();
-    ctx.strokeStyle=ink;ctx.lineWidth=2.1;ctx.beginPath();ctx.moveTo(98,62+bob);ctx.quadraticCurveTo(100,66+bob,101,70+bob);ctx.stroke();
-    // Option D's extended walking pose animates the feet in opposing phases.
+    ctx.beginPath();ctx.moveTo(83,46+bob);ctx.quadraticCurveTo(94,50+bob,101,44+bob);ctx.quadraticCurveTo(105,41+bob,107,35+bob);ctx.stroke();
+    ctx.strokeStyle=ink;ctx.lineWidth=2.1;ctx.beginPath();ctx.moveTo(103,42+bob);ctx.quadraticCurveTo(106,39+bob,107,35+bob);ctx.stroke();
+    // Opposing phases animate the near pair.
     leg(42,0,true,true);leg(76,Math.PI,true,false);
     ctx.restore();
   }
@@ -1944,7 +1948,7 @@
       const swing=moving?Math.sin(cycle+phase)*4.2:0;
       const lift=moving?Math.max(0,Math.cos(cycle+phase))*2.8:0;
       const hipY=(isFront?37:38)+bob,kneeX=hipX+swing*.42+(isFront?0:1);
-      const kneeY=46.5+bob-lift*.35,pawX=hipX+swing,pawY=55-lift;
+      const kneeY=46.5+bob-lift*.35,pawX=hipX+swing+(isFront?-1:2),pawY=55-lift;
       ctx.strokeStyle=isNear?coat:shade;ctx.lineWidth=isFront?6.5:6;ctx.lineCap="round";ctx.lineJoin="round";
       ctx.beginPath();ctx.moveTo(hipX,hipY);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY-1);ctx.stroke();
       // Short warm socks finish in one soft paw shape, with no inset mark.
@@ -1956,12 +1960,12 @@
     leg(34,Math.PI,false,true);leg(64,0,false,false);
     // Small upright tail nub.
     ctx.strokeStyle=coat;ctx.lineWidth=5.2;ctx.lineCap="round";ctx.beginPath();
-    ctx.moveTo(76,24+bob);ctx.quadraticCurveTo(81,22+bob,82,20+bob+Math.sin(cycle)*.7);ctx.stroke();
-    ctx.fillStyle=ink;ctx.beginPath();ctx.ellipse(82.4,20+bob+Math.sin(cycle)*.7,2.5,2.2,.2,0,Math.PI*2);ctx.fill();
+    ctx.moveTo(76,24+bob);ctx.quadraticCurveTo(81,22+bob,82,20+bob+(moving?Math.sin(cycle)*.7:0));ctx.stroke();
+    ctx.fillStyle=ink;ctx.beginPath();ctx.ellipse(82.4,20+bob+(moving?Math.sin(cycle)*.7:0),2.5,2.2,.2,0,Math.PI*2);ctx.fill();
     // Low, fairly flat back and rounded rump.
     ctx.fillStyle=coat;ctx.beginPath();
     ctx.moveTo(33,20+bob);ctx.quadraticCurveTo(43,14.5+bob,56,15.5+bob);
-    ctx.lineTo(72,17+bob);ctx.quadraticCurveTo(80,18+bob,82,23+bob);
+    ctx.lineTo(72,18+bob);ctx.quadraticCurveTo(80,20+bob,82,25+bob);
     ctx.quadraticCurveTo(84,30+bob,79,37.5+bob);ctx.quadraticCurveTo(75,42.5+bob,65,42.5+bob);
     ctx.lineTo(42,42+bob);ctx.quadraticCurveTo(34,41+bob,32,35+bob);ctx.closePath();ctx.fill();
     ctx.fillStyle=highlight;ctx.beginPath();ctx.ellipse(60,17.7+bob,13.2,2.2,-.04,0,Math.PI*2);ctx.fill();
@@ -2395,6 +2399,9 @@
         ctx.strokeStyle="#9b8974";ctx.lineWidth=2;
         for(let doorX=p[0]+8;doorX<p[0]+p[2]-24;doorX+=62){ctx.strokeRect(doorX,p[1]+12,52,Math.max(4,p[3]-15));}
         ctx.fillStyle="rgba(255,255,255,.55)";ctx.fillRect(p[0]+6,p[1]+3,p[2]-12,2);
+      }else if(level.decor==="kitchen"&&p[4]==="kitchenBin"){
+        ctx.fillStyle="#596361";roundedRect(p[0]+5,p[1]+6,p[2]-10,p[3]-6,7);ctx.fill();
+        ctx.fillStyle="#353e3c";roundedRect(p[0],p[1],p[2],10,4);ctx.fill();ctx.fillStyle="#aab4ae";ctx.fillRect(p[0]+6,p[1]+2,p[2]-12,3);
       }else if(level.decor==="kitchen"&&p[4]==="spiceShelf"){
         ctx.fillStyle="#9a7454";roundedRect(p[0],p[1],p[2],p[3],3);ctx.fill();
         ctx.fillStyle="#d8c5a4";ctx.fillRect(p[0]+4,p[1]+2,p[2]-8,4);
@@ -2582,9 +2589,9 @@
       ctx.strokeStyle="#151416";ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(h.w-4,12);ctx.quadraticCurveTo(h.w+18,-2,h.w+12,-15);ctx.stroke();
     } else if (h.type === "dalmatian") {
       ctx.save();if(h.dir>0){ctx.translate(h.w,0);ctx.scale(-1,1);}
-      drawDalmatianSprite(h.w,h.h,now,h.speed||0);ctx.restore();
+      drawDalmatianSprite(h.w,h.h,now,now >= (h.stunnedUntil || 0) ? h.speed||0 : 0);ctx.restore();
     } else if (h.type === "frenchie") {
-      drawFrenchieSprite(h.w,h.h,now,h.speed||0);
+      ctx.save();if(h.dir>0){ctx.translate(h.w,0);ctx.scale(-1,1);} drawFrenchieSprite(h.w,h.h,now,now >= (h.stunnedUntil || 0) ? h.speed||0 : 0);ctx.restore();
     } else if(h.type==="car"){
       ctx.save();if(h.dir<0){ctx.translate(h.w,0);ctx.scale(-1,1);}
       ctx.fillStyle="#111317";ctx.beginPath();ctx.arc(18,h.h-4,8,0,Math.PI*2);ctx.arc(h.w-19,h.h-4,8,0,Math.PI*2);ctx.fill();
