@@ -443,7 +443,7 @@
       intro:"Cross the broad leaves and climb the hanging vines. Catch every moth with your tongue, then use a Power Leap to clear the keeper’s hand and reach the exit.",
       completeTitle:"A clean leap into the night.",completeText:"The red-eyed tree frog clears the final branch and disappears into the warm forest air.",
       start:[55,430],exit:[870,105,48,90],
-      platforms:[[0,500,960,40],[38,458,175,20,"leafBridge"],[246,397,150,18,"leafBridge"],[430,333,135,18,"leafBridge"],[602,267,140,18,"leafBridge"],[790,195,140,18,"leafBridge"],[105,327,105,16,"leafBridge"],[320,265,100,16,"leafBridge"],[515,198,105,16,"leafBridge"],[704,132,100,16,"leafBridge"]],
+      platforms:[[0,500,960,40],[38,458,175,20,"leafBridge"],[246,397,150,18,"leafBridge"],[430,333,135,18,"leafBridge"],[602,267,140,18,"leafBridge"],[790,195,140,18,"leafBridge"],[105,327,105,16,"leafBridge"],[194,350,84,16,"bromeliadPlatform"],[320,265,100,16,"leafBridge"],[515,198,105,16,"leafBridge"],[704,132,100,16,"leafBridge"]],
       vines:[[215,300,16,158],[397,230,16,167],[566,160,16,175],[744,98,16,170]],
       insects:[[120,428],[300,366],[485,302],[655,236],[850,165],[360,235]],
       hazards:[{x:480,y:430,w:82,h:64,type:"grab",axis:"x",min:390,max:665,speed:80}]
@@ -1397,7 +1397,7 @@
           player.vy = Math.min(player.vy, parachuting?145:gliding?205:570);
           if(raccoonMovement&&onWall&&player.vy>90&&!parachuting)player.vy=90;
         }
-        if(["frog","glassfrog","treefrog"].includes(selectedCharacter)&&player.grounded&&(left||right)&&now>=frogHopCooldownUntil){
+        if(["frog","treefrog"].includes(selectedCharacter)&&player.grounded&&(left||right)&&now>=frogHopCooldownUntil){
           player.vy=-178;player.grounded=false;frogAutoHopping=true;frogHopCooldownUntil=now+300;
         }
         }
@@ -1641,16 +1641,24 @@
   }
 
   function drawBackdrop(level) {
-    if(["frog","glassfrog","treefrog"].includes(level.habitat)&&frogHabitatBackground.complete&&frogHabitatBackground.naturalWidth>0){
-      ctx.drawImage(frogHabitatBackground,0,0,W,H);
-      ctx.strokeStyle="rgba(210,255,230,.18)";ctx.lineWidth=5;ctx.strokeRect(18,45,924,455);
-      return;
-    }
     const gradient = ctx.createLinearGradient(0, 0, 0, H);
     gradient.addColorStop(0, level.palette[0]);
     gradient.addColorStop(1, level.palette[1]);
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, W, H);
+
+    const frogAtmosphere = {
+      frog: {imageAlpha:.14, wash:"rgba(11,48,30,.52)"},
+      glassfrog: {imageAlpha:.12, wash:"rgba(76,125,121,.56)"},
+      treefrog: {imageAlpha:.12, wash:"rgba(9,43,34,.58)"}
+    }[level.habitat];
+    if(frogAtmosphere){
+      if(frogHabitatBackground.complete&&frogHabitatBackground.naturalWidth>0){
+        ctx.save();ctx.globalAlpha=frogAtmosphere.imageAlpha;ctx.filter="saturate(.58) contrast(.68)";
+        ctx.drawImage(frogHabitatBackground,0,0,W,H);ctx.restore();
+      }
+      ctx.save();ctx.fillStyle=frogAtmosphere.wash;ctx.fillRect(0,0,W,H);ctx.restore();
+    }
 
     if(level.decor!=="enclosure"){
       ctx.globalAlpha = .13;
@@ -2023,6 +2031,54 @@
     ctx.restore();
   }
 
+  function drawBromeliad(x,baseY,habitat,variation=0,scale=1){
+    const styles={
+      frog:{leaves:["#286f3d","#3f9148","#65a64f","#347a43"],length:31,width:9,spread:2.55,cup:"#d47d63",bloom:"#e16aa2",center:"#f4d977",vein:"rgba(231,255,204,.52)"},
+      glassfrog:{leaves:["#4f887b","#71a99a","#a0cbb5","#5b958c"],length:35,width:5.5,spread:2.25,cup:"#83bca9",bloom:"#d5d4f1",center:"#fff0c4",vein:"rgba(230,255,249,.78)"},
+      treefrog:{leaves:["#245b36","#367643","#5e984c","#2a6740"],length:39,width:12,spread:2.45,cup:"#a64e3f",bloom:"#ed6746",center:"#ffcb67",vein:"rgba(216,244,157,.55)"},
+      crested:{leaves:["#465c36","#6b7541","#8d8051","#384d34"],length:34,width:7.5,spread:2.0,cup:"#82704b",bloom:"#d1bfa0",center:"#c6a953",vein:"rgba(236,225,183,.62)"}
+    };
+    const style=styles[habitat];
+    if(!style)return;
+    ctx.save();ctx.translate(x,baseY);ctx.scale(scale,scale);
+    ctx.fillStyle="rgba(9,22,15,.34)";ctx.beginPath();ctx.ellipse(0,1,18,5,0,0,Math.PI*2);ctx.fill();
+    const count=habitat==="glassfrog"?7:8;
+    for(let i=0;i<count;i++){
+      const t=count===1 ? .5 : i/(count-1),angle=-Math.PI/2-style.spread/2+t*style.spread+(variation%3-1)*.035;
+      const length=style.length*(.84+((i+variation)%4)*.075);
+      const width=style.width*(.8+((i+variation)%3)*.12);
+      drawPlantLeaf(0,-2,angle,style.leaves[(i+variation)%style.leaves.length],length,width);
+      if(habitat==="crested"&&i%2===0){
+        const markX=Math.cos(angle)*length*.43,markY=-2+Math.sin(angle)*length*.43;
+        ctx.fillStyle="rgba(239,224,183,.58)";ctx.beginPath();ctx.ellipse(markX,markY,1.6,1.1,angle,0,Math.PI*2);ctx.fill();
+      }
+    }
+    ctx.fillStyle=style.cup;ctx.beginPath();ctx.ellipse(0,-3,8,5.2,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle=style.vein;ctx.lineWidth=1;
+    for(const angle of [-.48,0,.48]){ctx.beginPath();ctx.moveTo(0,-3);ctx.lineTo(Math.sin(angle)*style.length*.67,-2-Math.cos(angle)*style.length*.67);ctx.stroke();}
+    for(let i=0;i<5;i++){
+      const angle=i*Math.PI*2/5+variation*.3;
+      ctx.fillStyle=style.bloom;ctx.beginPath();ctx.ellipse(Math.cos(angle)*4,-9+Math.sin(angle)*3,3.1,5,angle,0,Math.PI*2);ctx.fill();
+    }
+    ctx.fillStyle=style.center;ctx.beginPath();ctx.arc(0,-9,2.8,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+
+  function drawBromeliadPlatform(platform){
+    const [x,y,w,h]=platform,cx=x+w/2,base=y+h+7;
+    ctx.save();
+    for(const [angle,length,width,color] of [
+      [-2.8,42,10,"#2a663b"],[-2.3,40,11,"#367c42"],[-1.9,34,10,"#55934a"],
+      [-1.25,34,10,"#579248"],[-.82,40,11,"#387541"],[-.36,42,10,"#2b6339"]
+    ])drawPlantLeaf(cx,base,angle,color,length,width);
+    ctx.fillStyle="#713f39";ctx.beginPath();ctx.moveTo(x+13,y+h-1);ctx.quadraticCurveTo(x+17,y+5,x+w/2,y+7);ctx.quadraticCurveTo(x+w-17,y+5,x+w-13,y+h-1);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#50974c";ctx.fillRect(x+2,y,w-4,4);
+    ctx.fillStyle="#a4ce65";ctx.fillRect(x+7,y,w-14,2);
+    ctx.strokeStyle="rgba(226,251,179,.8)";ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(x+9,y+1);ctx.quadraticCurveTo(cx,y+2,cx+9,y+1);ctx.stroke();
+    ctx.fillStyle="#ee7647";for(const [bx,by] of [[cx-6,y+7],[cx,y+5],[cx+6,y+7]]){ctx.beginPath();ctx.ellipse(bx,by,3,2,0,0,Math.PI*2);ctx.fill();}
+    ctx.restore();
+  }
+
   function drawUnderwaterPlant(x, baseY, height, color) {
     ctx.save();ctx.strokeStyle=color;ctx.lineWidth=5;ctx.lineCap="round";
     for(let i=-1;i<=1;i++){
@@ -2047,11 +2103,12 @@
   }
 
   function drawHabitatDetails(level) {
-    ctx.save();ctx.globalAlpha=.7;
+    ctx.save();ctx.globalAlpha=["frog","glassfrog","treefrog"].includes(level.habitat) ? .56 : .7;
     if(level.habitat==="chameleon"){
       ctx.fillStyle="#443326";ctx.fillRect(72,414,76,65);drawLeaves(58,380,"#315b35");
     }else if(level.habitat==="crested"){
       drawCorkBark(710,92,92,318,1);drawCorkBark(310,115,66,195,.42);drawCorkBark(835,210,55,180,.38);drawMossFloor(492);
+      for(const [index,[x,y]] of [[274,495],[610,493],[918,491]].entries())drawBromeliad(x,y,"crested",index,.78);
     }else if(level.habitat==="newt"){
       const water=ctx.createLinearGradient(0,270,0,500);water.addColorStop(0,"rgba(76,196,202,.28)");water.addColorStop(1,"rgba(20,93,109,.58)");ctx.fillStyle=water;ctx.fillRect(20,270,500,226);
       ctx.strokeStyle="rgba(180,248,239,.55)";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(20,270);ctx.quadraticCurveTo(145,261,270,270);ctx.quadraticCurveTo(395,279,520,270);ctx.stroke();
@@ -2062,10 +2119,7 @@
       ctx.fillStyle="#3b2d22";ctx.fillRect(20,448,920,48);ctx.fillStyle="#6c4b31";
       for(let i=0;i<50;i++){const x=26+(i*97)%906,y=452+(i*31)%34;ctx.save();ctx.translate(x,y);ctx.rotate((i%7)*.34-.8);ctx.fillStyle=i%3===0?"#9a7544":i%3===1?"#684a31":"#aa8450";ctx.beginPath();ctx.ellipse(0,0,8+(i%4),3+(i%2),0,0,Math.PI*2);ctx.fill();ctx.restore();}
       drawMossFloor(477);drawCorkBark(55,267,64,192,.9);drawCorkBark(835,228,70,230,.82);drawCorkBark(415,326,48,144,.48);
-      for(const [x,y,color] of [[120,403,"#36834b"],[310,436,"#4a9b52"],[612,424,"#397e45"],[782,420,"#559b4f"],[904,404,"#337447"]]){
-        ctx.fillStyle=color;for(let i=0;i<7;i++){ctx.save();ctx.translate(x,y);ctx.rotate(i*Math.PI/3);ctx.beginPath();ctx.ellipse(0,-22,10,30,0,0,Math.PI*2);ctx.fill();ctx.restore();}
-        ctx.fillStyle="#e1b94f";ctx.beginPath();ctx.ellipse(x,y-5,8,5,0,0,Math.PI*2);ctx.fill();
-      }
+      for(const [index,[x,y]] of [[120,403],[310,436],[612,424],[782,420],[904,404]].entries())drawBromeliad(x,y,"frog",index,.92);
       drawLeaves(-20,195,"#286b3b");drawLeaves(288,154,"#347b43");drawLeaves(552,206,"#286b3b");drawLeaves(790,166,"#3a8245");
       ctx.strokeStyle="#4b8a48";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(220,55);ctx.bezierCurveTo(260,135,185,185,232,263);ctx.moveTo(700,55);ctx.bezierCurveTo(655,130,744,173,708,252);ctx.stroke();
       for(const [x,y] of [[180,315],[355,272],[642,335],[765,290]])drawPlantLeaf(x,y,-.5,"#4a9c4b",34,12);
@@ -2077,6 +2131,7 @@
       for(const [x,y,c] of [[120,188,"#3b7650"],[278,117,"#547e4e"],[526,158,"#3c7551"],[720,115,"#55834e"],[865,262,"#3b704a"]])drawLeaves(x,y,c);
       ctx.strokeStyle="rgba(183,232,216,.42)";ctx.lineWidth=3;for(const [x,y,h] of [[250,70,140],[455,56,178],[760,72,130]]){ctx.beginPath();ctx.moveTo(x,y);ctx.bezierCurveTo(x-18,y+45,x+16,y+82,x,y+h);ctx.stroke();}
       ctx.fillStyle="#7b6b50";ctx.fillRect(20,480,920,16);ctx.fillStyle="rgba(199,234,220,.2)";for(let x=42;x<930;x+=57){ctx.beginPath();ctx.ellipse(x,478-(x%3)*3,23,5,.08,0,Math.PI*2);ctx.fill();}
+      for(const [index,[x,y]] of [[46,493],[913,491]].entries())drawBromeliad(x,y,"glassfrog",index,.78);
     }else if(level.habitat==="treefrog"){
       // Warm tropical foliage and broad leaves frame the red-eyed tree frog's vivid green body.
       const forest=ctx.createLinearGradient(0,50,0,500);forest.addColorStop(0,"#182932");forest.addColorStop(.55,"#324b3d");forest.addColorStop(1,"#5c5133");ctx.fillStyle=forest;ctx.fillRect(20,50,920,446);
@@ -2085,6 +2140,7 @@
       for(const [x,y,c] of [[75,208,"#397647"],[210,125,"#5c944d"],[380,183,"#43834a"],[570,118,"#67964d"],[725,230,"#397346"],[895,157,"#568b4a"]])drawLeaves(x,y,c);
       ctx.fillStyle="#64513a";ctx.fillRect(20,480,920,16);ctx.fillStyle="rgba(220,198,127,.32)";for(let x=38;x<940;x+=49){ctx.beginPath();ctx.ellipse(x,475-(x%4)*2,19,5,-.15,0,Math.PI*2);ctx.fill();}
       ctx.strokeStyle="rgba(159,197,116,.55)";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(280,50);ctx.bezierCurveTo(320,125,250,200,305,278);ctx.moveTo(700,55);ctx.bezierCurveTo(664,120,728,184,692,244);ctx.stroke();
+      for(const [index,[x,y]] of [[44,493],[915,492],[480,492]].entries())drawBromeliad(x,y,"treefrog",index,.78);
     }else if(level.habitat==="boa"){
       ctx.fillStyle="#4b3524";ctx.fillRect(20,462,920,34);ctx.fillStyle="#6b4a2e";for(let x=25;x<940;x+=19){ctx.beginPath();ctx.ellipse(x,470+(x%5)*4,13,6,.2,0,Math.PI*2);ctx.fill();}
       ctx.fillStyle="#29231b";roundedRect(695,390,175,106,22);ctx.fill();roundedRect(92,390,168,106,22);ctx.fill();
@@ -2307,6 +2363,7 @@
 
   function drawPlatforms(level) {
     for (const p of level.platforms) {
+      if(p[4]==="bromeliadPlatform"){drawBromeliadPlatform(p);continue;}
       if(["branchStep","corkStep","shoreStone","leafBridge","logStep"].includes(p[4])){
         if(p[4]==="branchStep"||p[4]==="logStep"){
           const logColor=p[4]==="branchStep"?"#715033":"#68472b";
@@ -2728,36 +2785,90 @@
     ctx.save();
     ctx.translate(player.x + player.w/2, player.y + player.h/2);
     ctx.scale(player.facing, 1);
-    const green = selectedCrestieSkin==="halloween"?"#d9783c":characters.crested.color;
-    const spotColor=selectedCrestieSkin==="halloween"?"#34251f":"#593a28";
+    const appearances={
+      classic:{base:characters.crested.color,shadow:"#a86f43",mark:null,kind:"classic"},
+      "super-dalmatian":{base:characters.crested.color,shadow:"#a86f43",mark:"#35221d",kind:"spots"},
+      halloween:{base:"#171518",shadow:"#282126",mark:"#ed792f",kind:"patches"},
+      "lily-white":{base:"#c28c5b",shadow:"#9a6948",mark:"#f2e8d6",kind:"lily"},
+      axanthic:{base:"#202226",shadow:"#424750",mark:"#8b939f",kind:"axanthic"}
+    };
+    const skin=appearances[selectedCrestieSkin]||appearances.classic;
+    const green=skin.base;
     const motion=livelyMotion(now,.02);ctx.translate(0,Math.abs(motion.stride)*motion.moving*1.6+motion.landing*1.5);ctx.scale(1+motion.landing*.06,1-motion.landing*.1);
+    const drawSegmentMark=(x1,y1,x2,y2,index,far)=>{
+      if(!skin.mark)return;
+      const point=t=>[x1+(x2-x1)*t,y1+(y2-y1)*t];
+      if(skin.kind==="spots"){
+        for(let n=0;n<2;n++){
+          const t=.27+n*.44,[px,py]=point(t),offset=((index+n)%2?1:-1)*1.1;
+          ctx.fillStyle=skin.mark;ctx.beginPath();ctx.ellipse(px+offset,py+offset*.35,1.35+(index+n)%2*.25,1.05,0,0,Math.PI*2);ctx.fill();
+        }
+      }else if(skin.kind==="patches"){
+        const [sx,sy]=point(.17),[ex,ey]=point(.78);
+        ctx.strokeStyle=skin.mark;ctx.lineWidth=far?2.1:2.8;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo((sx+ex)/2+((index%2)?1:-1), (sy+ey)/2-1.2,ex,ey);ctx.stroke();
+      }else if(skin.kind==="lily"){
+        const [px,py]=point(.48);ctx.fillStyle=skin.mark;ctx.beginPath();ctx.ellipse(px,py,3.2,1.65,Math.atan2(y2-y1,x2-x1),0,Math.PI*2);ctx.fill();
+      }else if(skin.kind==="axanthic"){
+        const [sx,sy]=point(.18),[ex,ey]=point(.68),previousAlpha=ctx.globalAlpha;ctx.strokeStyle=skin.mark;ctx.globalAlpha=previousAlpha*(far ? .58 : .82);ctx.lineWidth=1.1;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo((sx+ex)/2,(sy+ey)/2-1,ex,ey);ctx.stroke();ctx.globalAlpha=previousAlpha;
+      }
+    };
     // Long, gently tapering tail. Crested geckos are not curly-tailed chameleons.
     if (tailReady) {
       ctx.strokeStyle = green; ctx.lineWidth = 7; ctx.lineCap = "round";
       const tailWave=Math.sin(now*.011)*(2+motion.moving*3)+(motion.airborne?-player.vy*.012:0);ctx.beginPath(); ctx.moveTo(-14, 2); ctx.bezierCurveTo(-27, 3-tailWave*.2, -37, 8+tailWave, -49, 5+tailWave*.5); ctx.stroke();
-      if(selectedCrestieSkin!=="classic"){ctx.fillStyle=selectedCrestieSkin==="halloween"?"#34251f":"#593a28";for(const [x,y,r] of [[-24,2-tailWave*.2,1.4],[-32,6+tailWave*.25,1.7],[-40,6+tailWave*.4,1.2]]){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}}
+      if(skin.kind==="spots"){
+        ctx.fillStyle=skin.mark;for(const [x,y,r] of [[-23,2-tailWave*.2,1.8],[-29,5+tailWave*.25,1.5],[-35,7+tailWave*.4,1.9],[-42,5+tailWave*.4,1.4]]){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
+      }else if(skin.kind==="patches"||skin.kind==="lily"||skin.kind==="axanthic"){
+        ctx.strokeStyle=skin.mark;ctx.globalAlpha=skin.kind==="axanthic" ? .72 : .96;ctx.lineWidth=skin.kind==="patches"?3.2:2.1;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-17,2);ctx.quadraticCurveTo(-29,4+tailWave*.5,-38,6+tailWave*.4);ctx.stroke();ctx.globalAlpha=1;
+      }
     }
 
     // Four articulated side-view legs with alternating steps and adhesive toe pads.
-    const geckoLeg=(hip,phase,front,far=false)=>{const rise=Math.max(-1,Math.min(1,-player.vy/430)),kneeX=hip+(motion.airborne?(front?7+rise*4:-8-rise*3):phase*.65),kneeY=motion.airborne?5:10,pawX=kneeX+(motion.airborne?(front?9:-8):front?8:-7),pawY=motion.airborne?9+Math.abs(rise)*2:14;ctx.globalAlpha=far?.55:1;ctx.strokeStyle=far?"#a86f43":green;ctx.lineWidth=far?3:4;ctx.beginPath();ctx.moveTo(hip,3);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();ctx.fillStyle=green;ctx.beginPath();ctx.ellipse(pawX,pawY,4,2.4,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle=green;ctx.lineWidth=1.2;for(let toe=-1;toe<=1;toe++){ctx.beginPath();ctx.moveTo(pawX+1,pawY+toe);ctx.lineTo(pawX+7,pawY+toe*2);ctx.stroke();}ctx.globalAlpha=1;};
-    const step=motion.stride*motion.moving*6;geckoLeg(-12,-step*.8,false,true);geckoLeg(7,step*.8,true,true);geckoLeg(-8,step,false);geckoLeg(11,-step,true,false);
+    const geckoLeg=(hip,phase,front,far=false,index=0)=>{const rise=Math.max(-1,Math.min(1,-player.vy/430)),kneeX=hip+(motion.airborne?(front?7+rise*4:-8-rise*3):phase*.65),kneeY=motion.airborne?5:10,pawX=kneeX+(motion.airborne?(front?9:-8):front?8:-7),pawY=motion.airborne?9+Math.abs(rise)*2:14;ctx.globalAlpha=far?.55:1;ctx.strokeStyle=far?skin.shadow:green;ctx.lineWidth=far?3:4;ctx.beginPath();ctx.moveTo(hip,3);ctx.lineTo(kneeX,kneeY);ctx.lineTo(pawX,pawY);ctx.stroke();drawSegmentMark(hip,3,kneeX,kneeY,index,far);drawSegmentMark(kneeX,kneeY,pawX,pawY,index+1,far);ctx.fillStyle=green;ctx.beginPath();ctx.ellipse(pawX,pawY,4,2.4,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle=green;ctx.lineWidth=1.2;for(let toe=-1;toe<=1;toe++){ctx.beginPath();ctx.moveTo(pawX+1,pawY+toe);ctx.lineTo(pawX+7,pawY+toe*2);ctx.stroke();}ctx.globalAlpha=1;};
+    const step=motion.stride*motion.moving*6;geckoLeg(-12,-step*.8,false,true,0);geckoLeg(7,step*.8,true,true,2);geckoLeg(-8,step,false,false,4);geckoLeg(11,-step,true,false,6);
 
     // Slender body and broad, flat-topped wedge head with a distinct blunt snout.
     ctx.fillStyle = green;
     ctx.beginPath(); ctx.ellipse(-1,0,20+motion.breath*.35,9+motion.breath*.2,0,0,Math.PI*2); ctx.fill();
-    if(selectedCrestieSkin!=="classic"){
-      ctx.save();ctx.beginPath();ctx.ellipse(-1,0,20+motion.breath*.35,9+motion.breath*.2,0,0,Math.PI*2);ctx.clip();ctx.fillStyle=spotColor;
-      const marks=selectedCrestieSkin==="super-dalmatian"?[[-16,-3,3.1,2.2],[-10,4,2.1,1.8],[-5,-4,2.7,2],[-1,3,3,2.4],[5,-3,2,1.7],[10,3,3.2,2.2],[15,-2,2.4,1.8]]:[[-15,-2,6,3.4],[-3,3,6,3],[9,-2,6,3.5]];
-      for(const [x,y,rx,ry] of marks){ctx.beginPath();ctx.ellipse(x,y,rx,ry,(x%3)*.08,0,Math.PI*2);ctx.fill();}ctx.restore();
+    if(skin.mark){
+      ctx.save();ctx.beginPath();ctx.ellipse(-1,0,20+motion.breath*.35,9+motion.breath*.2,0,0,Math.PI*2);ctx.clip();ctx.fillStyle=skin.mark;
+      if(skin.kind==="spots"){
+        const marks=[[-18,-3,1.8,1.4],[-15,3,1.4,1.5],[-12,-1,2.1,1.5],[-10,5,1.8,1.3],[-8,-5,1.9,1.5],[-5,1,1.45,1.3],[-3,-3,2.1,1.6],[-1,5,1.8,1.3],[2,-5,1.45,1.3],[4,1,1.9,1.4],[7,-2,1.45,1.5],[9,5,2,1.35],[12,-4,1.85,1.4],[15,1,1.6,1.4],[17,-3,1.15,1.2],[-17,0,1.15,1],[-8,4,1.05,1],[-2,2,1,1],[6,4,1.1,1],[13,3,1,1]];
+        for(const [x,y,rx,ry] of marks){ctx.beginPath();ctx.ellipse(x,y,rx,ry,(x%3)*.08,0,Math.PI*2);ctx.fill();}
+      }else if(skin.kind==="patches"){
+        ctx.beginPath();ctx.moveTo(-20,-2);ctx.quadraticCurveTo(-15,-8,-8,-6);ctx.quadraticCurveTo(-3,-4,1,-7);ctx.quadraticCurveTo(10,-9,19,-2);ctx.lineTo(17,1);ctx.quadraticCurveTo(9,0,4,2);ctx.quadraticCurveTo(-3,0,-8,4);ctx.quadraticCurveTo(-15,5,-20,2);ctx.closePath();ctx.fill();
+        ctx.beginPath();ctx.ellipse(-12,4.4,5.7,3.2,-.16,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(7,4.2,5.8,3.1,.1,0,Math.PI*2);ctx.fill();
+      }else if(skin.kind==="lily"){
+        ctx.beginPath();ctx.moveTo(-19,-2);ctx.quadraticCurveTo(-15,-7,-8,-7);ctx.quadraticCurveTo(-3,-8,3,-5);ctx.quadraticCurveTo(8,-6,10,-2);ctx.quadraticCurveTo(2,0,-4,0);ctx.quadraticCurveTo(-12,2,-19,1);ctx.closePath();ctx.fill();
+        ctx.beginPath();ctx.ellipse(-8,4.1,7.4,3.2,-.1,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(8,4.4,7.3,3.1,.08,0,Math.PI*2);ctx.fill();
+      }else if(skin.kind==="axanthic"){
+        for(const [x,y,rx,ry] of [[-15,-3,5,1.6],[-8,3,4,1.4],[0,-4,5.5,1.4],[8,3,4.4,1.45],[15,-2,3.6,1.5]]){ctx.beginPath();ctx.ellipse(x,y,rx,ry,.05,0,Math.PI*2);ctx.fill();}
+      }
+      ctx.restore();
+    }
+    if(skin.kind==="axanthic"){
+      ctx.strokeStyle="rgba(168,177,190,.68)";ctx.lineWidth=.7;ctx.beginPath();ctx.ellipse(-1,0,19.5+motion.breath*.35,8.6+motion.breath*.2,0,0,Math.PI*2);ctx.stroke();
     }
     ctx.save();ctx.translate(0,motion.headBob);
-    ctx.beginPath();
-    ctx.moveTo(8,-7);ctx.quadraticCurveTo(19,-11,33,-8);ctx.lineTo(40,-3);
-    ctx.lineTo(39,4);ctx.quadraticCurveTo(27,9,10,7);ctx.quadraticCurveTo(16,0,8,-7);ctx.fill();
+    const traceHead=()=>{ctx.beginPath();ctx.moveTo(8,-7);ctx.quadraticCurveTo(19,-11,33,-8);ctx.lineTo(40,-3);ctx.lineTo(39,4);ctx.quadraticCurveTo(27,9,10,7);ctx.quadraticCurveTo(16,0,8,-7);ctx.closePath();};
+    ctx.fillStyle=green;traceHead();ctx.fill();
+    if(skin.mark){
+      ctx.save();traceHead();ctx.clip();ctx.fillStyle=skin.mark;
+      if(skin.kind==="spots"){
+        for(const [x,y,r] of [[13,-5,1.6],[19,-7,1.7],[22,3,1.4],[33,-3,1.5]]){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
+      }else if(skin.kind==="patches"){
+        ctx.beginPath();ctx.moveTo(13,-7);ctx.quadraticCurveTo(21,-11,30,-8);ctx.lineTo(35,-5);ctx.quadraticCurveTo(27,-3,22,-3);ctx.quadraticCurveTo(17,-4,13,-7);ctx.fill();
+      }else if(skin.kind==="lily"){
+        ctx.beginPath();ctx.ellipse(19,-6.2,7.5,2.5,-.16,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(32,1.7,4.1,2.2,.12,0,Math.PI*2);ctx.fill();
+      }else if(skin.kind==="axanthic"){
+        ctx.beginPath();ctx.ellipse(18,-6.7,8,1.1,-.14,0,Math.PI*2);ctx.fill();
+      }
+      ctx.restore();
+    }
 
     // Raised eye turret and the little mouth line make the front unmistakable.
     ctx.beginPath();ctx.ellipse(25,-8,6,5,-.08,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#714b2f";ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(24,3);ctx.quadraticCurveTo(32,6,39,2);ctx.stroke();
+    ctx.strokeStyle=skin.kind==="axanthic"?"#8a929f":"#714b2f";ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(24,3);ctx.quadraticCurveTo(32,6,39,2);ctx.stroke();
 
     // Eyelash crests continue from above the eye down the back.
     ctx.fillStyle=green;
@@ -2769,6 +2880,11 @@
     ctx.lineTo(4,-12);ctx.lineTo(0,-8);
     ctx.lineTo(-5,-11);ctx.lineTo(-10,-7);
     ctx.closePath(); ctx.fill();
+    if(["patches","lily","axanthic"].includes(skin.kind)){
+      ctx.strokeStyle=skin.mark;ctx.lineWidth=skin.kind==="patches"?3.2:skin.kind==="lily"?2.8:1.3;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-8,-9);ctx.quadraticCurveTo(3,-12,15,-10);ctx.quadraticCurveTo(22,-12,28,-10);ctx.stroke();
+    }else if(skin.kind==="spots"){
+      ctx.fillStyle=skin.mark;for(const [x,y,r] of [[-4,-10,1.4],[4,-10,1.7],[12,-11,1.3],[20,-12,1.5]]){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
+    }
 
     ctx.fillStyle="#d9c577";ctx.beginPath();ctx.ellipse(26,-9,3.6,4.2,0,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="#071008";ctx.beginPath();ctx.ellipse(27,-9,1.4,motion.blink?.5:3.1,0,0,Math.PI*2);ctx.fill();
@@ -2885,7 +3001,8 @@
     const clamp=(value,min=0,max=1)=>Math.max(min,Math.min(max,value));
     const climbing=player.climbing||player.ceilingClimbing;
     const airborne=!player.grounded&&!climbing;
-    const groundSpeed=clamp(Math.abs(player.vx)/125);
+    const speed=Math.abs(player.vx);
+    const groundSpeed=clamp(speed/96);
     const climbSpeed=clamp((Math.abs(player.vx)+Math.abs(player.vy))/140);
     const moving=climbing?climbSpeed:groundSpeed;
     const direction=player.climbing&&player.climbDirection>0?-1:1;
@@ -2893,7 +3010,7 @@
     const landing=!airborne&&!climbing&&raccoonLandingUntil>now?Math.sin((raccoonLandingUntil-now)/190*Math.PI/2):0;
     return {
       climbing,airborne,groundWalk:player.grounded&&!climbing?groundSpeed:0,
-      climb:climbing?Math.max(.16,climbSpeed):0,phase,
+      groundSpeed:speed,climb:climbing?Math.max(.16,climbSpeed):0,phase,
       frontNear:Math.sin(phase),frontFar:Math.sin(phase+Math.PI),
       hindNear:Math.sin(phase+Math.PI),hindFar:Math.sin(phase),
       launch:airborne?clamp(-player.vy/650):0,
@@ -2912,7 +3029,7 @@
     if(cloaked){ctx.strokeStyle="rgba(194,255,231,.78)";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(1,0,35+Math.sin(now*.02)*3,24,0,0,Math.PI*2);ctx.stroke();ctx.globalAlpha*=.56;}
     const pose=frogAnimationPose(now,.3),walk=pose.groundWalk;
     const crouch=walk*.35+pose.landing*.48,breath=player.grounded&&walk<.1?Math.sin(now*.0036+.3):0;
-    const bob=Math.sin(now*.0036+.3)*.28*(1-walk)+Math.abs(Math.sin(pose.phase*2))*.72*walk-pose.launch*.45+pose.descent*.65-pose.landing*1.4;
+    const bob=Math.sin(now*.0036+.3)*.28*(1-walk)+Math.sin(pose.phase*2)*.16*walk-pose.launch*.45+pose.descent*.65-pose.landing*1.4;
     const pitch=pose.airborne?-.055*pose.launch+.065*pose.descent:Math.sin(pose.phase)*.018*walk;
     ctx.translate(0,bob);ctx.rotate(pitch);ctx.scale(1+breath*.012+pose.landing*.035,1+breath*.025-crouch*.035-pose.landing*.09);
 
@@ -3001,7 +3118,7 @@
     ctx.save();ctx.translate(player.x+player.w/2,player.y+player.h/2);ctx.scale(player.facing,1);
     const pose=frogAnimationPose(now,1.1),walk=pose.groundWalk;
     const crouch=walk*.3+pose.landing*.48,breath=player.grounded&&walk<.1?Math.sin(now*.0033+1.1):0;
-    const bob=Math.sin(now*.0033+1.1)*.3*(1-walk)+Math.abs(Math.sin(pose.phase*2))*.9*walk-pose.launch*.55+pose.descent*.75-pose.landing*1.6;
+    const bob=Math.sin(now*.0033+1.1)*.3*(1-walk)+Math.abs(Math.sin(pose.phase*2))*.38*walk-pose.launch*.55+pose.descent*.75-pose.landing*1.6;
     const pitch=pose.airborne?-.065*pose.launch+.075*pose.descent:Math.sin(pose.phase+1.1)*.02*walk;
     ctx.translate(0,bob);ctx.rotate(pitch);ctx.scale(1+breath*.014+pose.landing*.04,1+breath*.03-crouch*.04-pose.landing*.1);
 
