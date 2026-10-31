@@ -1650,9 +1650,9 @@
     ctx.fillRect(0, 0, W, H);
 
     const frogAtmosphere = {
-      frog: {imageAlpha:.14, wash:"rgba(11,48,30,.52)"},
-      glassfrog: {imageAlpha:.12, wash:"rgba(76,125,121,.56)"},
-      treefrog: {imageAlpha:.12, wash:"rgba(9,43,34,.58)"}
+      frog: {imageAlpha:.35, wash:"rgba(11,48,30,.52)"},
+      glassfrog: {imageAlpha:.35, wash:"rgba(76,125,121,.56)"},
+      treefrog: {imageAlpha:.35, wash:"rgba(9,43,34,.58)"}
     }[level.habitat];
     if(frogAtmosphere){
       if(frogHabitatBackground.complete&&frogHabitatBackground.naturalWidth>0){
